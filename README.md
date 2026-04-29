@@ -1,5 +1,3 @@
-Java OOP 실습 - Hunter&amp;Animal 예제 + Battle 팀 프로젝트
-
 # Java OOP Project
 상속, 다형성, 클래스 설계를 학습하는 Java OOP 실습 레포입니다.
 
