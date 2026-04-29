@@ -9,7 +9,7 @@
 | `docs/` | UML 및 설계 문서 |
 
 ## 프로젝트 구조
-\```
+```
 java-oop-project/
 ├── README.md
 ├── docs/
@@ -21,7 +21,7 @@ java-oop-project/
         ├── model/
         ├── view/
         └── main/
-\```
+```
 
 ## 개발 환경
 - Java 17
