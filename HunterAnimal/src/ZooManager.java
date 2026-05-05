@@ -10,11 +10,11 @@ public class ZooManager extends Human {
 	}
 
 	public void monitor() {
-		//todo : 구현 부탁드립니다
+		System.out.println(" 동물원관리자가 탈출하려는 동물들을 감시합니다.");
 	}
 
 	public void care(Animal animal) {
-		//todo : 구현 부탁드립니다
+		System.out.println(" 동물원관리자가 " + animal.getName() + "을/를 보살핍니다.");
 	}
 
 }
