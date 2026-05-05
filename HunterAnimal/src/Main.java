@@ -1,3 +1,12 @@
+import animal.AdoptedAnimal;
+import animal.ForestAnimal;
+import animal.StrayAnimal;
+import animal.ZooAnimal;
+import human.Owner;
+import human.Rescuer;
+import human.ShelterManager;
+import human.ZooManager;
+
 public class Main {
 	public static void main(String[] args) {
 

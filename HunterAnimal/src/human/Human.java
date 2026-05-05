@@ -1,3 +1,6 @@
+package human;
+import animal.Animal;
+
 public class Human {
 	private String name;
 	private int age;

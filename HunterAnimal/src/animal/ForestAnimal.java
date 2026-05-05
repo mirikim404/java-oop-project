@@ -1,3 +1,6 @@
+package animal;
+import common.IFindingFood;
+
 public class ForestAnimal extends Animal implements IFindingFood {
 	public ForestAnimal() {
 		

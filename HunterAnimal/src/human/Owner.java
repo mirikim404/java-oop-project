@@ -1,3 +1,6 @@
+package human;
+import animal.Animal;
+
 public class Owner extends Human {
 	private String housingType;
 	private Animal[] pets;

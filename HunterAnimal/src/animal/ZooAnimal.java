@@ -1,3 +1,4 @@
+package animal;
 public class ZooAnimal extends Animal {
     private String displayZone;
     private int escapeCount;

@@ -1,3 +1,6 @@
+package human;
+import animal.Animal;
+
 public class ZooManager extends Human {
 	private String cureArea;
 

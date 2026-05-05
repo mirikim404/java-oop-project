@@ -1,3 +1,4 @@
+package animal;
 public class ShelterAnimal extends Animal {
     private String admissionDate;
     private boolean isTreated;

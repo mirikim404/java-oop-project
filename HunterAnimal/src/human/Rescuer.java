@@ -1,3 +1,8 @@
+package human;
+import animal.Animal;
+import animal.StrayAnimal;
+import common.ISendAnimalInfo;
+
 public class Rescuer extends Human implements ISendAnimalInfo {
 	private String organization;
 	private Animal[] rescuedAnimals;

@@ -1,3 +1,6 @@
+package human;
+import animal.Animal;
+
 public class ShelterManager extends Human {
 	private String shelterName;
 	private Animal[] shelterAnimals;
