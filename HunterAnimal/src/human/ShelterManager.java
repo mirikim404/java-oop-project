@@ -1,7 +1,8 @@
 package human;
 import animal.Animal;
+import common.ISendAnimalInfo;
 
-public class ShelterManager extends Human {
+public class ShelterManager extends Human implements ISendAnimalInfo {
 	private String shelterName;
 	private Animal[] shelterAnimals;
 

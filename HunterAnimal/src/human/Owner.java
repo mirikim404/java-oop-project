@@ -1,4 +1,5 @@
 package human;
+import animal.AdoptedAnimal;
 import animal.Animal;
 
 public class Owner extends Human {
@@ -15,8 +16,10 @@ public class Owner extends Human {
 	}
 
 	public void adopt(Animal animal) {
-        System.out.println(getName() + " 보호자가 " + animal.getName() + "을/를 입양합니다.");
-
+	    System.out.println(getName() + " 보호자가 " + animal.getName() + "을/를 입양합니다.");
+	    if (animal instanceof AdoptedAnimal) {
+	        System.out.println("입양 날짜: " + ((AdoptedAnimal) animal).getAdoptionDate());
+	    }
 	}
 
 }

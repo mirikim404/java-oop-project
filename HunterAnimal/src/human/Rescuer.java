@@ -22,7 +22,8 @@ public class Rescuer extends Human implements ISendAnimalInfo {
 	}
 
 	public void rescue(StrayAnimal animal) {
-        System.out.println(getName() + " 구조대원이 길거리 동물을 구조합니다: " + animal.getName());
+	    System.out.println(getName() + " 구조대원이 길거리 동물을 구조합니다: " + animal.getName());
+	    System.out.println("발견 장소: " + animal.getFoundLocation() + ", 발견 날짜: " + animal.getFoundDate());
 	}
 
 }

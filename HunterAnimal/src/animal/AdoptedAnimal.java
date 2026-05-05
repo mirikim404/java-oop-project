@@ -13,5 +13,13 @@ public class AdoptedAnimal extends Animal {
     public void actCute(){
         System.out.println(getName() + "이/가 보호자에게 애교를 부립니다.");
     }
+    
+    public String getAdoptionDate() {
+        return adoptionDate;
+    }
+
+    public void setAdoptionDate(String adoptionDate) {
+        this.adoptionDate = adoptionDate;
+    }
 
 }

@@ -16,5 +16,13 @@ public class StrayAnimal extends Animal {
 	public void beWary() {
         System.out.println(getName() + "이/가 경계하고 있습니다.");
 	}
+	
+	public String getFoundLocation() {
+		return foundLocation;
+	}
+	
+	public String getFoundDate() {
+		return foundDate;
+	}
 
 }

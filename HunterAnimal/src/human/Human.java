@@ -36,5 +36,9 @@ public class Human {
 	public void getAnimalInfo(Animal animal) {
         System.out.println(name + "이/가 동물 정보를 확인합니다: " + animal);
 	}
+	
+	public String getOccupation() {
+		return occupation;
+	}
 
 }
