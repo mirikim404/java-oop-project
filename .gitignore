@@ -23,3 +23,13 @@
 hs_err_pid*
 replay_pid*
 /bin/
+
+# Eclipse
+.classpath
+.project
+.settings/
+bin/
+
+# OS
+.DS_Store
+Thumbs.db
