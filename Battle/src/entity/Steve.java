@@ -1,8 +1,12 @@
-public class Steve (Player) extends Entity implements Skillable {
+package entity;
+
+public class Steve extends Entity implements Skillable {
     private int coin;
     private String gameMode;
     private int level;
     private int exp;
+    private int maxHealth;
+    private int health;
     private Weapon weapon;
     private ActiveSkill[] activeSkills;
     private ConsumableSkill[] consumables;
