@@ -11,5 +11,8 @@ public class ActiveSkill extends Skill {
 
     public void triggerCooldown(){
     }
+    
+    public void decrementCooldown(){
+    }
 
 }
