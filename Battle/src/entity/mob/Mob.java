@@ -13,7 +13,10 @@ public abstract class Mob extends Entity implements StatusEffect {
     public Mob(String name, int health, int attackPower, int defencePower) { //생성자
 		super(name, health, attackPower, defencePower);
     }
-	@Override
+	
+    
+ 
+    @Override
 	public void activate() {
 		// TODO Auto-generated method stub
 		
