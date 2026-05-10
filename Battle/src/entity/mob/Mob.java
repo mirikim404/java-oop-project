@@ -9,13 +9,15 @@ public abstract class Mob extends Entity implements StatusEffect {
     protected boolean isStunned = false;
     protected int burnTurns = 0;
     
+    
     public Mob() {} // 생성자
-    public Mob(String name, int health, int attackPower, int defencePower) { //생성자
-		super(name, health, attackPower, defencePower);
+    public Mob(String name, int maxHealth, int attackPower, int defencePower) { //생성자
+		super(name, maxHealth, attackPower, defencePower);
     }
 	
     
  
+    
     @Override
 	public void activate() {
 		// TODO Auto-generated method stub
