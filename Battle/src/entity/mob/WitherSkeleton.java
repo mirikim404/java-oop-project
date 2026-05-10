@@ -2,8 +2,8 @@ package entity.mob;
 public class WitherSkeleton extends Mob {
 
 	public WitherSkeleton() {}
-	public WitherSkeleton (String name, int health, int attackPower, int defencePower) { //생성자
-		super(name, health, attackPower, defencePower);
+	public WitherSkeleton (String name, int maxHealth, int attackPower, int defencePower) { //생성자
+		super(name, maxHealth, attackPower, defencePower);
 	}
 	
 	@Override

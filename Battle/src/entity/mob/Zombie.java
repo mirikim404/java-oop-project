@@ -5,8 +5,8 @@ public class Zombie extends Mob {
 	
 	public Zombie() {}
 	
-	public Zombie (String name, int health, int attackPower, int defencePower) { //생성자
-		super(name, health, attackPower, defencePower);
+	public Zombie (String name, int maxHealth, int attackPower, int defencePower) { //생성자
+		super(name, maxHealth, attackPower, defencePower);
 	}
 	
 	@Override
