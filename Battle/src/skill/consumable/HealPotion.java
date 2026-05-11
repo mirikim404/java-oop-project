@@ -1,4 +1,7 @@
 package skill.consumable;
+
+import entity.Steve;
+
 public class HealPotion extends ConsumableSkill {
 	
 	private static final int HEAL_AMOUNT = 20;
