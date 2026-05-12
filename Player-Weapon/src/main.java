@@ -35,9 +35,13 @@ public class main {
 
             Player attacker = teamA[i];
             Player target = teamB[j];
-
-            attacker.attack(target);
-
+            
+            if (attacker instanceof 힐러) {
+            	((힐러) attacker).heal(teamA, countA);
+            } else {
+            	attacker.attack(target);
+            }
+            
             if (target.getHp() <= 0) {
                 teamB[j] = teamB[countB - 1];
                 countB--;
