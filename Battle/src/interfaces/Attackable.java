@@ -1,6 +1,6 @@
 package interfaces;
 public interface Attackable {
 
-    public void takeDamage();
+    public void takeDamage(int damage);
 
 }
