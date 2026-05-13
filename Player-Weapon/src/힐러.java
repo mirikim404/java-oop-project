@@ -5,6 +5,11 @@ public class 힐러 extends Player{
 		super(name, power, hp);
 		this.setWeapon(weapon);
 	}
+    
+    public 힐러(String name, int hp, int power, String file) {
+		super(name, power, hp, file);
+		
+	}
 
 	public void 치유하기(){
     }

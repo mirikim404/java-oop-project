@@ -5,6 +5,11 @@ public class 토르 extends Player {
 		super(name, power, hp);
 		this.setWeapon(weapon);
 	}
+	public 토르(String name, int hp, int power, 묠니르 weapon, String file) {
+		super(name, power, hp, file);
+		this.setWeapon(weapon);
+		
+	}
 
     public void 맥주마시기(){
     }
