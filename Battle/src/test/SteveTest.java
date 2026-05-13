@@ -54,7 +54,7 @@ public class SteveTest {
         System.out.println();
 
         System.out.println("[사망 후 초기화 테스트]");
-        steve.resetAfterDeath();
+        steve = steve.resetAfterDeath();
         System.out.println("사망 후 레벨: " + steve.getLevel());
         System.out.println("사망 후 경험치: " + steve.getExp());
         System.out.println("사망 후 코인: " + steve.getCoin());
