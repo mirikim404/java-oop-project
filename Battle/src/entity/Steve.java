@@ -9,7 +9,6 @@ import entity.mob.Mob;
 
 public class Steve extends Entity implements Skillable {
     private int coin;
-    private String gameMode;
     private int level;
     private int exp;
     private Weapon weapon;
@@ -24,27 +23,20 @@ public class Steve extends Entity implements Skillable {
     
     public Steve() {}	// 기본 생성자
     
-    public Steve(String name, String gameMode) {
+    public Steve(String name) {
         super(name, DEFAULT_MAX_HEALTH, DEFAULT_ATTACK_POWER, DEFAULT_DEFENCE_POWER);
         this.coin = 0;
-        this.gameMode = gameMode;
         this.level = 1;
         this.exp = 0;
         this.weapon = new WoodSword();
         this.activeSkills = new ActiveSkill[2];
         this.consumables = new ConsumableSkill[2];
 
-        System.out.println("Steve 생성 완료: " + name + ", 모드: " + gameMode);
+        System.out.println("Steve 생성 완료: " + name);
     }
-     
-
-    @Override
-	public void attack() {
-        System.out.println(getName() + "이/가 기본 공격을 합니다. 공격력: " + getTotalAttackPower());
-
-	}
     
-    public void attack(Mob target) {
+    
+    public void attack(Entity target) {
         int damage = getTotalAttackPower();
         System.out.println(getName() + "이/가 " + target.getName() + "을/를 공격합니다. 데미지: " + damage);
         target.takeDamage(damage);
@@ -53,7 +45,8 @@ public class Steve extends Entity implements Skillable {
     
     @Override
 	public void block() {
-		super.block();
+        System.out.println(getName() + "이/가 방어 자세를 취합니다.");
+        // TODO: 실제 피해 무효화는 BattleManager에서 처리
 	}
 
     @Override
@@ -160,14 +153,6 @@ public class Steve extends Entity implements Skillable {
         this.coin = coin;
     }
     
-    public String getGameMode() {
-        return gameMode;
-    }
-
-    public void setGameMode(String gameMode) {
-        this.gameMode = gameMode;
-    }
-
     public int getLevel() {
         return level;
     }

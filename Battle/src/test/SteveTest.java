@@ -1,4 +1,4 @@
-package game;
+package test;
 
 import entity.Steve;
 
@@ -6,9 +6,10 @@ public class SteveTest {
     public static void main(String[] args) {
         System.out.println("===== A파트 Steve 테스트 시작 =====");
 
-        Steve steve = new Steve("Steve", "Survival");
+        Steve steve = new Steve("Steve");
+        Steve target = new Steve("Target");
 
-        System.out.println("[생성 확인]");
+        System.out.println("[생성 확인 - steve]");
         System.out.println("이름: " + steve.getName());
         System.out.println("체력: " + steve.getHealth() + "/" + steve.getMaxHealth());
         System.out.println("공격력: " + steve.getAttackPower());
@@ -21,7 +22,7 @@ public class SteveTest {
         System.out.println();
 
         System.out.println("[공격/방어 테스트]");
-        steve.attack();
+        steve.attack(target);
         steve.block();
 
         System.out.println();

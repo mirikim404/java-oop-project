@@ -10,7 +10,8 @@ public abstract class Entity implements Blockable, Attackable {
 	private int defencePower;
 	private int maxHealth;
 
-	public Entity() {} // 기본 생성자
+	public Entity() {
+	} // 기본 생성자
 
 	public Entity(String name, int maxHealth, int attackPower, int defencePower) { // 생성자
 		System.out.println(name + "Entity 초기화");
@@ -33,8 +34,15 @@ public abstract class Entity implements Blockable, Attackable {
 		return health;
 	}
 
-	public void setHealth(int health) {
-		this.health = health;
+	public void setHealth(int health) {	
+		// hp 0 미만, maxHealth 초과 방지
+        if (health < 0) {
+            this.health = 0;
+        } else if (health > maxHealth) {
+            this.health = maxHealth;
+        } else {
+            this.health = health;
+        }
 	}
 
 	public int getAttackPower() {
@@ -70,19 +78,17 @@ public abstract class Entity implements Blockable, Attackable {
 	}
 
 	public void heal(int amount) {
+		if(amount <= 0) {
+			System.out.println("회복량이 없습니다.");
+			return;
+		}
+		int beforeHealth = health;
 		setHealth(health + amount);
-		System.out.println(name + "의 체력이 " + amount + " 회복되었습니다. 현재 체력: " + health + "/" + maxHealth);
+		int actualHealed = health - beforeHealth;
+		
+		System.out.println(name + "의 체력이 " + actualHealed + " 회복되었습니다. 현재 체력: " + health + "/" + maxHealth);
 	}
 
-	@Override
-	public void block() {
-		System.out.println(name + "이/가 방어합니다.");
-	}
-
-	@Override
-	public void takeDamage() {
-		takeDamage(0);
-	}
 
 	public void takeDamage(int damage) {
 		int finalDamage = damage - defencePower;
@@ -95,10 +101,9 @@ public abstract class Entity implements Blockable, Attackable {
 
 		System.out.println(name + "이/가 " + finalDamage + "의 피해를 입었습니다. 현재 체력: " + health + "/" + maxHealth);
 	}
+	
+	public abstract void attack(Entity target);
 
-	public abstract void attack();
+	public abstract void block();
 
-	//public abstract void block();
-
-	//public abstract void takeDamage();
 }
