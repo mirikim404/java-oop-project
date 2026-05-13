@@ -5,6 +5,11 @@ public class 헐크 extends Player {
 		super(name, power, hp);
 		this.setWeapon(weapon);
 	}
+	
+	public 헐크(String name, int hp, int power, String file) {
+		super(name, power, hp, file);
+		
+	}
 
     public void 옷찢기(){
     }

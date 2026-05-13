@@ -1,9 +1,23 @@
 import java.util.Random;
 
-public class main {
+public class Main {
+	
+	public static void consoleGame() {}
 
     public static void main(String[] args) {
+    	
+    	//콘솔 게임
+    	consoleGame();
+    	
+    	//윈도우 게임 : p1과 p2를 만들어 view에 전달한다!
+    	블랙위도우 b = new 블랙위도우("블랙위도우~", 100, 10, "블랙위도우.png");
+    	헐크 h = new 헐크("초록헐크", 100, 10, "헐크.png");
+    	
+    	System.out.println(b.getFilename());
+    	MyView view = new MyView(b, h);
+    	view.setVisible(true);
         
+    	/* 
         // 팀 A
         Player[] teamA = {
             new 토르("토르토르", 100, 10, new 묠니르("망치", 40)),
@@ -76,6 +90,8 @@ public class main {
                 System.out.println("팀A 승리!");
                 break;
             }
+            
         }
+        */
     }
 }

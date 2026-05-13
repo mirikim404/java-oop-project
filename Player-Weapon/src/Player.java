@@ -5,9 +5,18 @@ public class Player implements Attackable {
     private int power;
     private String name;
     private Weapon weapon;
+    private String filename;
 
     
-    public void attack(){
+    public String getFilename() {
+		return filename;
+	}
+
+	public void setFilename(String filename) {
+		this.filename = filename;
+	}
+
+	public void attack(){
     	System.out.println("플레이어가 공격합니다.");
     	System.out.println("각 하위 플레이어의 공격동작을 구현합니다.");
     }
@@ -49,6 +58,11 @@ public class Player implements Attackable {
     	this.name = name;
     	this.hp = hp;
     	this.power = power;
+    }
+    
+    public Player(String name, int power, int hp, String file) {
+    	this(name, power, hp);
+    	this.filename= file;
     }
 
 	public int getHp() {

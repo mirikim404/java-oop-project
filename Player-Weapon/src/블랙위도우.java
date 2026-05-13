@@ -6,6 +6,11 @@ public class 블랙위도우 extends Player {
 		this.setWeapon(weapon);
 	}
 	
+	public 블랙위도우(String name, int hp, int power, String file) {
+		super(name, power, hp, file);
+		
+	}
+	
 
     public void 총쏘기(){
     }
