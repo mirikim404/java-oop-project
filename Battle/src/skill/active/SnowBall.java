@@ -14,7 +14,7 @@ public class SnowBall extends ActiveSkill {
 	// TODO: Entity.getName() 추가 필요
 	@Override
 	public void use(Steve steve, Mob target) {
-		target.isStunned = true;
+		target.setStunned(true);
 		triggerCooldown();
 		System.out.println("눈동이를 던졌다!" + target.getName() + "이(가) 스턴됐다!");
 	}
