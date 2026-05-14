@@ -5,6 +5,9 @@ import entity.mob.*;
 import java.util.*;
 
 public class BattleManager {
+	// 화상 데미지 (추후 수정)
+	private static final int BURN_DAMAGE = 3;
+	
 	private GameState gameState;
 	private Steve steve;
 	private WaveManager waveManager;
@@ -112,21 +115,21 @@ public class BattleManager {
 
 	// 스턴/화상 체크 후 몹 행동 실행
 	public void processMobTurn(Mob mob) {
-		System.out.println("\n[" + mob.getName() + "의 턴]");
+	    System.out.println("\n[" + mob.getName() + "의 턴]");
 
-		// 상태이상 처리 (StatusEffect 목록 순회)
-		mob.processEffects();
+	    // 상태이상 처리 (Burn, Stun 등 effects 순회)
+	    mob.processEffects();
 
-		// 스턴 체크
-		if (mob.isStunned()) {
-			System.out.println(mob.getName() + "은(는) 스턴 상태! 행동 불가");
-			mob.setStunned(false);
-			return;
-		}
+	    // 스턴 체크
+	    if (mob.isStunned()) {
+	        System.out.println(mob.getName() + "은(는) 스턴 상태! 행동 불가");
+	        mob.setStunned(false);
+	        return;
+	    }
 
-		// 몹 행동
-		mob.act(steve);
-		System.out.println("스티브 HP: " + steve.getHealth());
+	    // 몹 행동
+	    mob.act(steve);
+	    System.out.println("스티브 HP: " + steve.getHealth());
 	}
 
 	// EXP + 코인 지급, aliveMobs 제거, 레벨업 체크
@@ -202,6 +205,7 @@ public class BattleManager {
 	    steve = steve.resetAfterDeath();
 
 		// 상점 진입
+	    shopManager.setSteve(steve); 
 		shopManager.enterShop(GameState.DEAD);
 		shopManager.showRestartMenu();
 

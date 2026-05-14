@@ -1,16 +1,19 @@
 package entity.mob;
 
 import ability.Mobability;
+import effect.Burn;
 import effect.StatusEffect;
 import entity.*;
 import entity.mob.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public abstract class Mob extends Entity implements StatusEffect {
     
-	private StatusEffect[] effects;
+	private List<StatusEffect> effects = new ArrayList<>();
     private Mobability ability;
     protected boolean isStunned = false;
-    protected int burnTurns = 0;
     
     private int dropExp;
     private int dropCoin;
@@ -26,13 +29,12 @@ public abstract class Mob extends Entity implements StatusEffect {
     
     // 상태이상 순회 처리
     public void processEffects() {
-    	if (effects != null) {
-    		for (StatusEffect effect : effects) {
-    			if (effect != null) {
-    				effect.activate();
-    			}
-    		}
-    	}
+        if (effects != null) {
+            effects.removeIf(effect -> {
+                effect.activate(this);
+                return effect instanceof Burn && ((Burn) effect).isExpired();
+            });
+        }
     }
     
     // Mob 행동
@@ -50,22 +52,20 @@ public abstract class Mob extends Entity implements StatusEffect {
     }
     
     @Override
-   	public void activate() {}
-   		// TODO Auto-generated method stub
+    public void activate(Mob mob) {
+        // TODO: 
+    }
    		
     
     // getter, setter
     public Mobability getAbility() { return ability; }
     public void setAbility(Mobability ability) { this.ability = ability; }
 
-    public StatusEffect[] getEffects() { return effects; }
-    public void setEffects(StatusEffect[] effects) { this.effects = effects; }
+    public List<StatusEffect> getEffects() { return effects; }
+    public void setEffects(List<StatusEffect> effects) { this.effects = effects; }
 
     public boolean isStunned() { return isStunned; }
     public void setStunned(boolean isStunned) { this.isStunned = isStunned; }
-
-    public int getBurnTurns() { return burnTurns; }
-    public void setBurnTurns(int burnTurns) { this.burnTurns = burnTurns; }
 
     public int getDropExp() { return dropExp; }
     public int getDropCoin() { return dropCoin; }

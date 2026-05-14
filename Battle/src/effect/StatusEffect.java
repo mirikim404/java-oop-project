@@ -1,6 +1,8 @@
 package effect;
+
+import entity.mob.Mob;
+
 public interface StatusEffect {
 
-    public void activate();
-
+    void activate(Mob mob);
 }
