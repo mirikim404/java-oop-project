@@ -39,5 +39,4 @@ public class EnderDragon extends Mob {
 	}
 
 
-
 }

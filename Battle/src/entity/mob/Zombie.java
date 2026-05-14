@@ -19,7 +19,7 @@ public class Zombie extends Mob {
 	@Override
 	public void attack(Entity target) {
 		target.takeDamage(getAttackPower());
-		// TODO Auto-generated method stub
+		System.out.println("으으으으... 으으으으..." + target.getName() + "...");
 		
 	}
 
@@ -28,6 +28,8 @@ public class Zombie extends Mob {
 		// TODO Auto-generated method stub
 		
 	}
+
+
 
 
 }
