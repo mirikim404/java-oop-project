@@ -1,5 +1,7 @@
 package entity.mob;
 
+import entity.Entity;
+
 public class Skeleton extends Mob {
 
 	private final int DEFAULT_MAX_HEALTH = 15;
@@ -14,21 +16,16 @@ public class Skeleton extends Mob {
 	}
 	
 	@Override
-	public void attack() {
+	public void attack(Entity target) {
+		target.takeDamage(getAttackPower());
 		// TODO Auto-generated method stub
 		
 	}
-
 	@Override
 	public void block() {
 		// TODO Auto-generated method stub
 		
 	}
 
-	@Override
-	public void takeDamage() {
-		// TODO Auto-generated method stub
-		
-	}
 
 }

@@ -1,4 +1,7 @@
 package entity.mob;
+
+import entity.Entity;
+
 public class Creeper extends Mob {
 	
 	private final int DEFAULT_MAX_HEALTH = 20;
@@ -15,7 +18,8 @@ public class Creeper extends Mob {
 	}
 	 
 	@Override
-	public void attack() {
+	public void attack(Entity target) {
+		target.takeDamage(getAttackPower());
 		// TODO Auto-generated method stub
 		
 	}
@@ -26,10 +30,5 @@ public class Creeper extends Mob {
 		
 	}
 
-	@Override
-	public void takeDamage() {
-		// TODO Auto-generated method stub
-		
-	}
 
 }

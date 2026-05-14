@@ -1,5 +1,7 @@
 package entity.mob;
 
+import entity.Entity;
+
 public class Piglin extends Mob {
 	private final int DEFAULT_MAX_HEALTH = 50;
     private final int DEFAULT_ATTACK_POWER = 25;  
@@ -14,7 +16,8 @@ public class Piglin extends Mob {
 	
 	
 	@Override
-	public void attack() {
+	public void attack(Entity target) {
+		target.takeDamage(getAttackPower());
 		// TODO Auto-generated method stub
 		
 	}
@@ -25,10 +28,6 @@ public class Piglin extends Mob {
 		
 	}
 
-	@Override
-	public void takeDamage() {
-		// TODO Auto-generated method stub
-		
-	}
+
 
 }

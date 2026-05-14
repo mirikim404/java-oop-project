@@ -1,4 +1,7 @@
 package entity.mob;
+
+import entity.Entity;
+
 public class EnderDragon extends Mob {
     
     private int phase;
@@ -22,8 +25,9 @@ public class EnderDragon extends Mob {
     public void chargeAttack(){
     }
 
-	@Override
-	public void attack() {
+    @Override
+	public void attack(Entity target) {
+		target.takeDamage(getAttackPower());
 		// TODO Auto-generated method stub
 		
 	}
@@ -34,10 +38,6 @@ public class EnderDragon extends Mob {
 		
 	}
 
-	@Override
-	public void takeDamage() {
-		// TODO Auto-generated method stub
-		
-	}
+
 
 }
