@@ -24,7 +24,7 @@ public class Piglin extends Mob {
 
 	@Override
 	public void block() {
-		// TODO Auto-generated method stub
+		
 		
 	}
 
