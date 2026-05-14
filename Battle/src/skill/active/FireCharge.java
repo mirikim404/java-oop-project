@@ -18,7 +18,7 @@ public class FireCharge extends ActiveSkill {
 	@Override
 	public void use(Steve steve, Mob target) {
 		target.takeDamage(DAMAGE);
-		target.burnTurns = BURN_TURNS;
+		target.setBurnTurns(BURN_TURNS);
 		triggerCooldown();
 		System.out.println("화염구 발사!" + target.getName() + "이(가) 화상을 입었다!");
 	}

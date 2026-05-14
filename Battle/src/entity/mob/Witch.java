@@ -1,5 +1,7 @@
 package entity.mob;
 
+import entity.Entity;
+
 public class Witch extends Mob {
 	
 	private final int DEFAULT_MAX_HEALTH = 30;
@@ -15,7 +17,8 @@ public class Witch extends Mob {
 	}
 	
 	@Override
-	public void attack() {
+	public void attack(Entity target) {
+		target.takeDamage(getAttackPower());
 		// TODO Auto-generated method stub
 		
 	}
@@ -26,10 +29,5 @@ public class Witch extends Mob {
 		
 	}
 
-	@Override
-	public void takeDamage() {
-		// TODO Auto-generated method stub
-		
-	}
 
 }

@@ -1,6 +1,10 @@
 package interfaces;
+
+import entity.mob.Mob;
+import java.util.List;
+
 public interface Skillable {
 
-    public void useSkill();
+    void useSkill(Mob target, List<Mob> aliveMobs);
 
 }
