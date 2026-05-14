@@ -200,7 +200,6 @@ public class ShopManager {
         System.out.println("\n[1] 재시작  [0] 종료");
         int input = scanner.nextInt();
         if (input == 1) {
-            steve = steve.resetAfterDeath();
             System.out.println("재시작합니다...");
         } else {
             System.out.println("게임을 종료합니다.");
