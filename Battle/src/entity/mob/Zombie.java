@@ -1,5 +1,6 @@
 package entity.mob;
 
+import ability.Heal;
 import entity.Entity;
 
 public class Zombie extends Mob {
@@ -14,6 +15,7 @@ public class Zombie extends Mob {
 	
 	public Zombie (String name, int DEFAULT_MAX_HEALTH, int DEFAULT_ATTACK_POWER, int DEFAULT_DEFENCE_POWER) { //생성자
 		super(name, DEFAULT_MAX_HEALTH, DEFAULT_ATTACK_POWER, DEFAULT_DEFENCE_POWER);
+		setAbility(null); // 좀비는 능력 없음
 	}
 	
 	@Override
@@ -25,7 +27,7 @@ public class Zombie extends Mob {
 
 	@Override
 	public void block() {
-		// TODO Auto-generated method stub
+		
 		
 	}
 

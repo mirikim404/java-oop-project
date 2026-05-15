@@ -1,5 +1,6 @@
 package entity.mob;
 
+import ability.DoubleAttack;
 import entity.Entity;
 
 public class Piglin extends Mob {
@@ -12,6 +13,7 @@ public class Piglin extends Mob {
 	
 	public Piglin (String name, int DEFAULT_MAX_HEALTH, int DEFAULT_ATTACK_POWER, int DEFAULT_DEFENCE_POWER) { //생성자
 		super(name, DEFAULT_MAX_HEALTH, DEFAULT_ATTACK_POWER, DEFAULT_DEFENCE_POWER);
+		setAbility(new DoubleAttack());
 	}
 	
 	
