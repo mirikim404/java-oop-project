@@ -10,7 +10,7 @@ import entity.mob.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class Mob extends Entity implements StatusEffect {
+public abstract class Mob extends Entity {
 
 	private List<StatusEffect> effects = new ArrayList<>();
 	private Mobability ability;
@@ -20,39 +20,54 @@ public abstract class Mob extends Entity implements StatusEffect {
 	private int dropCoin;
 	private int burnTurns;
 
-	public int getDropExp() { return dropExp; }
-	public int getDropCoin() { return dropCoin; }
+	public int getDropExp() {
+		return dropExp;
+	}
+
+	public int getDropCoin() {
+		return dropCoin;
+	}
 
 	public Mobability getAbility() {
 		return ability;
 	}
+
 	public void setAbility(Mobability ability) {
 		this.ability = ability;
 	}
-	public List<StatusEffect> getEffects() { return effects; }
 
-	public void setEffects(List<StatusEffect> effects) { this.effects = effects; }
+	public List<StatusEffect> getEffects() {
+		return effects;
+	}
+
+	public void setEffects(List<StatusEffect> effects) {
+		this.effects = effects;
+	}
 
 	public boolean isStunned() {
 		return isStunned;
 	}
+
 	public void setStunned(boolean isStunned) {
 		this.isStunned = isStunned;
 	}
+
 	public int getBurnTurns() {
 		return burnTurns;
 	}
+
 	public void setBurnTurns(int burnTurns) {
 		this.burnTurns = burnTurns;
 	}
 
-	public Mob() {} // 생성자
+	public Mob() {
+	} // 생성자
 
-	public Mob(String name, int maxHealth, int attackPower, int defencePower) { //생성자
+	public Mob(String name, int maxHealth, int attackPower, int defencePower) { // 생성자
 		super(name, maxHealth, attackPower, defencePower);
 		this.dropExp = dropExp;
 		this.dropCoin = dropCoin;
-		
+
 	}
 
 	// 상태이상 순회 처리
@@ -60,7 +75,7 @@ public abstract class Mob extends Entity implements StatusEffect {
 		if (effects != null) {
 			effects.removeIf(effect -> {
 				effect.activate(this);
-				return effect instanceof Burn && ((Burn) effect).isExpired();
+				return effect.isExpired();
 			});
 		}
 	}
@@ -79,24 +94,13 @@ public abstract class Mob extends Entity implements StatusEffect {
 	}
 
 	public void attack(Steve player) {
-		System.out.println(getName()+ "이 플레이어 "+ player.getName() +"을 공격합니다.");
+		System.out.println(getName() + "이 플레이어 " + player.getName() + "을 공격합니다.");
 		player.takeDamage(getAttackPower());
 	}
-
 
 	@Override
 	public void block() {
 		System.out.println(getName() + "이/가 피해를 받았습니다. ");
 	}
 
-	@Override
-	public void activate(Mob mob) {
-		// TODO: 
-	}
-
-	
-
-
-
 }
-
