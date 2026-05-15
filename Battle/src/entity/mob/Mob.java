@@ -77,8 +77,10 @@ public abstract class Mob extends Entity implements StatusEffect {
 	public void attack() {
 		System.out.println("공격, 플레이어(Steve)를 지정하세요");
 	}
+
 	public void attack(Steve player) {
 		System.out.println(getName()+ "이 플레이어 "+ player.getName() +"을 공격합니다.");
+		player.takeDamage(getAttackPower());
 	}
 
 

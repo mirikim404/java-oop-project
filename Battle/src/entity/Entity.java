@@ -91,6 +91,9 @@ public abstract class Entity implements Blockable, Attackable {
 
 
 	public void takeDamage(int damage) {
+		System.out.println("공격받음");
+		this.setHealth(getHealth()-damage);
+		System.out.println("현재 체력 : "+ getHealth());
 	}
 	
 	public abstract void attack(Entity target);

@@ -1,5 +1,6 @@
 package entity.mob;
 
+import ability.Explode;
 import entity.Entity;
 
 public class Creeper extends Mob {
@@ -15,11 +16,12 @@ public class Creeper extends Mob {
 	}
 	public Creeper (String name, int DEFAULT_MAX_HEALTH, int DEFAULT_ATTACK_POWER, int DEFAULT_DEFENCE_POWER) { //생성자
 		super(name, DEFAULT_MAX_HEALTH, DEFAULT_ATTACK_POWER, DEFAULT_DEFENCE_POWER);
+		setAbility(new Explode());
 	}
 	 
 	@Override
 	public void attack(Entity target) {
-		target.takeDamage(getAttackPower());
+		
 		// TODO Auto-generated method stub
 		
 	}
