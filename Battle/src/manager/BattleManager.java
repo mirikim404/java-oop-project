@@ -233,7 +233,7 @@ public class BattleManager {
 	// EnderDragon 체력 % 기준 페이즈 전환 체크
 	public void checkPhase() {
 		if (currentMob instanceof EnderDragon dragon) {
-			// TODO: EnderDragon 구현 후 활성하ㅗ
+			// TODO: EnderDragon 구현 후 활성화
 			// dragon.updatePhase();
 		}
 	}

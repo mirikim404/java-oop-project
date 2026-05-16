@@ -5,9 +5,9 @@ import entity.Steve;
 import entity.mob.Mob;
 
 public class FireCharge extends ActiveSkill {
-    private static final int DAMAGE = 5;
+    private static final int DAMAGE = 8;
     private static final int BURN_TURNS = 2;
-    private static final int BURN_DAMAGE = 3;
+    private static final int BURN_DAMAGE = 6;
 
     public FireCharge() {
         super("화염구", "소량 데미지 + 2턴 화상을 입힌다.", 3);

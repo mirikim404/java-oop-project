@@ -8,8 +8,8 @@ public class Zombie extends Mob {
 	private static final int DEFAULT_MAX_HEALTH = 25;
     private static final int DEFAULT_ATTACK_POWER = 10;  
     private static final int DEFAULT_DEFENCE_POWER = 1;
-    private static final int DROP_EXP = 10; 
-    private static final int DROP_COIN = 8;
+    private static final int DROP_EXP = 35; 
+    private static final int DROP_COIN = 25;
 	
 	public Zombie() {
 		super("좀비", DEFAULT_MAX_HEALTH, DEFAULT_ATTACK_POWER, DEFAULT_DEFENCE_POWER,DROP_EXP, DROP_COIN);

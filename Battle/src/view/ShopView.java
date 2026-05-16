@@ -13,8 +13,8 @@ import weapon.*;
 import javax.swing.*;
 import java.awt.*;
 
-public class ShopView extends JFrame {
-
+public class ShopView extends JPanel {
+	private GameFrame gameFrame;
     private Steve steve;
     private WaveManager waveManager;
     private ShopManager shopManager;
@@ -22,42 +22,39 @@ public class ShopView extends JFrame {
 
     private JLabel coinLabel;
 
-    public ShopView(Steve steve, WaveManager waveManager, int wave) {
-        this.steve = steve;
+    public ShopView(GameFrame gameFrame, Steve steve, WaveManager waveManager, int wave) {
+    	this.gameFrame = gameFrame;
+    	this.steve = steve;
         this.waveManager = waveManager;
         this.shopManager = new ShopManager(steve);
         this.wave = wave;
 
-        setTitle("Minecraft RPG - Shop");
-        setSize(854, 480);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);
-        setResizable(false);
 
         JPanel root = new BackgroundPanel();
         root.setLayout(new BorderLayout(10, 10));
         root.setBorder(BorderFactory.createEmptyBorder(16, 24, 16, 24));
-        setContentPane(root);
+        setLayout(new BorderLayout());
+        add(root, BorderLayout.CENTER);
 
         root.add(buildTopPanel(), BorderLayout.NORTH);
         root.add(buildShopPanel(), BorderLayout.CENTER);
         root.add(buildBottomPanel(), BorderLayout.SOUTH);
 
-        setVisible(true);
     }
 
     // ─── 상단: 타이틀 + 코인 ───
     private JPanel buildTopPanel() {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setOpaque(false);
+        panel.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
 
-        JLabel titleLabel = new JLabel("🛒 SHOP", SwingConstants.LEFT);
-        titleLabel.setFont(new Font("Dialog", Font.BOLD, 24));
-        titleLabel.setForeground(new Color(255, 215, 0));
+        JLabel titleLabel = new JLabel("SHOP", SwingConstants.LEFT);
+        titleLabel.setFont(new Font("Dialog", Font.BOLD, 32));
+        titleLabel.setForeground(new Color(255, 215, 80));
 
-        coinLabel = new JLabel("💰 " + steve.getCoin(), SwingConstants.RIGHT);
+        coinLabel = new JLabel("Coin " + steve.getCoin(), SwingConstants.RIGHT);
         coinLabel.setFont(new Font("Dialog", Font.BOLD, 20));
-        coinLabel.setForeground(new Color(255, 215, 0));
+        coinLabel.setForeground(new Color(255, 230, 120));
 
         panel.add(titleLabel, BorderLayout.WEST);
         panel.add(coinLabel, BorderLayout.EAST);
@@ -85,14 +82,15 @@ public class ShopView extends JFrame {
         panel.setBorder(BorderFactory.createEmptyBorder(12, 16, 12, 16));
 
         String[][] weapons = {
-            {"StoneSword",     "돌 검",        "30"},
-            {"IronSword",      "철 검",        "60"},
-            {"DiamondSword",   "다이아몬드 검", "100"},
-            {"NetheriteSword", "네더라이트 검", "150"},
+            {"StoneSword",     "돌 검",        "40"},
+            {"IronSword",      "철 검",        "75"},
+            {"DiamondSword",   "다이아몬드 검", "115"},
+            {"NetheriteSword", "네더라이트 검", "160"},
         };
 
         for (String[] w : weapons) {
             JPanel row = buildItemRow(
+                w[0],
                 w[1],
                 w[2] + " 코인",
                 () -> {
@@ -120,12 +118,12 @@ public class ShopView extends JFrame {
         panel.setBackground(new Color(30, 30, 30));
         panel.setBorder(BorderFactory.createEmptyBorder(12, 16, 12, 16));
 
-        panel.add(buildItemRow("눈덩이 (단일 스턴, 쿨타임 3턴)", "40 코인", () -> {
+        panel.add(buildItemRow("눈덩이 (보조 스턴, 쿨타임 3턴)", "45 코인", () -> {
             boolean ok = shopManager.buySkill(new SnowBall());
             if (ok) refreshCoin();
         }));
 
-        panel.add(buildItemRow("화염구 (화상 2턴, 쿨타임 3턴)", "60 코인", () -> {
+        panel.add(buildItemRow("화염구 (화상 2턴, 쿨타임 3턴)", "65 코인", () -> {
             boolean ok = shopManager.buySkill(new FireCharge());
             if (ok) refreshCoin();
         }));
@@ -139,7 +137,7 @@ public class ShopView extends JFrame {
         panel.setBackground(new Color(30, 30, 30));
         panel.setBorder(BorderFactory.createEmptyBorder(12, 16, 12, 16));
 
-        panel.add(buildItemRow("공격 포션 (1턴 공격력 2배)", "20 코인", () -> {
+        panel.add(buildItemRow("공격 포션 (다음 공격 2배)", "18 코인", () -> {
             boolean ok = shopManager.buyPotion(new AttackPotion());
             if (ok) refreshCoin();
         }));
@@ -154,32 +152,70 @@ public class ShopView extends JFrame {
 
     // ─── 아이템 행 공통 컴포넌트 ───
     private JPanel buildItemRow(String name, String price, Runnable onBuy) {
-        JPanel row = new JPanel(new BorderLayout(10, 0));
-        row.setBackground(new Color(50, 50, 50));
-        row.setBorder(BorderFactory.createEmptyBorder(8, 12, 8, 12));
+        String imageName = switch (price.replaceAll("[^0-9]", "")) {
+            case "45" -> "SnowBall";
+            case "65" -> "FireCharge";
+            case "18" -> "AttackPotion";
+            case "15" -> "HealPotion";
+            default -> "WoodSword";
+        };
+        return buildItemRow(imageName, name, price, onBuy);
+    }
+
+    private JPanel buildItemRow(String imageName, String name, String price, Runnable onBuy) {
+        JPanel row = new JPanel(new BorderLayout(12, 0));
+        row.setBackground(new Color(24, 24, 34));
+        row.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(86, 78, 110), 2),
+                BorderFactory.createEmptyBorder(8, 10, 8, 12)
+        ));
+
+        JLabel iconLabel = new JLabel();
+        iconLabel.setPreferredSize(new Dimension(56, 56));
+        iconLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        iconLabel.setOpaque(true);
+        iconLabel.setBackground(new Color(14, 14, 22));
+        iconLabel.setBorder(BorderFactory.createLineBorder(new Color(128, 113, 70), 1));
+        ImageIcon icon = loadShopIcon(imageName);
+        if (icon != null) {
+            iconLabel.setIcon(icon);
+        }
 
         JLabel nameLabel = new JLabel(name);
-        nameLabel.setFont(new Font("Dialog", Font.PLAIN, 15));
+        nameLabel.setFont(new Font("Dialog", Font.BOLD, 15));
         nameLabel.setForeground(Color.WHITE);
 
         JLabel priceLabel = new JLabel(price);
         priceLabel.setFont(new Font("Dialog", Font.BOLD, 14));
-        priceLabel.setForeground(new Color(255, 215, 0));
+        priceLabel.setForeground(new Color(255, 215, 80));
 
-        MinecraftButton btnBuy = new MinecraftButton("구매");
-        btnBuy.setPreferredSize(new Dimension(80, 32));
+        MinecraftButton btnBuy = new MinecraftButton("Buy");
+        btnBuy.setPreferredSize(new Dimension(84, 34));
         btnBuy.setFont(new Font("Dialog", Font.BOLD, 13));
         btnBuy.addActionListener(e -> onBuy.run());
 
-        JPanel rightPanel = new JPanel(new BorderLayout(8, 0));
-        rightPanel.setOpaque(false);
-        rightPanel.add(priceLabel, BorderLayout.WEST);
-        rightPanel.add(btnBuy, BorderLayout.EAST);
+        JPanel textPanel = new JPanel(new GridLayout(2, 1, 0, 4));
+        textPanel.setOpaque(false);
+        textPanel.add(nameLabel);
+        textPanel.add(priceLabel);
 
-        row.add(nameLabel, BorderLayout.CENTER);
+        JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+        rightPanel.setOpaque(false);
+        rightPanel.add(btnBuy);
+
+        row.add(iconLabel, BorderLayout.WEST);
+        row.add(textPanel, BorderLayout.CENTER);
         row.add(rightPanel, BorderLayout.EAST);
 
         return row;
+    }
+
+    private ImageIcon loadShopIcon(String imageName) {
+        ImageIcon icon = new ImageIcon("resources/shop/" + imageName + ".png");
+        if (icon.getIconWidth() <= 0) return null;
+
+        Image scaled = icon.getImage().getScaledInstance(44, 44, Image.SCALE_SMOOTH);
+        return new ImageIcon(scaled);
     }
 
     // ─── 하단: 나가기 버튼 ───
@@ -191,9 +227,8 @@ public class ShopView extends JFrame {
         btnNext.setPreferredSize(new Dimension(200, 44));
         btnNext.setFont(new Font("Dialog", Font.BOLD, 16));
         btnNext.addActionListener(e -> {
-            dispose();
             Mob nextMob = waveManager.getAliveMobs().get(0);
-            new EncounterView(steve, waveManager, nextMob, wave);
+            gameFrame.showEncounter(steve, waveManager, nextMob, wave);
         });
 
         panel.add(btnNext);
@@ -202,6 +237,6 @@ public class ShopView extends JFrame {
 
     // ─── 코인 갱신 ───
     private void refreshCoin() {
-        coinLabel.setText("💰 " + steve.getCoin());
+        coinLabel.setText("Coin " + steve.getCoin());
     }
 }

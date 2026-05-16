@@ -19,11 +19,12 @@ public class Steve extends Entity implements Skillable {
 	private ActiveSkill[] activeSkills;
 	private ConsumableSkill[] consumables;
 	private List<StatusEffect> effects = new ArrayList<>();
+	private int pendingLevelUps;
 
 	private static final int DEFAULT_MAX_HEALTH = 100;
-	private static final int DEFAULT_ATTACK_POWER = 10;
-	private static final int DEFAULT_DEFENCE_POWER = 3;
-	private static final int BASE_REQUIRED_EXP = 100;
+	private static final int DEFAULT_ATTACK_POWER = 24;
+	private static final int DEFAULT_DEFENCE_POWER = 6;
+	private static final int BASE_REQUIRED_EXP = 45;
 
 	public Steve() {
 		this("Steve");
@@ -34,6 +35,7 @@ public class Steve extends Entity implements Skillable {
 		this.level = 1;
 		this.exp = 0;
 		this.coin = 0;
+		this.pendingLevelUps = 0;
 		this.weapon = new WoodSword();
 		this.activeSkills = new ActiveSkill[2];
 		this.consumables = new ConsumableSkill[2];
@@ -78,36 +80,9 @@ public class Steve extends Entity implements Skillable {
 	}
 
 	public void levelUp() {
-		level++;
-		Scanner sc = new Scanner(System.in);
-		System.out.println(getName() + " 레벨업! 현재 레벨: " + level);
-		System.out.println("증가시킬 스탯을 선택하세요.");
-		System.out.println("1. 최대체력 +10");
-		System.out.println("2. 공격력 +2");
-		System.out.println("3. 방어력 +1");
-		System.out.print("선택: ");
-
-		int choice = sc.nextInt();
-		switch (choice) {
-			case 1:
-				setMaxHealth(getMaxHealth() + 10);
-				setHealth(getMaxHealth());
-				System.out.println("최대체력이 증가했습니다. 현재 최대체력: " + getMaxHealth());
-				break;
-			case 2:
-				setAttackPower(getAttackPower() + 2);
-				System.out.println("공격력이 증가했습니다. 현재 공격력: " + getAttackPower());
-				break;
-			case 3:
-				setDefencePower(getDefencePower() + 1);
-				System.out.println("방어력이 증가했습니다. 현재 방어력: " + getDefencePower());
-				break;
-			default:
-				System.out.println("잘못된 입력입니다. 기본값으로 최대체력을 증가시킵니다.");
-				setMaxHealth(getMaxHealth() + 10);
-				setHealth(getMaxHealth());
-				break;
-		}
+	    level++;
+	    pendingLevelUps++;
+	    System.out.println(getName() + " 레벨업! 현재 레벨: " + level);
 	}
 
 	public void gainCoin() {
@@ -146,7 +121,7 @@ public class Steve extends Entity implements Skillable {
 		return newSteve;
 	}
 
-	private int getRequiredExp() {
+	public int getRequiredExp() {
 		return BASE_REQUIRED_EXP * level;
 	}
 
@@ -162,6 +137,33 @@ public class Steve extends Entity implements Skillable {
 	        effect.activate(this);
 	        return effect.isExpired();
 	    });
+	}
+	
+	public boolean hasPendingLevelUp() {
+	    return pendingLevelUps > 0;
+	}
+
+	public void applyLevelUpChoice(int choice) {
+	    if (pendingLevelUps <= 0) return;
+
+	    switch (choice) {
+	        case 1:
+	            setMaxHealth(getMaxHealth() + 20);
+	            setHealth(getMaxHealth());
+	            break;
+	        case 2:
+	            setAttackPower(getAttackPower() + 5);
+	            break;
+	        case 3:
+	            setDefencePower(getDefencePower() + 2);
+	            break;
+	        default:
+	            setMaxHealth(getMaxHealth() + 10);
+	            setHealth(getMaxHealth());
+	            break;
+	    }
+
+	    pendingLevelUps--;
 	}
 
 	// getter, setter

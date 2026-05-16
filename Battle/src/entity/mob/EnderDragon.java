@@ -10,7 +10,7 @@ public class EnderDragon extends Mob {
     private final int CHARGE_DAMAGE = 35;
 
     public EnderDragon() {
-        super("엔더드래곤", 500, 40, 20, 0, 0); // 여기서 스탯 고정
+        super("엔더드래곤", 300, 22, 8, 0, 0); // 최종 보스라 보상은 사용하지 않음
         setAbility(null);
         phase = 1;
         showPhase();
@@ -18,8 +18,8 @@ public class EnderDragon extends Mob {
 
     public void whatPhase() {
         double hpRatio = (double) getHealth() / getMaxHealth();
-        if (hpRatio > 0.667) phase = 1;
-        else if (hpRatio > 0.333) phase = 2;
+        if (hpRatio > 0.75) phase = 1;
+        else if (hpRatio > 0.45) phase = 2;
         else phase = 3;
     }
 

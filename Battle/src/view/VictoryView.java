@@ -7,18 +7,18 @@ import manager.WaveManager;
 import javax.swing.*;
 import java.awt.*;
 
-public class VictoryView extends JFrame {
+public class VictoryView extends JPanel {
+	
+	private GameFrame gameFrame;
 
-    public VictoryView(Steve steve, WaveManager waveManager, int wave) {
-        setTitle("Minecraft RPG");
-        setSize(854, 480);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);
-        setResizable(false);
+	public VictoryView(GameFrame gameFrame, Steve steve, WaveManager waveManager, int wave) {
+	    this.gameFrame = gameFrame;
+	    
 
         JPanel panel = new BackgroundPanel();
         panel.setLayout(new GridBagLayout());
-        setContentPane(panel);
+        setLayout(new BorderLayout());
+        add(panel, BorderLayout.CENTER);
 
         boolean isFinalWave = waveManager.isLastWave();
 
@@ -60,8 +60,7 @@ public class VictoryView extends JFrame {
             btnTitle.setPreferredSize(new Dimension(250, 44));
             btnTitle.setFont(new Font("Dialog", Font.BOLD, 18));
             btnTitle.addActionListener(e -> {
-                dispose();
-                new StartView();
+            	gameFrame.showStart();
             });
             gbc = new GridBagConstraints();
             gbc.gridx = 0; gbc.gridy = 2;
@@ -75,22 +74,14 @@ public class VictoryView extends JFrame {
             MinecraftButton btnNext = new MinecraftButton("Next Wave ►");
             btnNext.setFont(new Font("Dialog", Font.BOLD, 16));
             btnNext.addActionListener(e -> {
-                waveManager.nextWave(); // wave++ 여기서 호출
-                dispose();
-                if (waveManager.isLastWave()) {
-                    // wave 6이면 상점 없이 바로 보스 인카운터
-                    Mob boss = waveManager.getAliveMobs().get(0);
-                    new EncounterView(steve, waveManager, boss, wave + 1);
-                } else {
-                    new ShopView(steve, waveManager, wave + 1);
-                } // 상점으로
+                waveManager.nextWave();
+                gameFrame.showShop(steve, waveManager, wave + 1);
             });
 
             MinecraftButton btnTitle = new MinecraftButton("Title");
             btnTitle.setFont(new Font("Dialog", Font.BOLD, 16));
             btnTitle.addActionListener(e -> {
-                dispose();
-                new StartView();
+                gameFrame.showStart();
             });
 
             btnRow.add(btnNext);
