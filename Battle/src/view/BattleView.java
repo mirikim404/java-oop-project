@@ -250,12 +250,7 @@ public class BattleView extends JFrame {
 
         Timer t = new Timer(1200, e -> {
             dispose();
-         // TODO: GameOverView
-            JOptionPane.showMessageDialog(null, "Game Over\n코인은 유지됩니다.", "사망", JOptionPane.PLAIN_MESSAGE);
-            steve = steve.resetAfterDeath();
-            WaveManager newWave = new WaveManager(); // 사망 시엔 1웨이브부터 재시작
-            newWave.loadCurrentWave();
-            new EncounterView(steve, newWave, newWave.getAliveMobs().get(0), 1);
+            new DeadView(steve, waveManager);
         });
         t.setRepeats(false);
         t.start();

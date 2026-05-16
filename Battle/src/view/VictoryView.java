@@ -75,10 +75,15 @@ public class VictoryView extends JFrame {
             MinecraftButton btnNext = new MinecraftButton("Next Wave ►");
             btnNext.setFont(new Font("Dialog", Font.BOLD, 16));
             btnNext.addActionListener(e -> {
-                waveManager.nextWave(); // ✅ wave++ 하고 다음 몹 세팅
-                Mob nextMob = waveManager.getAliveMobs().get(0);
+                waveManager.nextWave(); // wave++ 여기서 호출
                 dispose();
-                new EncounterView(steve, waveManager, nextMob, wave + 1);
+                if (waveManager.isLastWave()) {
+                    // wave 6이면 상점 없이 바로 보스 인카운터
+                    Mob boss = waveManager.getAliveMobs().get(0);
+                    new EncounterView(steve, waveManager, boss, wave + 1);
+                } else {
+                    new ShopView(steve, waveManager, wave + 1);
+                } // 상점으로
             });
 
             MinecraftButton btnTitle = new MinecraftButton("Title");
