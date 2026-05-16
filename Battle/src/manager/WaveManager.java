@@ -23,7 +23,7 @@ public class WaveManager {
 
         List<Mob> wave1 = new ArrayList<>();
         // 테스트용 임시 교체
-        wave1.add(new ZombieTest());
+        wave1.add(new Zombie());
         table.put(1, wave1);
 
         List<Mob> wave2 = new ArrayList<>();
