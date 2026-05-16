@@ -6,7 +6,7 @@ import entity.Entity;
 public class Skeleton extends Mob {
 
 	private static final int DEFAULT_MAX_HEALTH = 30;
-    private static final int DEFAULT_ATTACK_POWER = 7;  
+    private static final int DEFAULT_ATTACK_POWER = 35;  
     private static final int DEFAULT_DEFENCE_POWER = 5;
     private static final int DROP_EXP = 15; 
     private static final int DROP_COIN = 15;

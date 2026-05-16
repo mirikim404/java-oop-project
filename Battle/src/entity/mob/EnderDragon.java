@@ -10,7 +10,7 @@ public class EnderDragon extends Mob {
     private final int CHARGE_DAMAGE = 35;
 
     public EnderDragon() {
-        super("엔더드래곤", 500, 35, 20, 0, 0); // 여기서 스탯 고정
+        super("엔더드래곤", 500, 40, 20, 0, 0); // 여기서 스탯 고정
         setAbility(null);
         phase = 1;
         showPhase();

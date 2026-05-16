@@ -5,7 +5,7 @@ import entity.Entity;
 
 public class Piglin extends Mob {
 	private static final int DEFAULT_MAX_HEALTH = 80;
-    private static final int DEFAULT_ATTACK_POWER = 28;  
+    private static final int DEFAULT_ATTACK_POWER = 38;  
     private static final int DEFAULT_DEFENCE_POWER = 25;
     private static final int DROP_EXP = 60; 
     private static final int DROP_COIN = 55;

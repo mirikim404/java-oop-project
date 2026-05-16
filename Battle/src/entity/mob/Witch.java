@@ -7,7 +7,7 @@ import ability.Heal;
 public class Witch extends Mob implements Mobability{
 	
 	private static final int DEFAULT_MAX_HEALTH = 55;
-    private static final int DEFAULT_ATTACK_POWER = 18; 
+    private static final int DEFAULT_ATTACK_POWER = 25; 
     private static final int DEFAULT_DEFENCE_POWER = 12;
     private static final int DROP_EXP = 35; 
     private static final int DROP_COIN = 30;
