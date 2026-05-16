@@ -30,7 +30,7 @@ public class Explode implements Mobability {
 		if(beforeExplosionTurns == 0) { 
 			
 			System.out.println("쉬시시시식...펑!!!");
-			player.takeDamage(explosionDamage);
+			player.takeDamage(explosionDamage + player.getDefencePower());  // 방어력만큼 더해서 상쇄
 			attacker.setHealth(0); // 자폭(사망처리) //플레이어 막기() 무시
 			System.out.println(attacker.getName()+"가 폭발하여" + player.getName()+"에게"+ explosionDamage+"만큼의 피해를 입혔습니다.");
 		}

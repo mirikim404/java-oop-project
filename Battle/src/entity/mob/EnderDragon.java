@@ -57,7 +57,7 @@ public class EnderDragon extends Mob {
 
     public void chargeAttack(Steve player) {
         System.out.println(getName() + "이(가) 돌진 공격을 사용합니다!//방어력 무시//");
-        player.takeDamage(CHARGE_DAMAGE);
+        player.takeDamage(CHARGE_DAMAGE + player.getDefencePower());
         System.out.println(player.getName() + "이(가) " + CHARGE_DAMAGE + "의 고정 피해를 입었습니다.");
     }
 
