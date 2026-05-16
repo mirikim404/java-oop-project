@@ -10,38 +10,35 @@ import java.awt.*;
 import java.io.File;
 import java.awt.GraphicsEnvironment;
 
-public class StartView extends JFrame {
+public class StartView extends JPanel {
 
 	private JPanel contentPane;
 	private MinecraftButton btnNewGame;
 	private MinecraftButton btnHowTo;
 	private MinecraftButton btnCredits;
 	private MinecraftButton btnExit;
+	private GameFrame gameFrame;
 
 	private Font mcFont;
 
-	public StartView() {
-		setTitle("Minecraft RPG");
-		setSize(854, 480);
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setLocationRelativeTo(null);
-		setResizable(false);
+	public StartView(GameFrame gameFrame) {
+	    this.gameFrame = gameFrame;
 
-		// 폰트 로드
-		try {
-			mcFont = Font.createFont(Font.TRUETYPE_FONT, new File("fonts/Minecraftia-Regular.ttf")).deriveFont(14f);
-			GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(mcFont);
-		} catch (Exception e) {
-			e.printStackTrace();
-			mcFont = new Font("Dialog", Font.BOLD, 14);
-		}
+	    try {
+	        mcFont = Font.createFont(Font.TRUETYPE_FONT, new File("fonts/Minecraftia-Regular.ttf")).deriveFont(14f);
+	        GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(mcFont);
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        mcFont = new Font("Dialog", Font.BOLD, 14);
+	    }
 
-		contentPane = new BackgroundPanel();
-		contentPane.setLayout(new GridBagLayout());
-		setContentPane(contentPane);
+	    contentPane = new BackgroundPanel();
+	    contentPane.setLayout(new GridBagLayout());
 
-		initComponents();
-		setVisible(true);
+	    setLayout(new BorderLayout());
+	    add(contentPane, BorderLayout.CENTER);
+
+	    initComponents();
 	}
 
 	private void initComponents() {
@@ -108,15 +105,10 @@ public class StartView extends JFrame {
 
 		// 액션
 		btnNewGame.addActionListener(e -> {
-			String name = JOptionPane.showInputDialog(this, "닉네임을 입력하세요:", "새 게임", JOptionPane.PLAIN_MESSAGE);
-			if (name != null && !name.trim().isEmpty()) {
-				Steve steve = new Steve(name);
-				WaveManager waveManager = new WaveManager();
-				waveManager.loadCurrentWave();
-				Mob firstMob = waveManager.getAliveMobs().get(0); // 1웨이브 첫 번째 몹
-				dispose();
-				new EncounterView(steve, waveManager, firstMob, 1);
-			}
+		    String name = JOptionPane.showInputDialog(this, "닉네임을 입력하세요", "새 게임", JOptionPane.PLAIN_MESSAGE);
+		    if (name != null && !name.trim().isEmpty()) {
+		        gameFrame.startNewGame(name.trim());
+		    }
 		});
 		btnHowTo.addActionListener(e -> JOptionPane.showMessageDialog(this,
 				"[ 전투 ]\n공격 — 기본 공격\n막기 — 이번 턴 피해 무효\n스킬 — 쿨타임/수량 소모\n\n[ 코인 ]\n몹 처치/웨이브 클리어 시 획득\n사망해도 유지됨", "게임 방법",
@@ -124,9 +116,5 @@ public class StartView extends JFrame {
 		btnCredits.addActionListener(
 				e -> JOptionPane.showMessageDialog(this, "제작진 내용", "제작진", JOptionPane.PLAIN_MESSAGE));
 		btnExit.addActionListener(e -> System.exit(0));
-	}
-
-	public static void main(String[] args) {
-		SwingUtilities.invokeLater(StartView::new);
 	}
 }

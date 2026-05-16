@@ -16,6 +16,7 @@ public class HealPotion extends ConsumableSkill {
 	public void use(Steve steve) {
 		if (hasStock()) {
 			int healed = Math.min(steve.getMaxHealth() - steve.getHealth(), HEAL_AMOUNT);
+			steve.heal(HEAL_AMOUNT);
 			quantity--;
 			System.out.println("회복 포션 사용! 체력이 " + healed + "회복됐다!");
 		}

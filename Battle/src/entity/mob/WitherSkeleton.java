@@ -8,11 +8,11 @@ import ability.WitherDmg;
 
 public class WitherSkeleton extends Mob implements Mobability {
 
-	private static final int DEFAULT_MAX_HEALTH = 65;
-    private static final int DEFAULT_ATTACK_POWER = 30; 
-    private static final int DEFAULT_DEFENCE_POWER = 15;
-    private static final int DROP_EXP = 40; 
-    private static final int DROP_COIN = 35; 
+	private static final int DEFAULT_MAX_HEALTH = 68;
+    private static final int DEFAULT_ATTACK_POWER = 24; 
+    private static final int DEFAULT_DEFENCE_POWER = 10;
+    private static final int DROP_EXP = 80; 
+    private static final int DROP_COIN = 70; 
     private static final int WITHERTURNS = 3; // 위더 효과 발현 턴수
     private static  final int WITHERDAMAGE = 7;
     

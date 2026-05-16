@@ -23,18 +23,18 @@ public class ShopManager {
 
     private void initPrices() {
         weaponPrices = new HashMap<>();
-        weaponPrices.put("StoneSword",     50);
-        weaponPrices.put("IronSword",      90);
-        weaponPrices.put("DiamondSword",  140);
-        weaponPrices.put("NetheriteSword",200);
+        weaponPrices.put("StoneSword",     40);
+        weaponPrices.put("IronSword",      75);
+        weaponPrices.put("DiamondSword",  115);
+        weaponPrices.put("NetheriteSword",160);
 
         skillPrices = new HashMap<>();
-        skillPrices.put("SnowBall",   55);
-        skillPrices.put("FireCharge", 80);
+        skillPrices.put("SnowBall",   45);
+        skillPrices.put("FireCharge", 65);
 
         potionPrices = new HashMap<>();
-        potionPrices.put("AttackPotion", 25);
-        potionPrices.put("HealPotion",   20);
+        potionPrices.put("AttackPotion", 18);
+        potionPrices.put("HealPotion",   15);
     }
 
     public void enterShop(GameState state) {
@@ -171,6 +171,7 @@ public class ShopManager {
         }
         for (int i = 0; i < consumables.length; i++) {
             if (consumables[i] == null) {
+                potion.addQuantity(1);
                 consumables[i] = potion;
                 break;
             }

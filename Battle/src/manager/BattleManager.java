@@ -13,6 +13,7 @@ public class BattleManager {
 	private WaveManager waveManager;
 	private ShopManager shopManager;
 	private Mob currentMob;
+	private boolean isBlocking = false;
 
 	private final Scanner scanner = new Scanner(System.in);
 
@@ -102,8 +103,9 @@ public class BattleManager {
 				System.out.println(mob.getName() + " HP: " + mob.getHealth());
 			}
 			case 2 -> {
-				steve.block();
-				System.out.println("막기 자세를 취했다!");
+			    steve.block();
+			    isBlocking = true; // 막기 플래그 on
+			    System.out.println("막기 자세를 취했다!");
 			}
 			case 3 -> steve.useSkill(mob, waveManager.getAliveMobs());
 			default -> {
@@ -117,17 +119,22 @@ public class BattleManager {
 	public void processMobTurn(Mob mob) {
 	    System.out.println("\n[" + mob.getName() + "의 턴]");
 
-	    // 상태이상 처리 (Burn, Stun 등 effects 순회)
 	    mob.processEffects();
 
-	    // 스턴 체크
 	    if (mob.isStunned()) {
 	        System.out.println(mob.getName() + "은(는) 스턴 상태! 행동 불가");
 	        mob.setStunned(false);
+	        isBlocking = false;
 	        return;
 	    }
 
-	    // 몹 행동
+	    // 막기 체크
+	    if (isBlocking) {
+	        System.out.println(mob.getName() + "이 공격했지만 막혔다!");
+	        isBlocking = false; // 막기 해제
+	        return;
+	    }
+
 	    mob.act(steve);
 	    System.out.println("스티브 HP: " + steve.getHealth());
 	}
@@ -226,7 +233,7 @@ public class BattleManager {
 	// EnderDragon 체력 % 기준 페이즈 전환 체크
 	public void checkPhase() {
 		if (currentMob instanceof EnderDragon dragon) {
-			// TODO: EnderDragon 구현 후 활성하ㅗ
+			// TODO: EnderDragon 구현 후 활성화
 			// dragon.updatePhase();
 		}
 	}

@@ -8,29 +8,26 @@ import manager.WaveManager;
 import javax.swing.*;
 import java.awt.*;
 
-public class DeadView extends JFrame {
-
+public class DeadView extends JPanel {
+	private GameFrame gameFrame;
     private Steve steve;
     private WaveManager waveManager;
     private ShopManager shopManager;
 
     private JLabel coinLabel;
 
-    public DeadView(Steve steve, WaveManager waveManager) {
-        this.steve = steve;
+    public DeadView(GameFrame gameFrame, Steve steve, WaveManager waveManager) {
+        this.gameFrame = gameFrame;
+    	this.steve = steve;
         this.waveManager = waveManager;
         this.shopManager = new ShopManager(steve);
 
-        setTitle("Minecraft RPG - Game Over");
-        setSize(854, 480);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);
-        setResizable(false);
 
         JPanel root = new BackgroundPanel();
         root.setLayout(new BorderLayout(10, 10));
         root.setBorder(BorderFactory.createEmptyBorder(16, 24, 16, 24));
-        setContentPane(root);
+        setLayout(new BorderLayout());
+        add(root, BorderLayout.CENTER);
 
         root.add(buildTopPanel(), BorderLayout.NORTH);
         root.add(buildShopPanel(), BorderLayout.CENTER);
@@ -87,10 +84,10 @@ public class DeadView extends JFrame {
         panel.setBorder(BorderFactory.createEmptyBorder(12, 16, 12, 16));
 
         String[][] weapons = {
-            {"StoneSword",     "돌 검",         "30"},
-            {"IronSword",      "철 검",         "60"},
-            {"DiamondSword",   "다이아몬드 검",  "100"},
-            {"NetheriteSword", "네더라이트 검",  "150"},
+            {"StoneSword",     "돌 검",         "40"},
+            {"IronSword",      "철 검",         "75"},
+            {"DiamondSword",   "다이아몬드 검",  "115"},
+            {"NetheriteSword", "네더라이트 검",  "160"},
         };
 
         for (String[] w : weapons) {
@@ -114,10 +111,10 @@ public class DeadView extends JFrame {
         panel.setBackground(new Color(30, 30, 30));
         panel.setBorder(BorderFactory.createEmptyBorder(12, 16, 12, 16));
 
-        panel.add(buildItemRow("눈덩이 (단일 스턴, 쿨타임 3턴)", "40 코인", () -> {
+        panel.add(buildItemRow("눈덩이 (보조 스턴, 쿨타임 3턴)", "45 코인", () -> {
             if (shopManager.buySkill(new skill.active.SnowBall())) refreshCoin();
         }));
-        panel.add(buildItemRow("화염구 (화상 2턴, 쿨타임 3턴)", "60 코인", () -> {
+        panel.add(buildItemRow("화염구 (화상 2턴, 쿨타임 3턴)", "65 코인", () -> {
             if (shopManager.buySkill(new skill.active.FireCharge())) refreshCoin();
         }));
 
@@ -130,7 +127,7 @@ public class DeadView extends JFrame {
         panel.setBackground(new Color(30, 30, 30));
         panel.setBorder(BorderFactory.createEmptyBorder(12, 16, 12, 16));
 
-        panel.add(buildItemRow("공격 포션 (1턴 공격력 2배)", "20 코인", () -> {
+        panel.add(buildItemRow("공격 포션 (다음 공격 2배)", "18 코인", () -> {
             if (shopManager.buyPotion(new skill.consumable.AttackPotion())) refreshCoin();
         }));
         panel.add(buildItemRow("회복 포션 (체력 회복)", "15 코인", () -> {
@@ -183,16 +180,14 @@ public class DeadView extends JFrame {
             WaveManager newWaveManager = new WaveManager();
             newWaveManager.loadCurrentWave();
             Mob firstMob = newWaveManager.getAliveMobs().get(0);
-            dispose();
-            new EncounterView(steve, newWaveManager, firstMob, 1);
+            gameFrame.restartAfterDeath(steve);
         });
 
         MinecraftButton btnTitle = new MinecraftButton("Title");
         btnTitle.setPreferredSize(new Dimension(120, 44));
         btnTitle.setFont(new Font("Dialog", Font.BOLD, 16));
         btnTitle.addActionListener(e -> {
-            dispose();
-            new StartView();
+        	gameFrame.showStart();
         });
 
         panel.add(btnRestart);

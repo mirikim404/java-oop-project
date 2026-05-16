@@ -7,26 +7,23 @@ import manager.WaveManager;
 import javax.swing.*;
 import java.awt.*;
 
-public class EncounterView extends JFrame {
+public class EncounterView extends JPanel {
 
     private Steve steve;
     private Mob mob;
     private int wave;
+    private GameFrame gameFrame;
 
-    public EncounterView(Steve steve, WaveManager waveManager, Mob mob, int wave) {
+    public EncounterView(GameFrame gameFrame, Steve steve, WaveManager waveManager, Mob mob, int wave) {
+        this.gameFrame = gameFrame;
         this.steve = steve;
         this.wave = wave;
         this.mob = mob;
 
-        setTitle("Minecraft RPG");
-        setSize(854, 480);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);
-        setResizable(false);
-
         JPanel panel = new BackgroundPanel();
         panel.setLayout(new GridBagLayout());
-        setContentPane(panel);
+        setLayout(new BorderLayout());
+        add(panel, BorderLayout.CENTER);
 
         // 웨이브 라벨
         JLabel waveLabel = new JLabel(wave == 6 ? "⚠ BOSS WAVE ⚠" : "Wave " + wave, SwingConstants.CENTER);
@@ -56,10 +53,8 @@ public class EncounterView extends JFrame {
         panel.add(btnFight, gbc);
 
         btnFight.addActionListener(e -> {
-            dispose();
-            new BattleView(steve, waveManager, mob, wave); // 다음 화면
+            gameFrame.showBattle(steve, waveManager, mob, wave);
         });
 
-        setVisible(true);
     }
 }

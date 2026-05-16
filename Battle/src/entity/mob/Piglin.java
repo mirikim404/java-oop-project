@@ -4,11 +4,11 @@ import ability.DoubleAttack;
 import entity.Entity;
 
 public class Piglin extends Mob {
-	private static final int DEFAULT_MAX_HEALTH = 80;
-    private static final int DEFAULT_ATTACK_POWER = 38;  
-    private static final int DEFAULT_DEFENCE_POWER = 25;
-    private static final int DROP_EXP = 60; 
-    private static final int DROP_COIN = 55;
+	private static final int DEFAULT_MAX_HEALTH = 82;
+    private static final int DEFAULT_ATTACK_POWER = 28;  
+    private static final int DEFAULT_DEFENCE_POWER = 14;
+    private static final int DROP_EXP = 110; 
+    private static final int DROP_COIN = 95;
 	public Piglin () {
 		super("피글린", DEFAULT_MAX_HEALTH, DEFAULT_ATTACK_POWER, DEFAULT_DEFENCE_POWER, DROP_EXP,DROP_COIN);
 		setAbility(new DoubleAttack());
