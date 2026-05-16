@@ -37,7 +37,7 @@ public class BattleManager {
 	// WaveManager에서 몹 목록 받아 전투 시작
 	public void startWave() {
 		waveManager.loadCurrentWave();
-		List<Mob> mobs = waveManager.getAliveMobs();
+		List<Mob> mobs = new ArrayList<>(waveManager.getAliveMobs());
 
 		System.out.println("\n=== 웨이브 " + waveManager.getCurrentWave() + " 시작 ===");
 

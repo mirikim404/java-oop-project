@@ -25,7 +25,6 @@ public class Zombie extends Mob {
 	@Override
 	public void attack(Entity target) {
 		super.attack(target);
-		target.takeDamage(getAttackPower());
 		System.out.println("으으으으... 으으으으..." + target.getName() + "...");
 		
 	}

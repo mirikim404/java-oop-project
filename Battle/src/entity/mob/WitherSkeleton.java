@@ -28,7 +28,6 @@ public class WitherSkeleton extends Mob implements Mobability {
 	@Override
 	public void attack(Entity target) {
 		super.attack(target);
-		target.takeDamage(getAttackPower());
 		// TODO Auto-generated method stub
 		
 	}

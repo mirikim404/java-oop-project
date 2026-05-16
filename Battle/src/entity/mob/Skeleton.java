@@ -24,7 +24,6 @@ public class Skeleton extends Mob {
 	@Override
 	public void attack(Entity target) {
 		super.attack(target);
-		target.takeDamage(getAttackPower());
 		System.out.println(getName() + "이" + target.getName()+ "에게 활을 쏩니다");
 
 	}

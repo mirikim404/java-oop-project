@@ -24,7 +24,6 @@ public class Piglin extends Mob {
 	public void attack(Entity target) {
 		super.attack(target);
 		System.out.println(getName() + "이(가) 외칩니다.  '금 냄새가 난다... 내놔!'");
-		target.takeDamage(getAttackPower());
 	
 		
 	}

@@ -67,7 +67,6 @@ public abstract class Mob extends Entity {
 		super(name, maxHealth, attackPower, defencePower);
 		this.dropExp = dropExp;
 		this.dropCoin = dropCoin;
-
 	}
 
 	// 상태이상 순회 처리
