@@ -5,12 +5,12 @@ import entity.Entity;
 
 public class Creeper extends Mob {
 	
-	private static final int DEFAULT_MAX_HEALTH = 20;
-    private static final int DEFAULT_ATTACK_POWER = 5; //폭발 데미지 
-    private static final int DEFAULT_DEFENCE_POWER = 5;
+	private static final int DEFAULT_MAX_HEALTH = 35;
+    private static final int DEFAULT_ATTACK_POWER = 12; //폭발 데미지 
+    private static final int DEFAULT_DEFENCE_POWER = 3;
     private static final int EXPLOSION_TURNS = 2;
-    private static final int DROP_EXP = 15; 
-    private static final int DROP_COIN = 15;
+    private static final int DROP_EXP = 20; 
+    private static final int DROP_COIN = 20;
     
 	public Creeper () { // 기본 생성자
 		super("크리퍼", DEFAULT_MAX_HEALTH, DEFAULT_ATTACK_POWER, DEFAULT_DEFENCE_POWER, DROP_EXP, DROP_COIN);

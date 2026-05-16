@@ -5,12 +5,12 @@ import entity.Entity;
 
 public class Skeleton extends Mob {
 
-	private static final int DEFAULT_MAX_HEALTH = 15;
-    private static final int DEFAULT_ATTACK_POWER = 2;  
-    private static final int DEFAULT_DEFENCE_POWER = 3;
-    private static final int DROP_EXP = 10; 
-    private static final int DROP_COIN = 10;
-    private static final int EXTRA_DAMAGE = 1; // 스킬 발동 시 추가 데미지
+	private static final int DEFAULT_MAX_HEALTH = 30;
+    private static final int DEFAULT_ATTACK_POWER = 7;  
+    private static final int DEFAULT_DEFENCE_POWER = 5;
+    private static final int DROP_EXP = 15; 
+    private static final int DROP_COIN = 15;
+    private static final int EXTRA_DAMAGE = 3; // 스킬 발동 시 추가 데미지
 	public Skeleton() {
 		super("스켈레톤", DEFAULT_MAX_HEALTH, DEFAULT_ATTACK_POWER, DEFAULT_DEFENCE_POWER, DROP_EXP, DROP_COIN );
 		setAbility(new Shoot(EXTRA_DAMAGE));
