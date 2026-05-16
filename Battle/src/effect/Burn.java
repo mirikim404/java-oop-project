@@ -1,6 +1,6 @@
 package effect;
 
-import entity.mob.Mob;
+import entity.Entity;
 
 public class Burn implements StatusEffect {
 	
@@ -14,13 +14,13 @@ public class Burn implements StatusEffect {
     }
 
     @Override
-    public void activate(Mob mob) {
+    public void activate(Entity target) {
         if (remainingTurns <= 0) {
             return;
         }
         
-        System.out.println(mob.getName() + "이/가 화상 피해를 입었습니다. 데미지: " + damage);
-        mob.takeDamage(damage);
+        System.out.println(target.getName() + "이/가 화상 피해를 입었습니다. 데미지: " + damage);
+        target.takeDamage(damage);
         remainingTurns--;
     }
 

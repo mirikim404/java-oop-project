@@ -1,19 +1,28 @@
 package effect;
 
-import entity.mob.Mob;
+import entity.Entity;
 
 public class Wither implements StatusEffect {
-    
-    @Override
-    public void activate(Mob mob) {
-    	// TODO : 위더 효과 구현
+
+    private int remainingTurns;
+    private int damage;
+
+    public Wither(int turns, int damage) {
+        this.remainingTurns = turns;
+        this.damage = damage;
     }
 
-	@Override
-	public boolean isExpired() {
-        // TODO: 위더 효과 구현 시 만료 조건 추가
-        return true;
-	}
-    
-    
+    @Override
+    public void activate(Entity target) {
+        if (remainingTurns <= 0) return;
+
+        System.out.println(target.getName() + "이/가 위더 피해를 입었습니다. 데미지: " + damage);
+        target.takeDamage(damage);
+        remainingTurns--;
+    }
+
+    @Override
+    public boolean isExpired() {
+        return remainingTurns <= 0;
+    }
 }

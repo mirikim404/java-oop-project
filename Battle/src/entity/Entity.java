@@ -9,6 +9,8 @@ public abstract class Entity implements Blockable, Attackable {
 	private int attackPower;
 	private int defencePower;
 	private int maxHealth;
+	
+	protected boolean isStunned = false;
 
 	public Entity() {
 	} // 기본 생성자
@@ -21,6 +23,9 @@ public abstract class Entity implements Blockable, Attackable {
 		this.attackPower = attackPower;
 		this.defencePower = defencePower;
 	}
+	
+	public boolean isStunned() { return isStunned; }
+	public void setStunned(boolean stunned) { this.isStunned = stunned; }
 
 	public String getName() {
 		return name;
