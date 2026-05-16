@@ -12,7 +12,7 @@ public class Skeleton extends Mob {
     private static final int DROP_COIN = 10;
     private static final int EXTRA_DAMAGE = 1; // 스킬 발동 시 추가 데미지
 	public Skeleton() {
-		super("스켈레톤", DEFAULT_MAX_HEALTH, DEFAULT_ATTACK_POWER, DEFAULT_DEFENCE_POWER);
+		super("스켈레톤", DEFAULT_MAX_HEALTH, DEFAULT_ATTACK_POWER, DEFAULT_DEFENCE_POWER, DROP_EXP, DROP_COIN );
 		setAbility(new Shoot(EXTRA_DAMAGE));
 	}
 	
