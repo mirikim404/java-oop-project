@@ -8,12 +8,13 @@ public class Creeper extends Mob {
 	private static final int DEFAULT_MAX_HEALTH = 20;
     private static final int DEFAULT_ATTACK_POWER = 5; //폭발 데미지 
     private static final int DEFAULT_DEFENCE_POWER = 5;
+    private static final int EXPLOSION_TURNS = 2;
     private static final int DROP_EXP = 15; 
     private static final int DROP_COIN = 15;
     
 	public Creeper () { // 기본 생성자
 		super("크리퍼", DEFAULT_MAX_HEALTH, DEFAULT_ATTACK_POWER, DEFAULT_DEFENCE_POWER, DROP_EXP, DROP_COIN);
-		setAbility(new Explode());
+		setAbility(new Explode(EXPLOSION_TURNS, DEFAULT_ATTACK_POWER));
 	}
 	
 //	public Creeper (String name, int DEFAULT_MAX_HEALTH, int DEFAULT_ATTACK_POWER, int DEFAULT_DEFENCE_POWER) { //생성자
