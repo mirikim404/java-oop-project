@@ -6,24 +6,29 @@ import entity.Steve;
 import ability.Heal;
 public class Witch extends Mob implements Mobability{
 	
-	private final int DEFAULT_MAX_HEALTH = 30;
-    private final int DEFAULT_ATTACK_POWER = 15; 
-    private final int DEFAULT_DEFENCE_POWER = 15;
-    private final int DROP_EXP = 30; 
-    private final int DROP_COIN = 30;
-	private final int HEAL_AMOUNT = 5; // 고유 능력 회복량
+	private static final int DEFAULT_MAX_HEALTH = 30;
+    private static final int DEFAULT_ATTACK_POWER = 15; 
+    private static final int DEFAULT_DEFENCE_POWER = 15;
+    private static final int DROP_EXP = 30; 
+    private static final int DROP_COIN = 30;
+	private static final int HEAL_AMOUNT = 5; // 고유 능력 회복량
 	
-	public Witch() {}
-	
-	public Witch(String name, int DEFAULT_MAX_HEALTH, int DEFAULT_ATTACK_POWER, int DEFAULT_DEFENCE_POWER) { //생성자
-		super(name, DEFAULT_MAX_HEALTH, DEFAULT_ATTACK_POWER, DEFAULT_DEFENCE_POWER);
+	public Witch() {
+		super("마녀", DEFAULT_MAX_HEALTH, DEFAULT_ATTACK_POWER, DEFAULT_DEFENCE_POWER);
 		//마녀 능력 적용
 		setAbility(new Heal(HEAL_AMOUNT));
 	}
 	
-	
+//	public Witch(String name, int DEFAULT_MAX_HEALTH, int DEFAULT_ATTACK_POWER, int DEFAULT_DEFENCE_POWER) { //생성자
+//		super(name, DEFAULT_MAX_HEALTH, DEFAULT_ATTACK_POWER, DEFAULT_DEFENCE_POWER);
+//		//마녀 능력 적용
+//		setAbility(new Heal(HEAL_AMOUNT));
+//	}
+//	
+//	
 	@Override
 	public void attack(Entity target) {
+		super.attack(target);
 		target.takeDamage(getAttackPower());
 		// TODO Auto-generated method stub
 		
@@ -31,7 +36,7 @@ public class Witch extends Mob implements Mobability{
 
 	@Override
 	public void block() {
-		// TODO Auto-generated method stub
+		super.block();
 		
 	}
 	
