@@ -17,7 +17,7 @@ public class WitherSkeleton extends Mob implements Mobability {
     private static  final int WITHERDAMAGE = 5;
     
 	public WitherSkeleton() {
-		super("위더스켈레톤", DEFAULT_MAX_HEALTH, DEFAULT_ATTACK_POWER, DEFAULT_DEFENCE_POWER);
+		super("위더스켈레톤", DEFAULT_MAX_HEALTH, DEFAULT_ATTACK_POWER, DEFAULT_DEFENCE_POWER, DROP_EXP, DROP_COIN);
 		setAbility(new WitherDmg(WITHERTURNS, WITHERDAMAGE));
 	}
 //	public WitherSkeleton (String name, int DEFAULT_MAX_HEALTH, int DEFAULT_ATTACK_POWER, int DEFAULT_DEFENCE_POWER) { //생성자
@@ -28,7 +28,6 @@ public class WitherSkeleton extends Mob implements Mobability {
 	@Override
 	public void attack(Entity target) {
 		super.attack(target);
-		target.takeDamage(getAttackPower());
 		// TODO Auto-generated method stub
 		
 	}

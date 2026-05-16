@@ -12,7 +12,7 @@ public class Zombie extends Mob {
     private static final int DROP_COIN = 5;
 	
 	public Zombie() {
-		super("좀비", DEFAULT_MAX_HEALTH, DEFAULT_ATTACK_POWER, DEFAULT_DEFENCE_POWER);
+		super("좀비", DEFAULT_MAX_HEALTH, DEFAULT_ATTACK_POWER, DEFAULT_DEFENCE_POWER,DROP_EXP, DROP_COIN);
 		setAbility(null); // 좀비는 능력 없음
 	}
 	
@@ -25,7 +25,6 @@ public class Zombie extends Mob {
 	@Override
 	public void attack(Entity target) {
 		super.attack(target);
-		target.takeDamage(getAttackPower());
 		System.out.println("으으으으... 으으으으..." + target.getName() + "...");
 		
 	}

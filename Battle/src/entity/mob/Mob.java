@@ -63,11 +63,10 @@ public abstract class Mob extends Entity {
 	public Mob() {
 	} // 생성자
 
-	public Mob(String name, int maxHealth, int attackPower, int defencePower) { // 생성자
+	public Mob(String name, int maxHealth, int attackPower, int defencePower, int dropExp, int dropCoin) { // 생성자
 		super(name, maxHealth, attackPower, defencePower);
 		this.dropExp = dropExp;
 		this.dropCoin = dropCoin;
-
 	}
 
 	// 상태이상 순회 처리

@@ -15,7 +15,7 @@ public class EnderDragon extends Mob {
 	public EnderDragon() {} // 기본 생성자
 
 	public EnderDragon (String name, int DEFAULT_MAX_HEALTH, int DEFAULT_ATTACK_POWER, int DEFAULT_DEFENCE_POWER) { //생성자
-		super(name, DEFAULT_MAX_HEALTH, DEFAULT_ATTACK_POWER, DEFAULT_DEFENCE_POWER);
+		super(name, DEFAULT_MAX_HEALTH, DEFAULT_ATTACK_POWER, DEFAULT_DEFENCE_POWER, 0 , 0);
 		setAbility(null); // 능력 없음
 		phase = 1;
 		showPhase();

@@ -14,7 +14,7 @@ public class Witch extends Mob implements Mobability{
 	private static final int HEAL_AMOUNT = 5; // 고유 능력 회복량
 	
 	public Witch() {
-		super("마녀", DEFAULT_MAX_HEALTH, DEFAULT_ATTACK_POWER, DEFAULT_DEFENCE_POWER);
+		super("마녀", DEFAULT_MAX_HEALTH, DEFAULT_ATTACK_POWER, DEFAULT_DEFENCE_POWER, DROP_EXP ,DROP_COIN);
 		//마녀 능력 적용
 		setAbility(new Heal(HEAL_AMOUNT));
 	}
@@ -29,7 +29,6 @@ public class Witch extends Mob implements Mobability{
 	@Override
 	public void attack(Entity target) {
 		super.attack(target);
-		target.takeDamage(getAttackPower());
 		// TODO Auto-generated method stub
 		
 	}
