@@ -12,7 +12,7 @@ public class Creeper extends Mob {
     private static final int DROP_COIN = 15;
     
 	public Creeper () { // 기본 생성자
-		super("크리퍼", DEFAULT_MAX_HEALTH, DEFAULT_ATTACK_POWER, DEFAULT_DEFENCE_POWER);
+		super("크리퍼", DEFAULT_MAX_HEALTH, DEFAULT_ATTACK_POWER, DEFAULT_DEFENCE_POWER, DROP_EXP, DROP_COIN);
 		setAbility(new Explode());
 	}
 	

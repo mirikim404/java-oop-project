@@ -10,7 +10,7 @@ public class Piglin extends Mob {
     private static final int DROP_EXP = 50; 
     private static final int DROP_COIN = 50;
 	public Piglin () {
-		super("크리퍼", DEFAULT_MAX_HEALTH, DEFAULT_ATTACK_POWER, DEFAULT_DEFENCE_POWER);
+		super("크리퍼", DEFAULT_MAX_HEALTH, DEFAULT_ATTACK_POWER, DEFAULT_DEFENCE_POWER, DROP_EXP,DROP_COIN);
 		setAbility(new DoubleAttack());
 	} // 기본 생성자
 	
