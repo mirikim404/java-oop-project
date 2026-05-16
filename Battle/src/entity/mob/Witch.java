@@ -12,11 +12,12 @@ public class Witch extends Mob implements Mobability{
     private static final int DROP_EXP = 30; 
     private static final int DROP_COIN = 30;
 	private static final int HEAL_AMOUNT = 5; // 고유 능력 회복량
+	private static final double HEAL_PERCENT = 0.5; // 회복 확률
 	
 	public Witch() {
 		super("마녀", DEFAULT_MAX_HEALTH, DEFAULT_ATTACK_POWER, DEFAULT_DEFENCE_POWER, DROP_EXP ,DROP_COIN);
 		//마녀 능력 적용
-		setAbility(new Heal(HEAL_AMOUNT));
+		setAbility(new Heal(HEAL_AMOUNT, HEAL_PERCENT));
 	}
 	
 //	public Witch(String name, int DEFAULT_MAX_HEALTH, int DEFAULT_ATTACK_POWER, int DEFAULT_DEFENCE_POWER) { //생성자

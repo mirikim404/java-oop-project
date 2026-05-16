@@ -19,6 +19,7 @@ public class Wither implements StatusEffect {
         System.out.println(target.getName() + "이/가 위더 피해를 입었습니다. 데미지: " + damage);
         target.takeDamage(damage);
         remainingTurns--;
+        System.out.println("남은 턴 수 : " + remainingTurns );
     }
 
     @Override
