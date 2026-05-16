@@ -1,6 +1,6 @@
 package effect;
 
-import entity.mob.Mob;
+import entity.Entity;
 
 public class Stun implements StatusEffect {
 	private int remainingTurns;
@@ -13,16 +13,13 @@ public class Stun implements StatusEffect {
         this.remainingTurns = turns;
     }
 
+ // Stun.java
     @Override
-    public void activate(Mob mob) {
-        if (remainingTurns <= 0) {
-            return;
-        }
-
-        mob.setStunned(true);
-        System.out.println(mob.getName() + "이/가 스턴 상태가 되었습니다.");
+    public void activate(Entity target) {
+        if (remainingTurns <= 0) return;
+        target.setStunned(true);
+        System.out.println(target.getName() + "이/가 스턴 상태가 되었습니다.");
         remainingTurns--;
-
     }
 
 	@Override

@@ -1,6 +1,8 @@
 package entity;
 
 import interfaces.Skillable;
+import effect.StatusEffect;
+import java.util.ArrayList;
 import skill.active.ActiveSkill;
 import skill.consumable.ConsumableSkill;
 import entity.mob.Mob;
@@ -16,6 +18,7 @@ public class Steve extends Entity implements Skillable {
 	private Weapon weapon;
 	private ActiveSkill[] activeSkills;
 	private ConsumableSkill[] consumables;
+	private List<StatusEffect> effects = new ArrayList<>();
 
 	private static final int DEFAULT_MAX_HEALTH = 100;
 	private static final int DEFAULT_ATTACK_POWER = 10;
@@ -121,14 +124,15 @@ public class Steve extends Entity implements Skillable {
 	}
 
 	public void onTurnEnd() {
-		if (activeSkills != null) {
-			for (ActiveSkill skill : activeSkills) {
-				if (skill != null) {
-					skill.decrementCooldown();
-				}
-			}
-		}
-		System.out.println(getName() + "의 턴이 종료되었습니다.");
+	    processEffects();  // ← 추가
+	    if (activeSkills != null) {
+	        for (ActiveSkill skill : activeSkills) {
+	            if (skill != null) {
+	                skill.decrementCooldown();
+	            }
+	        }
+	    }
+	    System.out.println(getName() + "의 턴이 종료되었습니다.");
 	}
 
 	public Steve resetAfterDeath() {
@@ -152,6 +156,13 @@ public class Steve extends Entity implements Skillable {
 		}
 		return getAttackPower() + weapon.getAttackBonus();
 	}
+	
+	public void processEffects() {
+	    effects.removeIf(effect -> {
+	        effect.activate(this);
+	        return effect.isExpired();
+	    });
+	}
 
 	// getter, setter
 	public int getCoin() { return coin; }
@@ -170,4 +181,6 @@ public class Steve extends Entity implements Skillable {
 	public void setConsumables(ConsumableSkill[] consumables) { this.consumables = consumables; }
 
 	public String getUsername() { return getName(); }
+	
+	public List<StatusEffect> getEffects() { return effects; }
 }
