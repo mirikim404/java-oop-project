@@ -15,7 +15,7 @@ public abstract class Mob extends Entity {
 	private List<StatusEffect> effects = new ArrayList<>();
 	private Mobability ability;
 	protected boolean isStunned = false;
-
+	protected boolean isBlock = false; // Block 판별 
 	private int dropExp;
 	private int dropCoin;
 	private int burnTurns;
@@ -93,14 +93,23 @@ public abstract class Mob extends Entity {
 		System.out.println("공격, 플레이어(Steve)를 지정하세요");
 	}
 
-	public void attack(Steve player) {
-		System.out.println(getName() + "이 플레이어 " + player.getName() + "을 공격합니다.");
+
+//	public void attack(Steve player) {
+//		System.out.println(getName() + "이 플레이어 " + player.getName() + "을 공격합니다.");
+
+	
+	@Override
+	public void attack(Entity player) {
+		System.out.println(getName()+ "이"+ player.getName() +"을/를 공격합니다.");
 		player.takeDamage(getAttackPower());
 	}
 
 	@Override
 	public void block() {
-		System.out.println(getName() + "이/가 피해를 받았습니다. ");
+		
+		System.out.println(getName() + "이/가 공격을 막았습니다. ");
+		isBlock = true;
+		
 	}
 
 }
