@@ -6,12 +6,12 @@ import entity.Steve;
 import ability.Heal;
 public class Witch extends Mob implements Mobability{
 	
-	private static final int DEFAULT_MAX_HEALTH = 30;
-    private static final int DEFAULT_ATTACK_POWER = 15; 
-    private static final int DEFAULT_DEFENCE_POWER = 15;
-    private static final int DROP_EXP = 30; 
+	private static final int DEFAULT_MAX_HEALTH = 55;
+    private static final int DEFAULT_ATTACK_POWER = 25; 
+    private static final int DEFAULT_DEFENCE_POWER = 12;
+    private static final int DROP_EXP = 35; 
     private static final int DROP_COIN = 30;
-	private static final int HEAL_AMOUNT = 5; // 고유 능력 회복량
+	private static final int HEAL_AMOUNT = 8; // 고유 능력 회복량
 	private static final double HEAL_PERCENT = 0.5; // 회복 확률
 	
 	public Witch() {
