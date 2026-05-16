@@ -210,6 +210,8 @@ public class BattleManager {
 		shopManager.showRestartMenu();
 
 		// 재시작 선택 시 웨이브 1부터 다시
+		this.waveManager = new WaveManager();
+		
 		setGameState(GameState.BATTLE);
 		startGame();
 	}
