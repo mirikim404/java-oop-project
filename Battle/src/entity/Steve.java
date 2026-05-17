@@ -20,7 +20,10 @@ public class Steve extends Entity implements Skillable {
 	private ConsumableSkill[] consumables;
 	private List<StatusEffect> effects = new ArrayList<>();
 	private int pendingLevelUps;
-
+	private boolean isUsed = false;
+	
+	Scanner input = new Scanner(System.in);
+	
 	private static final int DEFAULT_MAX_HEALTH = 100;
 	private static final int DEFAULT_ATTACK_POWER = 24;
 	private static final int DEFAULT_DEFENCE_POWER = 6;
@@ -57,27 +60,63 @@ public class Steve extends Entity implements Skillable {
 
 	@Override
 	public void useSkill(Steve steve, Mob mob) {
-		System.out.println(getName() + "이/가 스킬을 사용합니다.");
-		System.out.println("\n --- 사용 가능한 스킬 목록 --- ");
 		ActiveSkill[] skills = steve.getActiveSkills();
+		isUsed = false;
+		
+		if (skills[0] == null) { // 사용할 수 있는 스킬이 없으면
+			System.out.println("사용할 수 있는 스킬이 없습니다");
+			return; 
+		}
+		System.out.println(getName() + "이/가 스킬을 사용합니다.");
+		System.out.println("\n === 사용 가능한 스킬 목록 === ");
 
 		for (int i = 0; i < skills.length; i++) {
 			if (skills[i] != null) {
 				//가지고 있는 스킬 꺼내서 보여줌 
-				System.out.printf("[%d] %s", i+1, skills[i].getClass().getSimpleName());
+				String readyText = skills[i].isReady() ? "사용 가능" : "사용 불가능";
+				System.out.printf("[%d] %s (쿨타임 %d턴 남음 / %s)\n", i+1, skills[i].getClass().getSimpleName(), skills[i].getCurrentCooldown() , readyText);
 			}
+			
 		}
 			System.out.println("\n === 사용할 스킬을 선택하세요. ===");
-			Scanner input = new Scanner(System.in);
+			
 			int ans = input.nextInt();
 			ActiveSkill chosenSkill = skills[ans-1];
 			if (chosenSkill.isReady() == true) {
 				chosenSkill.use(steve, mob);
+				isUsed = true; // 뭔가 선택되었는가?
 			}
-			else System.out.println("==아직 준비되지 않은 스킬입니다. ");
+			else System.out.println("==아직 준비되지 않은 스킬입니다. === ");
 	}
 
-
+	@Override
+	public void usePotion(Steve steve) {
+		ConsumableSkill[] potions = this.getConsumables();
+		isUsed = false; //
+		if (potions[0] == null) { // 사용할 수 있는 포션이 없으면
+			System.out.println("사용할 수 있는 포션이 없습니다");
+			return; 
+		} 
+		System.out.println(getName() + "이/가 포션을 사용합니다.");
+		System.out.println("\n --- 사용 가능한 포션 목록 --- ");
+		
+		
+		for (int i = 0; i < potions.length; i++) {
+			if (potions[i] != null) {
+				System.out.printf("[%d] %s %d개 ", i+1, potions[i].getClass().getSimpleName(), potions[i].getQuantity());
+			}
+			
+		}
+		System.out.println("\n === 사용할 스킬을 선택하세요. ===");
+		
+		int ans = input.nextInt();
+		ConsumableSkill chosenPotion = potions[ans-1];
+		if (chosenPotion.hasStock() == true) {
+			chosenPotion.use(steve);
+			isUsed = true;
+		}
+		else System.out.println("=== 보유하지 않은 포션입니다. === ");
+	}
 	
 
 	public void gainExp() {
@@ -204,4 +243,9 @@ public class Steve extends Entity implements Skillable {
 	public String getUsername() { return getName(); }
 	
 	public List<StatusEffect> getEffects() { return effects; }
+
+	public boolean getIsUsed() { return isUsed; }
+	public void setIsUsed(boolean isUsed) { this.isUsed = isUsed; }
+
+	
 }

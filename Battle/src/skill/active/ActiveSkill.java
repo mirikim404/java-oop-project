@@ -30,6 +30,15 @@ public abstract class ActiveSkill extends Skill {
     	if (currentCooldown > 0) currentCooldown--;
     }
     
-    public abstract void use(Steve steve, Mob target);
+    
+    public int getCurrentCooldown() {
+		return currentCooldown;
+	}
+
+	public void setCurrentCooldown(int currentCooldown) {
+		this.currentCooldown = currentCooldown;
+	}
+
+	public abstract void use(Steve steve, Mob target);
 
 }
