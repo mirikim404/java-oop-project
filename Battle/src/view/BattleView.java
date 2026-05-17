@@ -54,6 +54,18 @@ public class BattleView extends JPanel {
     private static final Color GOLD = new Color(230, 184, 76);
     private static final Color PANEL_DARK = new Color(12, 12, 20, 210);
     private static final Color PANEL_EDGE = new Color(52, 46, 72);
+    private static final Color MC_PANEL = new Color(198, 198, 198, 236);
+    private static final Color MC_PANEL_DARK = new Color(82, 82, 82, 235);
+    private static final Color MC_SLOT = new Color(139, 139, 139, 235);
+    private static final Color MC_SLOT_DARK = new Color(55, 55, 55, 235);
+    private static final Color MC_HIGHLIGHT = new Color(255, 255, 255, 210);
+    private static final Color MC_SHADOW = new Color(45, 45, 45, 230);
+    private static final Color MC_TEXT = new Color(46, 46, 46);
+    private static final Color HOTBAR_SLOT = new Color(118, 118, 118, 82);
+    private static final Color HOTBAR_INNER = new Color(210, 210, 210, 34);
+    private static final Color HOTBAR_LIGHT = new Color(255, 255, 255, 122);
+    private static final Color HOTBAR_DARK = new Color(0, 0, 0, 168);
+    private static final Color XP_GREEN = new Color(116, 255, 70);
     private static final String COIN_ICON_PATH = "resources/icon/Coin.png";
 
     private static final Map<String, String[]> MOB_IMAGE_MAP = new HashMap<>();
@@ -170,9 +182,22 @@ public class BattleView extends JPanel {
             int cardH = 180;
             int cardX = (w - cardW) / 2;
             int cardY = h - cardH;
+            
             mobBattlePanel.setCardTopY(cardY);
             mobBattlePanel.setBounds(0, 0, w, h);
-            messageLabel.setBounds(0, Math.max(64, cardY - 28), w, 24);
+            
+            // 텍스트가 출력될 목표 Y좌표
+            int targetY = cardY - 28; 
+            
+            // 목표 Y좌표가 200보다 작아진다는 것은 화면이 찌그러지거나 전환되는 비정상적인 상황을 의미함
+            // 이럴 때는 텍스트 창이 상단(경험치 바 쪽)에 나타나지 못하게 아예 숨겨버림
+            if (targetY < 200) {
+                messageLabel.setVisible(false);
+            } else {
+                messageLabel.setVisible(true);
+                messageLabel.setBounds(0, targetY, w, 24); 
+            }
+            
             cardPanel.setBounds(cardX, cardY, cardW, cardH);
         }
     }
@@ -359,7 +384,7 @@ public class BattleView extends JPanel {
     enum CardAction { ATTACK, GUARD, AOE_SLASH, ACTIVE_SKILL }
 
     static class Card {
-        String name, type, description;
+        String name, type, description, tooltip;
         int cost;
         Color color;
         CardType cardType;
@@ -368,37 +393,46 @@ public class BattleView extends JPanel {
         Rectangle bounds;
 
         Card(String name, String type, int cost, Color color, String description, CardType cardType, CardAction action) {
+            this(name, type, cost, color, description, null, cardType, action);
+        }
+
+        Card(String name, String type, int cost, Color color, String description, String tooltip, CardType cardType, CardAction action) {
             this.name = name;
             this.type = type;
             this.cost = cost;
             this.color = color;
             this.description = description;
+            this.tooltip = tooltip;
             this.cardType = cardType;
             this.action = action;
         }
 
         Card(String name, String type, int cost, Color color, String description, CardType cardType, ActiveSkill activeSkill) {
-            this(name, type, cost, color, description, cardType, CardAction.ACTIVE_SKILL);
+            this(name, type, cost, color, description, null, cardType, activeSkill);
+        }
+
+        Card(String name, String type, int cost, Color color, String description, String tooltip, CardType cardType, ActiveSkill activeSkill) {
+            this(name, type, cost, color, description, tooltip, cardType, CardAction.ACTIVE_SKILL);
             this.activeSkill = activeSkill;
         }
     }
 
     static class CardStyle {
-        static final int WIDTH = 94;
-        static final int HEIGHT = 138;
-        static final int GAP = 12;
+        static final int WIDTH = 96;
+        static final int HEIGHT = 136;
+        static final int GAP = 10;
         static final int ARC = 0;
-        static final int HEADER_H = 20;
-        static final int ART_X = 8;
-        static final int ART_Y = 25;
-        static final int ART_H = 60;
-        static final int DESC_Y = 90;
-        static final int DESC_H = 43;
+        static final int HEADER_H = 22;
+        static final int ART_X = 13;
+        static final int ART_Y = 32;
+        static final int ART_H = 54;
+        static final int DESC_Y = 92;
+        static final int DESC_H = 37;
         static final Color SHADOW = new Color(0, 0, 0, 80);
-        static final Color ART_BG = new Color(18, 12, 10, 165);
-        static final Color DESC_BG = new Color(47, 49, 86);
-        static final Color BADGE = new Color(74, 180, 82);
-        static final Color BORDER = new Color(234, 196, 74);
+        static final Color ART_BG = new Color(112, 112, 112);
+        static final Color DESC_BG = new Color(170, 170, 170);
+        static final Color BADGE = new Color(76, 151, 48);
+        static final Color BORDER = new Color(50, 50, 50);
     }
 
     private class CardPanel extends JPanel {
@@ -456,9 +490,12 @@ public class BattleView extends JPanel {
 
         private void rebuildDeck() {
             deckCards.clear();
-            deckCards.add(new Card("Attack", "Basic", 0, new Color(0x8B2020), "Deal weapon damage.", CardType.ATTACK, CardAction.ATTACK));
-            deckCards.add(new Card("Guard", "Basic", 0, new Color(0x1A3A8A), "Block the next hit.", CardType.GUARD, CardAction.GUARD));
-            Card aoeSlash = new Card("AoeSlash", "Skill", 0, new Color(0x7A3A0A), "Default sword skill.", CardType.AOE, CardAction.AOE_SLASH);
+            deckCards.add(new Card("Attack", "Basic", 0, new Color(0x8B2020),
+                    "물리 피해 **" + steve.getTotalAttackPower() + "** 입힘", CardType.ATTACK, CardAction.ATTACK));
+            deckCards.add(new Card("Guard", "Basic", 0, new Color(0x1A3A8A),
+                    "다음 공격 **방어**", CardType.GUARD, CardAction.GUARD));
+            Card aoeSlash = new Card("AoeSlash", "Skill", 0, new Color(0x7A3A0A),
+                    "광역 피해 **"+ steve.getTotalAttackPower()+"** 입힘", CardType.AOE, CardAction.AOE_SLASH);
             if (isCardAvailable(aoeSlash)) deckCards.add(aoeSlash);
 
             ActiveSkill[] skills = steve.getActiveSkills();
@@ -467,10 +504,12 @@ public class BattleView extends JPanel {
                     if (skill == null) continue;
                     String simpleName = skill.getClass().getSimpleName();
                     if ("SnowBall".equals(simpleName)) {
-                        Card snowBall = new Card("SnowBall", "Skill", 0, new Color(0x1D5F8F), "Stun the mob.", CardType.ICE, skill);
+                        Card snowBall = new Card("SnowBall", "Skill", 0, new Color(0x1D5F8F),
+                                "적 대상 **스턴**", "스턴: 적이 한 턴 동안 공격하지 못함", CardType.ICE, skill);
                         if (isCardAvailable(snowBall)) deckCards.add(snowBall);
                     } else if ("FireCharge".equals(simpleName)) {
-                        Card fireCharge = new Card("FireCharge", "Skill", 0, new Color(0xA63D16), "Damage and burn.", CardType.FIRE, skill);
+                        Card fireCharge = new Card("FireCharge", "Skill", 0, new Color(0xA63D16),
+                                "적 대상 **화상**", "화상: 턴마다 추가 피해", CardType.FIRE, skill);
                         if (isCardAvailable(fireCharge)) deckCards.add(fireCharge);
                     }
                 }
@@ -523,13 +562,11 @@ public class BattleView extends JPanel {
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
             Graphics2D g2 = (Graphics2D) g.create();
-            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
 
-            int bandY = 76;
-            g2.setColor(new Color(9, 9, 15, 158));
-            g2.fillRect(0, bandY, getWidth(), getHeight() - bandY);
-            g2.setColor(new Color(255, 255, 255, 30));
-            g2.drawLine(0, bandY, getWidth(), bandY);
+            int bandY = 74;
+            g2.setColor(new Color(0, 0, 0, 38));
+            g2.fillRect(16, bandY + 4, getWidth() - 32, getHeight() - bandY - 8);
 
             drawCards(g2);
             if (hoveredCard != null) drawTooltip(g2, hoveredCard);
@@ -547,14 +584,30 @@ public class BattleView extends JPanel {
                 Card c = handCards.get(i);
                 int cx = startX + i * (cardW + gap);
                 boolean lifted = c == hoveredCard || c == selectedCard;
+                
                 int drawW = lifted ? cardW + 14 : cardW;
                 int drawH = lifted ? cardH + 20 : cardH;
                 int cy = lifted ? baseY - 16 : baseY;
                 int drawX = lifted ? cx - 7 : cx;
+                
                 c.bounds = new Rectangle(drawX, cy, drawW, drawH);
                 float discardProgress = disappearingCards.getOrDefault(c, 0f);
-                drawCard(g2, c, drawX, cy - (int) (28 * discardProgress), drawW, drawH,
-                        lifted, 1f - discardProgress);
+                
+                java.awt.geom.AffineTransform oldTransform = g2.getTransform();
+                if (lifted) {
+                    // 카드가 들렸을 때(호버) 그래픽 캔버스 자체를 확대시킵니다.
+                    double scaleX = (double) drawW / cardW;
+                    double scaleY = (double) drawH / cardH;
+                    
+                    g2.translate(drawX, cy - (int) (28 * discardProgress));
+                    g2.scale(scaleX, scaleY);
+                    
+                    // 확대된 캔버스이므로 그리기 시작점을 0,0으로 맞추고 원본 크기(cardW, cardH)로 그립니다.
+                    drawCard(g2, c, 0, 0, cardW, cardH, lifted, 1f - discardProgress);
+                } else {
+                    drawCard(g2, c, drawX, cy - (int) (28 * discardProgress), cardW, cardH, lifted, 1f - discardProgress);
+                }
+                g2.setTransform(oldTransform);
             }
         }
 
@@ -562,68 +615,70 @@ public class BattleView extends JPanel {
             Composite oldComposite = g2.getComposite();
             g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, Math.max(0f, Math.min(1f, alpha))));
 
-            g2.setColor(highlighted ? new Color(0, 0, 0, 130) : CardStyle.SHADOW);
-            g2.fillRoundRect(x + 4, y + 6, w, h, CardStyle.ARC, CardStyle.ARC);
+            drawHotbarSlot(g2, x, y, w, h);
 
-            g2.setColor(card.color.darker());
-            g2.fillRoundRect(x, y, w, h, CardStyle.ARC, CardStyle.ARC);
-
+            g2.setColor(new Color(40, 40, 40, 92));
+            g2.fillRect(x + 7, y + 7, w - 14, CardStyle.HEADER_H);
             g2.setColor(card.color);
-            g2.fillRect(x + 4, y + 4, w - 8, CardStyle.HEADER_H - 4);
+            g2.fillRect(x + 9, y + 9, w - 18, 5);
 
-            g2.setStroke(highlighted ? new BasicStroke(2.5f) : new BasicStroke(1.5f));
-            g2.setColor(highlighted ? new Color(255, 230, 120) : CardStyle.BORDER);
-            g2.drawRoundRect(x, y, w, h, CardStyle.ARC, CardStyle.ARC);
-
-            g2.setColor(CardStyle.ART_BG);
-            g2.fillRect(x + CardStyle.ART_X, y + CardStyle.ART_Y, w - CardStyle.ART_X * 2, CardStyle.ART_H);
+            int artX = x + CardStyle.ART_X;
+            int artY = y + CardStyle.ART_Y;
+            int artW = w - CardStyle.ART_X * 2;
             drawCardArt(g2, card, x + CardStyle.ART_X, y + CardStyle.ART_Y, w - CardStyle.ART_X * 2, CardStyle.ART_H);
 
-            g2.setColor(CardStyle.DESC_BG);
-            g2.fillRect(x + 4, y + CardStyle.DESC_Y, w - 8, Math.max(20, h - CardStyle.DESC_Y - 5));
+            g2.setColor(new Color(25, 25, 25, 72));
+            g2.fillRect(x + 7, y + CardStyle.DESC_Y, w - 14, Math.max(20, h - CardStyle.DESC_Y - 7));
+            g2.setColor(new Color(255, 255, 255, 55));
+            g2.drawRect(x + 7, y + CardStyle.DESC_Y, w - 15, Math.max(19, h - CardStyle.DESC_Y - 8));
 
-            g2.setColor(new Color(12, 15, 26));
-            g2.fillOval(x + 5, y + 4, 22, 22);
             int cooldown = getCardCooldown(card);
+            drawHotbarSlot(g2, x + 5, y + 5, 24, 24);
             g2.setColor(CardStyle.BADGE);
-            g2.fillOval(x + 7, y + 6, 18, 18);
+            g2.fillRect(x + 9, y + 9, 16, 16);
+            g2.setColor(new Color(40, 40, 40));
+            g2.drawRect(x + 9, y + 9, 15, 15);
             g2.setColor(Color.WHITE);
             g2.setFont(pixelFont(11));
             String badge = String.valueOf(cooldown);
             FontMetrics badgeMetrics = g2.getFontMetrics();
-            g2.drawString(badge, x + 16 - badgeMetrics.stringWidth(badge) / 2, y + 19);
+            g2.drawString(badge, x + 17 - badgeMetrics.stringWidth(badge) / 2, y + 22);
 
             g2.setFont(pixelFont(10));
             g2.setColor(Color.WHITE);
-            drawCentered(g2, card.name, x + 22, y + 17, w - 24);
+            drawShadowedCentered(g2, card.name, x + 28, y + 22, w - 32);
             g2.setFont(pixelFont(8));
-            g2.setColor(new Color(214, 190, 136));
-            drawCentered(g2, card.type, x, y + CardStyle.DESC_Y + 12, w);
-            g2.setColor(new Color(225, 222, 210));
-            drawWrappedCentered(g2, card.description, x + 8, y + CardStyle.DESC_Y + 25, w - 16, 10);
+            g2.setColor(new Color(224, 224, 210));
+            drawCentered(g2, card.type, x + 8, y + CardStyle.DESC_Y + 12, w - 16);
+            drawMarkedWrappedCentered(g2, card.description, x + 10, y + CardStyle.DESC_Y + 24, w - 20, 9, 2);
+            if (highlighted) {
+                g2.setStroke(new BasicStroke(3f));
+                g2.setColor(new Color(255, 255, 80));
+                g2.drawRect(x - 2, y - 2, w + 3, h + 3);
+            }
             g2.setComposite(oldComposite);
         }
 
         private void drawCardArt(Graphics2D g2, Card card, int x, int y, int w, int h) {
             int mx = x + w / 2, my = y + h / 2;
             if (card.cardType == CardType.ATTACK) {
-                drawIcon(g2, atkIcon, x + 8, y + 6, w - 16, h - 12);
+                drawIcon(g2, atkIcon, x + 4, y + 2, w - 8, h - 4);
                 return;
             }
             if (card.cardType == CardType.GUARD) {
-                drawIcon(g2, defIcon, x + 8, y + 6, w - 16, h - 12);
+                drawIcon(g2, defIcon, x + 4, y + 2, w - 8, h - 4);
                 return;
             }
             if (card.cardType == CardType.AOE) {
-                drawIcon(g2, aoeSlashIcon, x + 8, y + 6, w - 16, h - 12);
+                drawIcon(g2, aoeSlashIcon, x + 4, y + 2, w - 8, h - 4);
                 return;
             }
             if (card.cardType == CardType.ICE && snowBallIcon != null) {
-                drawIcon(g2, snowBallIcon, x + 8, y + 6, w - 16, h - 12);
+                drawIcon(g2, snowBallIcon, x + 4, y + 2, w - 8, h - 4);
                 return;
             }
             if (card.cardType == CardType.FIRE && fireChargeIcon != null) {
-                drawIcon(g2, fireChargeIcon, x + 8, y + 6, w - 16, h - 12);
+                drawIcon(g2, fireChargeIcon, x + 4, y + 2, w - 8, h - 4);
                 return;
             }
             if (card.cardType == CardType.ATTACK || card.cardType == CardType.AOE) {
@@ -662,26 +717,35 @@ public class BattleView extends JPanel {
         }
 
         private void drawTooltip(Graphics2D g2, Card card) {
-            int tw = 180, th = 64;
-            int tx = mouseX + 14;
-            int ty = mouseY - th - 10;
-            if (tx + tw > getWidth() - 8) tx = mouseX - tw - 10;
-            if (ty < 4) ty = mouseY + 20;
+            if (card.tooltip == null || card.tooltip.isEmpty() || card.bounds == null) return;
+            int tw = 220, th = 34;
+            int tx = card.bounds.x + card.bounds.width + 8;
+            int ty = card.bounds.y + 6;
+            // if (tx + tw > getWidth() - 8) tx = card.bounds.x - tw - 8;
+            if (ty < 4) ty = 4;
 
-            g2.setColor(new Color(15, 14, 24, 238));
-            g2.fillRoundRect(tx, ty, tw, th, 8, 8);
-            g2.setColor(GOLD);
-            g2.drawRoundRect(tx, ty, tw, th, 8, 8);
+            g2.setColor(new Color(12, 12, 12, 232));
+            g2.fillRect(tx, ty, tw, th);
+            g2.setColor(new Color(235, 235, 235, 160));
+            g2.drawRect(tx, ty, tw - 1, th - 1);
             g2.setFont(pixelFont(10));
-            g2.setColor(new Color(255, 226, 120));
-            g2.drawString(card.name, tx + 10, ty + 19);
-            g2.setFont(pixelFont(8));
             g2.setColor(Color.WHITE);
-            g2.drawString(card.description, tx + 10, ty + 40);
+            g2.drawString(trimToWidth(g2, card.tooltip, tw - 18), tx + 9, ty + 22);
         }
 
         private Font pixelFont(int size) {
             return new Font("Monospaced", Font.BOLD, size);
+        }
+    }
+
+    private class PlayerSidebarPanel extends JPanel {
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
+
+            g2.dispose();
         }
     }
 
@@ -690,8 +754,11 @@ public class BattleView extends JPanel {
 
         ItemPanel() {
             setOpaque(false);
-            setPreferredSize(new Dimension(96, 132));
-            setMaximumSize(new Dimension(96, 132));
+            setPreferredSize(new Dimension(58, 90));
+            setMaximumSize(new Dimension(58, 90));
+            setToolTipText("");
+            ToolTipManager.sharedInstance().registerComponent(this);
+            ToolTipManager.sharedInstance().setInitialDelay(120);
             addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
@@ -704,6 +771,42 @@ public class BattleView extends JPanel {
                     }
                 }
             });
+            addMouseMotionListener(new MouseMotionAdapter() {
+                @Override
+                public void mouseMoved(MouseEvent e) {
+                    // 마우스가 아이템 슬롯 영역을 벗어나서 툴팁 텍스트가 null이 되면 강제 초기화
+                    if (getToolTipText(e) == null) {
+                        ToolTipManager.sharedInstance().setEnabled(false);
+                        ToolTipManager.sharedInstance().setEnabled(true);
+                    }
+                }
+            });
+            
+        }
+
+        @Override
+        public String getToolTipText(MouseEvent event) {
+            for (ItemSlot slot : slots) {
+                if (slot.bounds.contains(event.getPoint())) {
+                    return slot.className + "  x" + getConsumableQuantity(slot.className);
+                }
+            }
+            return null;
+        }
+
+        @Override
+        public Point getToolTipLocation(MouseEvent event) {
+            for (ItemSlot slot : slots) {
+                if (slot.bounds.contains(event.getPoint())) {
+                    return new Point(54, slot.bounds.y);
+                }
+            }
+            return new Point(54, 0);
+        }
+
+        @Override
+        public JToolTip createToolTip() {
+            return createHotbarToolTip(this);
         }
 
         @Override
@@ -713,29 +816,26 @@ public class BattleView extends JPanel {
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
             slots.clear();
-            drawConsumableSlot(g2, "HealPotion", healPotionIcon, 8, 12);
-            drawConsumableSlot(g2, "AttackPotion", attackPotionIcon, 8, 66);
+            drawConsumableSlot(g2, "HealPotion", healPotionIcon, 7, 0);
+            drawConsumableSlot(g2, "AttackPotion", attackPotionIcon, 7, 44);
             g2.dispose();
         }
 
         private void drawConsumableSlot(Graphics2D g2, String className, ImageIcon icon, int x, int y) {
             int qty = getConsumableQuantity(className);
-            Rectangle bounds = new Rectangle(x, y, 48, 44);
+            Rectangle bounds = new Rectangle(x, y, 44, 44);
             slots.add(new ItemSlot(className, bounds));
 
-            g2.setColor(new Color(8, 8, 14, 185));
-            g2.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
-            g2.setColor(qty > 0 ? GOLD : new Color(88, 88, 96));
-            g2.drawRect(bounds.x, bounds.y, bounds.width, bounds.height);
+            drawHotbarSlot(g2, bounds.x, bounds.y, bounds.width, bounds.height);
 
-            drawIcon(g2, icon, bounds.x + 6, bounds.y + 5, 28, 28);
+            drawIcon(g2, icon, bounds.x + 5, bounds.y + 5, 34, 34);
             g2.setFont(new Font("Monospaced", Font.BOLD, 11));
             g2.setColor(Color.WHITE);
-            g2.drawString("x" + qty, bounds.x + 29, bounds.y + 35);
+            drawItemCount(g2, String.valueOf(qty), bounds.x + bounds.width - 5, bounds.y + bounds.height - 5);
 
             if (qty <= 0) {
                 g2.setColor(new Color(0, 0, 0, 120));
-                g2.fillRect(bounds.x + 1, bounds.y + 1, bounds.width - 1, bounds.height - 1);
+                g2.fillRect(bounds.x + 3, bounds.y + 3, bounds.width - 6, bounds.height - 6);
             }
         }
     }
@@ -743,8 +843,40 @@ public class BattleView extends JPanel {
     private class EquipmentPanel extends JPanel {
         EquipmentPanel() {
             setOpaque(false);
-            setPreferredSize(new Dimension(112, 122));
-            setMaximumSize(new Dimension(112, 122));
+            setPreferredSize(new Dimension(58, 58));
+            setMaximumSize(new Dimension(58, 58));
+            setToolTipText("");
+            ToolTipManager.sharedInstance().registerComponent(this);
+            ToolTipManager.sharedInstance().setInitialDelay(120);
+            
+            addMouseMotionListener(new MouseMotionAdapter() {
+                @Override
+                public void mouseMoved(MouseEvent e) {
+                    // 마우스가 아이템 슬롯 영역을 벗어나서 툴팁 텍스트가 null이 되면 강제 초기화
+                    if (getToolTipText(e) == null) {
+                        ToolTipManager.sharedInstance().setEnabled(false);
+                        ToolTipManager.sharedInstance().setEnabled(true);
+                    }
+                }
+            });
+        }
+
+        @Override
+        public String getToolTipText(MouseEvent event) {
+            String weaponName = steve.getWeapon() == null ? "None" : steve.getWeapon().getClass().getSimpleName();
+            Rectangle weaponBounds = new Rectangle(7, 2, 44, 44);
+            if (weaponBounds.contains(event.getPoint())) return weaponName + "  공격력 +" + getWeaponAttackBonus();
+            return null;
+        }
+
+        @Override
+        public Point getToolTipLocation(MouseEvent event) {
+            return new Point(54, 2);
+        }
+
+        @Override
+        public JToolTip createToolTip() {
+            return createHotbarToolTip(this);
         }
 
         @Override
@@ -753,41 +885,15 @@ public class BattleView extends JPanel {
             Graphics2D g2 = (Graphics2D) g.create();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-            int x = 8;
-            int y = 8;
-            int w = getWidth() - 14;
-            int h = getHeight() - 16;
-            g2.setColor(new Color(8, 8, 14, 185));
-            g2.fillRect(x, y, w, h);
-            g2.setColor(PANEL_EDGE);
-            g2.drawRect(x, y, w, h);
+            int x = 7;
+            int y = 2;
 
             String weaponName = steve.getWeapon() == null ? "None" : steve.getWeapon().getClass().getSimpleName();
             ImageIcon weaponIcon = BattleView.loadScaledIcon("resources/shop/" + weaponName + ".png", 34, 34);
-            drawIcon(g2, weaponIcon, x + 8, y + 12, 34, 34);
-
-            g2.setFont(new Font("Monospaced", Font.BOLD, 9));
-            g2.setColor(new Color(255, 226, 120));
-            drawTrimmed(g2, weaponName, x + 46, y + 26, w - 50);
-
-            g2.setFont(new Font("Monospaced", Font.BOLD, 11));
-            drawIcon(g2, atkIcon, x + 12, y + 62, 16, 16);
-            g2.setColor(Color.WHITE);
-            g2.drawString(String.valueOf(steve.getTotalAttackPower()), x + 34, y + 75);
-
-            drawIcon(g2, defIcon, x + 12, y + 86, 16, 16);
-            g2.drawString(String.valueOf(steve.getDefencePower()), x + 34, y + 99);
+            drawHotbarSlot(g2, x, y, 44, 44);
+            drawIcon(g2, weaponIcon, x + 5, y + 5, 34, 34);
 
             g2.dispose();
-        }
-
-        private void drawTrimmed(Graphics2D g2, String text, int x, int y, int maxW) {
-            FontMetrics fm = g2.getFontMetrics();
-            String trimmed = text;
-            while (trimmed.length() > 3 && fm.stringWidth(trimmed) > maxW) {
-                trimmed = trimmed.substring(0, trimmed.length() - 2) + ".";
-            }
-            g2.drawString(trimmed, x, y);
         }
     }
 
@@ -804,8 +910,45 @@ public class BattleView extends JPanel {
     private class HeartPanel extends JPanel {
         HeartPanel() {
             setOpaque(false);
-            setPreferredSize(new Dimension(86, 180));
-            setMaximumSize(new Dimension(86, 180));
+            setPreferredSize(new Dimension(58, 134));
+            setMaximumSize(new Dimension(58, 134));
+            setToolTipText("");
+            ToolTipManager.sharedInstance().registerComponent(this);
+            ToolTipManager.sharedInstance().setInitialDelay(120);
+            
+            addMouseMotionListener(new MouseMotionAdapter() {
+                @Override
+                public void mouseMoved(MouseEvent e) {
+                    // 마우스가 아이템 슬롯 영역을 벗어나서 툴팁 텍스트가 null이 되면 강제 초기화
+                    if (getToolTipText(e) == null) {
+                        ToolTipManager.sharedInstance().setEnabled(false);
+                        ToolTipManager.sharedInstance().setEnabled(true);
+                    }
+                }
+            });
+        }
+
+        @Override
+        public String getToolTipText(MouseEvent event) {
+            Point p = event.getPoint();
+            if (new Rectangle(7, 0, 44, 44).contains(p)) return "공격력 " + steve.getTotalAttackPower();
+            if (new Rectangle(7, 44, 44, 44).contains(p)) return "방어력 " + steve.getDefencePower();
+            if (new Rectangle(7, 88, 44, 44).contains(p)) return "최대체력 " + steve.getMaxHealth();
+            return null;
+        }
+
+        @Override
+        public Point getToolTipLocation(MouseEvent event) {
+            Point p = event.getPoint();
+            if (new Rectangle(7, 0, 44, 44).contains(p)) return new Point(54, 0);
+            if (new Rectangle(7, 44, 44, 44).contains(p)) return new Point(54, 44);
+            if (new Rectangle(7, 88, 44, 44).contains(p)) return new Point(54, 88);
+            return new Point(54, 12);
+        }
+
+        @Override
+        public JToolTip createToolTip() {
+            return createHotbarToolTip(this);
         }
 
         @Override
@@ -814,30 +957,17 @@ public class BattleView extends JPanel {
             Graphics2D g2 = (Graphics2D) g.create();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-            int x = 10;
-            int y = 18;
-            int w = getWidth() - 18;
-            g2.setColor(new Color(8, 8, 14, 185));
-            g2.fillRect(x, y, w, getHeight() - 34);
-            g2.setColor(PANEL_EDGE);
-            g2.drawRect(x, y, w, getHeight() - 34);
+            int x = 7;
+            int y = 0;
+            drawHotbarSlot(g2, x, y, 44, 44);
+            drawIcon(g2, atkIcon, x + 5, y + 5, 34, 34);
+            drawItemCount(g2, String.valueOf(steve.getTotalAttackPower()), x + 39, y + 39);
 
-            g2.setFont(new Font("Dialog", Font.BOLD, 12));
-            g2.setColor(Color.WHITE);
-            drawCentered(g2, steve.getName(), x, y + 22, w);
+            drawHotbarSlot(g2, x, y + 44, 44, 44);
+            drawIcon(g2, defIcon, x + 5, y + 49, 34, 34);
+            drawItemCount(g2, String.valueOf(steve.getDefencePower()), x + 39, y + 83);
 
-            int heartSize = 52;
-            int heartX = x + (w - heartSize) / 2;
-            int heartY = y + 58;
-            drawHeart(g2, heartX, heartY, heartSize, getHealthRatio());
-
-            g2.setFont(new Font("Monospaced", Font.BOLD, 9));
-            g2.setColor(Color.WHITE);
-            drawCentered(g2, String.valueOf(steve.getHealth()), heartX, heartY + 22, heartSize);
-            g2.setColor(new Color(230, 230, 230));
-            g2.drawLine(heartX + 15, heartY + 27, heartX + heartSize - 15, heartY + 27);
-            g2.setColor(Color.WHITE);
-            drawCentered(g2, String.valueOf(steve.getMaxHealth()), heartX, heartY + 39, heartSize);
+            drawHeartSlot(g2, x, y + 88);
             g2.dispose();
         }
 
@@ -846,26 +976,44 @@ public class BattleView extends JPanel {
             return Math.max(0, Math.min(1, (double) steve.getHealth() / steve.getMaxHealth()));
         }
 
-        private void drawHeart(Graphics2D g2, int x, int y, int size, double ratio) {
-            Path2D.Double heart = new Path2D.Double();
-            double s = size / 18.0;
-            heart.moveTo(x + 9 * s, y + 16 * s);
-            heart.curveTo(x + 2 * s, y + 10 * s, x, y + 6 * s, x + 3 * s, y + 2 * s);
-            heart.curveTo(x + 6 * s, y - 1 * s, x + 9 * s, y + 2 * s, x + 9 * s, y + 5 * s);
-            heart.curveTo(x + 9 * s, y + 2 * s, x + 12 * s, y - 1 * s, x + 15 * s, y + 2 * s);
-            heart.curveTo(x + 18 * s, y + 6 * s, x + 16 * s, y + 10 * s, x + 9 * s, y + 16 * s);
-            g2.setColor(new Color(72, 70, 82));
-            g2.fill(heart);
+        private void drawHeartSlot(Graphics2D g2, int x, int y) {
+            drawHotbarSlot(g2, x, y, 44, 44);
+            drawPixelHeart(g2, x + 10, y + 8, 24, getHealthRatio());
+            drawItemCount(g2, String.valueOf(steve.getHealth()), x + 39, y + 39);
+        }
 
-            Shape oldClip = g2.getClip();
-            g2.setClip(heart);
-            int fillHeight = (int) Math.round(size * ratio);
-            g2.setColor(new Color(230, 52, 68));
-            g2.fillRect(x, y + size - fillHeight, size, fillHeight);
-            g2.setClip(oldClip);
+        private void drawPixelHeart(Graphics2D g2, int x, int y, int size, double fillRatio) {
+            int unit = Math.max(1, size / 8);
+            int[][] pixels = {
+                    {1, 0}, {2, 0}, {5, 0}, {6, 0},
+                    {0, 1}, {1, 1}, {2, 1}, {3, 1}, {4, 1}, {5, 1}, {6, 1}, {7, 1},
+                    {0, 2}, {1, 2}, {2, 2}, {3, 2}, {4, 2}, {5, 2}, {6, 2}, {7, 2},
+                    {1, 3}, {2, 3}, {3, 3}, {4, 3}, {5, 3}, {6, 3},
+                    {2, 4}, {3, 4}, {4, 4}, {5, 4},
+                    {3, 5}, {4, 5}
+            };
 
-            g2.setColor(new Color(255, 178, 190));
-            g2.draw(heart);
+            g2.setColor(new Color(70, 70, 70));
+            for (int[] p : pixels) {
+                g2.fillRect(x + p[0] * unit, y + p[1] * unit, unit, unit);
+            }
+
+            int fillColumns = (int) Math.ceil(8 * fillRatio);
+            g2.setColor(new Color(224, 34, 34));
+            for (int[] p : pixels) {
+                if (p[0] < fillColumns) {
+                    g2.fillRect(x + p[0] * unit, y + p[1] * unit, unit, unit);
+                }
+            }
+
+            g2.setColor(new Color(122, 0, 0));
+            for (int[] p : pixels) {
+                g2.drawRect(x + p[0] * unit, y + p[1] * unit, unit, unit);
+            }
+            if (fillRatio > 0) {
+                g2.setColor(new Color(255, 136, 136));
+                g2.fillRect(x + 1 * unit, y + unit, unit, unit);
+            }
         }
     }
 
@@ -1047,11 +1195,87 @@ public class BattleView extends JPanel {
             g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, oldHint);
         }
     }
+
+    private static void drawMinecraftWindow(Graphics2D g2, int x, int y, int w, int h) {
+        g2.setColor(MC_PANEL);
+        g2.fillRect(x, y, w, h);
+        g2.setColor(MC_HIGHLIGHT);
+        g2.fillRect(x, y, w, 3);
+        g2.fillRect(x, y, 3, h);
+        g2.setColor(MC_SHADOW);
+        g2.fillRect(x, y + h - 4, w, 4);
+        g2.fillRect(x + w - 4, y, 4, h);
+        g2.setColor(new Color(18, 18, 18));
+        g2.drawRect(x, y, w - 1, h - 1);
+    }
+
+    private static void drawMinecraftSlot(Graphics2D g2, int x, int y, int w, int h) {
+        g2.setColor(MC_SLOT_DARK);
+        g2.fillRect(x, y, w, h);
+        g2.setColor(new Color(42, 42, 42));
+        g2.fillRect(x, y, w, 3);
+        g2.fillRect(x, y, 3, h);
+        g2.setColor(MC_HIGHLIGHT);
+        g2.fillRect(x + 3, y + h - 3, w - 3, 3);
+        g2.fillRect(x + w - 3, y + 3, 3, h - 3);
+        g2.setColor(MC_SLOT);
+        g2.fillRect(x + 4, y + 4, Math.max(0, w - 8), Math.max(0, h - 8));
+    }
+
+    private static void drawHotbarSlot(Graphics2D g2, int x, int y, int w, int h) {
+        g2.setColor(new Color(0, 0, 0, 72));
+        g2.fillRect(x + 2, y + 2, w, h);
+        g2.setColor(HOTBAR_SLOT);
+        g2.fillRect(x, y, w, h);
+        g2.setColor(HOTBAR_INNER);
+        g2.fillRect(x + 4, y + 4, Math.max(0, w - 8), Math.max(0, h - 8));
+        g2.setColor(new Color(0, 0, 0, 220));
+        g2.drawRect(x, y, w - 1, h - 1);
+        g2.setColor(new Color(255, 255, 255, 118));
+        g2.drawRect(x + 1, y + 1, Math.max(0, w - 3), Math.max(0, h - 3));
+        g2.setColor(new Color(0, 0, 0, 128));
+        g2.drawRect(x + 3, y + 3, Math.max(0, w - 7), Math.max(0, h - 7));
+        g2.setColor(new Color(255, 255, 255, 42));
+        g2.drawRect(x + 5, y + 5, Math.max(0, w - 11), Math.max(0, h - 11));
+    }
+
+    private static void drawItemCount(Graphics2D g2, String text, int rightX, int baseline) {
+        g2.setFont(new Font("Monospaced", Font.BOLD, 13));
+        FontMetrics fm = g2.getFontMetrics();
+        int x = rightX - fm.stringWidth(text);
+        g2.setColor(new Color(0, 0, 0, 210));
+        g2.drawString(text, x + 2, baseline + 2);
+        g2.setColor(new Color(45, 45, 45, 170));
+        g2.drawString(text, x + 1, baseline + 1);
+        g2.setColor(Color.WHITE);
+        g2.drawString(text, x, baseline);
+    }
+
+    private static JToolTip createHotbarToolTip(JComponent owner) {
+        JToolTip tip = new JToolTip() {
+            @Override
+            public Dimension getPreferredSize() {
+                Dimension d = super.getPreferredSize();
+                return new Dimension(Math.min(170, Math.max(96, d.width + 8)), 34);
+            }
+        };
+        tip.setComponent(owner);
+        tip.setFont(new Font("Monospaced", Font.BOLD, 11));
+        tip.setForeground(Color.WHITE);
+        tip.setBackground(new Color(18, 18, 18, 232));
+        tip.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(235, 235, 235, 150), 1),
+                BorderFactory.createEmptyBorder(5, 8, 5, 8)
+        ));
+        tip.setOpaque(true);
+        return tip;
+    }
+
     private JPanel buildTopHud() {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setOpaque(false);
         panel.setPreferredSize(new Dimension(0, 64));
-        panel.setBorder(BorderFactory.createEmptyBorder(4, 98, 4, 24));
+        panel.setBorder(BorderFactory.createEmptyBorder(4, 96, 4, 24));
 
         JPanel expWrap = new JPanel(new BorderLayout(0, 3));
         expWrap.setOpaque(false);
@@ -1063,18 +1287,32 @@ public class BattleView extends JPanel {
             @Override
             protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g.create();
-                g2.setColor(new Color(12, 12, 18));
-                g2.fillRect(0, 0, getWidth(), getHeight());
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
+                int w = getWidth();
+                int barH = 10;
+                int y = (getHeight() - barH) / 2;
+
+                g2.setColor(new Color(0, 0, 0, 190));
+                g2.fillRect(0, y, w, barH);
+                g2.setColor(new Color(31, 46, 29, 230));
+                g2.fillRect(2, y + 2, Math.max(0, w - 4), barH - 4);
+
                 double ratio = getMaximum() == 0 ? 0 : (double) getValue() / getMaximum();
-                g2.setColor(new Color(48, 108, 255));
-                g2.fillRect(2, 2, (int) ((getWidth() - 4) * ratio), getHeight() - 4);
-                g2.setColor(GOLD);
-                g2.setStroke(new BasicStroke(2f));
-                g2.drawRect(0, 0, getWidth() - 1, getHeight() - 1);
+                int fillW = (int) ((w - 4) * ratio);
+                g2.setColor(new Color(54, 146, 36));
+                g2.fillRect(2, y + 2, fillW, barH - 4);
+                g2.setColor(XP_GREEN);
+                g2.fillRect(2, y + 2, fillW, 2);
+                g2.setColor(new Color(5, 16, 5, 190));
+                for (int sx = 2; sx < w - 2; sx += 14) {
+                    g2.drawLine(sx, y + 2, sx, y + barH - 3);
+                }
+                g2.setColor(new Color(0, 0, 0, 230));
+                g2.drawRect(0, y, w - 1, barH - 1);
                 g2.dispose();
             }
         };
-        expBar.setPreferredSize(new Dimension(0, 14));
+        expBar.setPreferredSize(new Dimension(0, 12));
         expBar.setBorderPainted(false);
         expBar.setStringPainted(false);
         expWrap.add(expLabel, BorderLayout.NORTH);
@@ -1089,19 +1327,22 @@ public class BattleView extends JPanel {
     }
 
     private JPanel buildPlayerSidebar() {
-        JPanel panel = new JPanel();
+        JPanel panel = new PlayerSidebarPanel();
         panel.setOpaque(false);
-        panel.setPreferredSize(new Dimension(116, 0));
+        panel.setPreferredSize(new Dimension(74, 0));
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBorder(BorderFactory.createEmptyBorder(12, 8, 12, 8));
 
         itemPanel = new ItemPanel();
         equipmentPanel = new EquipmentPanel();
         heartPanel = new HeartPanel();
 
-        panel.add(itemPanel);
         panel.add(equipmentPanel);
-        panel.add(Box.createVerticalGlue());
+        panel.add(Box.createVerticalStrut(18));
         panel.add(heartPanel);
+        panel.add(Box.createVerticalStrut(18));
+        panel.add(itemPanel);
+        panel.add(Box.createVerticalGlue());
         return panel;
     }
 
@@ -1373,6 +1614,9 @@ public class BattleView extends JPanel {
         if (equipmentPanel != null) equipmentPanel.repaint();
         if (mobBattlePanel != null) mobBattlePanel.repaint();
         if (cardPanel != null) cardPanel.repaint();
+        
+        this.revalidate();
+        this.repaint();
     }
     
     private void showLevelUpDialog() {
@@ -1437,6 +1681,10 @@ public class BattleView extends JPanel {
 
     private int getMobDefense() {
         return readIntMethod(mob, 0, "getDefensePower", "getDefense", "getArmor");
+    }
+
+    private int getWeaponAttackBonus() {
+        return steve.getWeapon() == null ? 0 : steve.getWeapon().getAttackBonus();
     }
 
     private int getSteveMaxExp() {
@@ -1529,21 +1777,139 @@ public class BattleView extends JPanel {
         g2.drawString(s, x + (w - fm.stringWidth(s)) / 2, y);
     }
 
+    private static void drawCenteredTrimmed(Graphics2D g2, String s, int x, int y, int w) {
+        drawCentered(g2, trimToWidth(g2, s, w), x, y, w);
+    }
+
+    private static void drawRightAligned(Graphics2D g2, String s, int rightX, int y) {
+        FontMetrics fm = g2.getFontMetrics();
+        g2.drawString(s, rightX - fm.stringWidth(s), y);
+    }
+
+    private static void drawShadowedCentered(Graphics2D g2, String s, int x, int y, int w) {
+        FontMetrics fm = g2.getFontMetrics();
+        int tx = x + (w - fm.stringWidth(s)) / 2;
+        Color old = g2.getColor();
+        g2.setColor(new Color(48, 48, 48));
+        g2.drawString(s, tx + 1, y + 1);
+        g2.setColor(old);
+        g2.drawString(s, tx, y);
+    }
+
     private static void drawWrappedCentered(Graphics2D g2, String s, int x, int y, int w, int lineHeight) {
+        drawWrappedCentered(g2, s, x, y, w, lineHeight, Integer.MAX_VALUE);
+    }
+
+    private static void drawWrappedCentered(Graphics2D g2, String s, int x, int y, int w, int lineHeight, int maxLines) {
         FontMetrics fm = g2.getFontMetrics();
         String[] words = s.split(" ");
         String line = "";
         int lineY = y;
+        int linesDrawn = 0;
         for (String word : words) {
             String next = line.isEmpty() ? word : line + " " + word;
             if (fm.stringWidth(next) > w && !line.isEmpty()) {
-                drawCentered(g2, line, x, lineY, w);
+                linesDrawn++;
+                if (linesDrawn >= maxLines) {
+                    drawCentered(g2, trimToWidth(g2, line + "...", w), x, lineY, w);
+                    return;
+                }
+                drawCentered(g2, trimToWidth(g2, line, w), x, lineY, w);
                 line = word;
                 lineY += lineHeight;
             } else {
                 line = next;
             }
         }
-        if (!line.isEmpty()) drawCentered(g2, line, x, lineY, w);
+        if (!line.isEmpty()) drawCentered(g2, trimToWidth(g2, line, w), x, lineY, w);
+    }
+
+    private static void drawMarkedWrappedCentered(Graphics2D g2, String s, int x, int y, int w, int lineHeight, int maxLines) {
+        FontMetrics fm = g2.getFontMetrics();
+        String[] words = s.split(" ");
+        List<String> lines = new ArrayList<>();
+        String line = "";
+        for (String word : words) {
+            String next = line.isEmpty() ? word : line + " " + word;
+            if (fm.stringWidth(stripMarks(next)) > w && !line.isEmpty()) {
+                lines.add(line);
+                line = word;
+                if (lines.size() == maxLines - 1) break;
+            } else {
+                line = next;
+            }
+        }
+        if (!line.isEmpty() && lines.size() < maxLines) lines.add(line);
+
+        for (int i = 0; i < lines.size(); i++) {
+            drawMarkedCenteredLine(g2, lines.get(i), x, y + i * lineHeight, w);
+        }
+    }
+
+    private static void drawMarkedCenteredLine(Graphics2D g2, String s, int x, int y, int w) {
+        List<TextRun> runs = parseMarkedRuns(s);
+        FontMetrics fm = g2.getFontMetrics();
+        int totalW = 0;
+        for (TextRun run : runs) totalW += fm.stringWidth(run.text);
+        int tx = x + (w - totalW) / 2;
+        for (TextRun run : runs) {
+            g2.setColor(run.marked ? new Color(255, 223, 82) : new Color(255, 255, 245));
+            g2.drawString(run.text, tx, y);
+            tx += fm.stringWidth(run.text);
+        }
+    }
+
+    private static String stripMarks(String s) {
+        return s.replace("**", "");
+    }
+
+    private static List<TextRun> parseMarkedRuns(String s) {
+        List<TextRun> runs = new ArrayList<>();
+        boolean marked = false;
+        StringBuilder current = new StringBuilder();
+        for (int i = 0; i < s.length(); i++) {
+            if (i + 1 < s.length() && s.charAt(i) == '*' && s.charAt(i + 1) == '*') {
+                if (current.length() > 0) {
+                    runs.add(new TextRun(current.toString(), marked));
+                    current.setLength(0);
+                }
+                marked = !marked;
+                i++;
+            } else {
+                current.append(s.charAt(i));
+            }
+        }
+        if (current.length() > 0) runs.add(new TextRun(current.toString(), marked));
+        return runs;
+    }
+
+    private static class TextRun {
+        String text;
+        boolean marked;
+
+        TextRun(String text, boolean marked) {
+            this.text = text;
+            this.marked = marked;
+        }
+    }
+
+    private static String trimToWidth(Graphics2D g2, String text, int maxW) {
+        FontMetrics fm = g2.getFontMetrics();
+        if (fm.stringWidth(text) <= maxW) return text;
+        String suffix = ".";
+        String trimmed = text;
+        while (trimmed.length() > 1 && fm.stringWidth(trimmed + suffix) > maxW) {
+            trimmed = trimmed.substring(0, trimmed.length() - 1);
+        }
+        return trimmed + suffix;
+    }
+    
+    @Override
+    public void removeNotify() {
+        super.removeNotify();
+        // 현재 패널이 화면에서 제거될 때(웨이브 전환 등) 
+        // 툴팁 매니저를 강제로 껐다 켜서 허공에 남은 툴팁을 즉시 삭제합니다.
+        ToolTipManager.sharedInstance().setEnabled(false);
+        ToolTipManager.sharedInstance().setEnabled(true);
     }
 }
