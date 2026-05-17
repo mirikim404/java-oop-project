@@ -56,10 +56,29 @@ public class Steve extends Entity implements Skillable {
 	}
 
 	@Override
-	public void useSkill(Mob target, List<Mob> aliveMobs) {
+	public void useSkill(Steve steve, Mob mob) {
 		System.out.println(getName() + "이/가 스킬을 사용합니다.");
-		// TODO: 스킬 선택 로직 필요
+		System.out.println("\n --- 사용 가능한 스킬 목록 --- ");
+		ActiveSkill[] skills = steve.getActiveSkills();
+
+		for (int i = 0; i < skills.length; i++) {
+			if (skills[i] != null) {
+				//가지고 있는 스킬 꺼내서 보여줌 
+				System.out.printf("[%d] %s", i+1, skills[i].getClass().getSimpleName());
+			}
+		}
+			System.out.println("\n === 사용할 스킬을 선택하세요. ===");
+			Scanner input = new Scanner(System.in);
+			int ans = input.nextInt();
+			ActiveSkill chosenSkill = skills[ans-1];
+			if (chosenSkill.isReady() == true) {
+				chosenSkill.use(steve, mob);
+			}
+			else System.out.println("==아직 준비되지 않은 스킬입니다. ");
 	}
+
+
+	
 
 	public void gainExp() {
 		gainExp(0);
