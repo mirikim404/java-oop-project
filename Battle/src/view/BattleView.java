@@ -56,13 +56,13 @@ public class BattleView extends JPanel {
 
     private static final Map<String, String[]> MOB_IMAGE_MAP = new HashMap<>();
     static {
-        MOB_IMAGE_MAP.put("\uC880\uBE44", new String[]{"resources/monster/zombie.png", "resources/monster/zombie_v1.png"});
-        MOB_IMAGE_MAP.put("\uC2A4\uCF08\uB808\uD1A4", new String[]{"resources/monster/skeleton.png", "resources/monster/skeleton_v1.png"});
-        MOB_IMAGE_MAP.put("\uB9C8\uB140", new String[]{"resources/monster/witch.png", "resources/monster/witch.png"});
-        MOB_IMAGE_MAP.put("\uD06C\uB9AC\uD37C", new String[]{"resources/monster/creeper.png", "resources/monster/creeper_v1.png"});
-        MOB_IMAGE_MAP.put("\uC704\uB354\uC2A4\uCF08\uB808\uD1A4", new String[]{"resources/monster/witherskeleton.png", "resources/monster/witherskeleton_v1.png"});
-        MOB_IMAGE_MAP.put("\uD53C\uAE00\uB9B0", new String[]{"resources/monster/piglin.png", "resources/monster/piglin_v1.png"});
-        MOB_IMAGE_MAP.put("\uC5D4\uB354\uB4DC\uB798\uACE4", new String[]{"resources/monster/enderdragon_phase0.png", "resources/monster/enderdragon_phase0.png"});
+        MOB_IMAGE_MAP.put("\uC880\uBE44", new String[]{"resources/monster/zombie_clean.png", "resources/monster/zombie_v1_clean.png"});
+        MOB_IMAGE_MAP.put("\uC2A4\uCF08\uB808\uD1A4", new String[]{"resources/monster/skeleton_clean.png", "resources/monster/skeleton_v1_clean.png"});
+        MOB_IMAGE_MAP.put("\uB9C8\uB140", new String[]{"resources/monster/witch_clean.png", "resources/monster/witch_clean.png"});
+        MOB_IMAGE_MAP.put("\uD06C\uB9AC\uD37C", new String[]{"resources/monster/creeper_clean.png", "resources/monster/creeper_v1_clean.png"});
+        MOB_IMAGE_MAP.put("\uC704\uB354\uC2A4\uCF08\uB808\uD1A4", new String[]{"resources/monster/witherskeleton_clean.png", "resources/monster/witherskeleton_v1_clean.png"});
+        MOB_IMAGE_MAP.put("\uD53C\uAE00\uB9B0", new String[]{"resources/monster/piglin_clean.png", "resources/monster/piglin_v1_clean.png"});
+        MOB_IMAGE_MAP.put("\uC5D4\uB354\uB4DC\uB798\uACE4", new String[]{"resources/monster/enderdragon_phase0_clean.png", "resources/monster/enderdragon_phase0_clean.png"});
     }
 
     public BattleView(GameFrame gameFrame, Steve steve, WaveManager waveManager, Mob mob, int wave) {
@@ -76,7 +76,7 @@ public class BattleView extends JPanel {
         updateDragonPhaseImage(false);
         resetSkillCooldownsForWave();
 
-        BackgroundPanel root = new BackgroundPanel("resources/bg/battle_bg.png");
+        BackgroundPanel root = new BackgroundPanel(getBackgroundPath());
         root.setLayout(new BorderLayout());
         root.setBorder(BorderFactory.createEmptyBorder(8, 10, 10, 10));
 
@@ -95,6 +95,13 @@ public class BattleView extends JPanel {
         root.add(new BattleLayerPanel(), BorderLayout.CENTER);
 
         refreshUI();
+    }
+
+    private String getBackgroundPath() {
+        if (wave <= 2) return "resources/bg/battle_easy.png";
+        if (wave == 3) return "resources/bg/battle_normal.png";
+        if (wave <= 5) return "resources/bg/battle_hard.png";
+        return "resources/bg/battle_boss.png";
     }
 
     private static class BackgroundPanel extends JPanel {
@@ -917,7 +924,7 @@ public class BattleView extends JPanel {
         if (nextPhase == dragonPhase) return;
         dragonPhase = nextPhase;
 
-        mobNormalIcon = loadIcon("resources/monster/enderdragon_phase" + dragonPhase + ".png");
+        mobNormalIcon = loadIcon("resources/monster/enderdragon_phase" + dragonPhase + "_clean.png");
         mobHurtIcon = mobNormalIcon;
         if (mobBattlePanel != null) {
             mobBattlePanel.setImages(
