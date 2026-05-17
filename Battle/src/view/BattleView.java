@@ -31,6 +31,7 @@ public class BattleView extends JPanel {
     private JLabel messageLabel;
     private HeartPanel heartPanel;
     private ItemPanel itemPanel;
+    private EquipmentPanel equipmentPanel;
 
     private MobBattlePanel mobBattlePanel;
     private CardPanel cardPanel;
@@ -53,6 +54,7 @@ public class BattleView extends JPanel {
     private static final Color GOLD = new Color(230, 184, 76);
     private static final Color PANEL_DARK = new Color(12, 12, 20, 210);
     private static final Color PANEL_EDGE = new Color(52, 46, 72);
+    private static final String COIN_ICON_PATH = "resources/icon/Coin.png";
 
     private static final Map<String, String[]> MOB_IMAGE_MAP = new HashMap<>();
     static {
@@ -286,20 +288,24 @@ public class BattleView extends JPanel {
                 int pw = getWidth(), ph = getHeight();
                 int iw = img.getWidth(null), ih = img.getHeight(null);
                 if (iw > 0 && ih > 0) {
-                    int topLimit = 78;
-                    int bottomLimit = Math.max(topLimit + 90, cardTopY - 18);
-                    int availableH = bottomLimit - topLimit;
-                    double scale = (availableH * 0.92) / ih;
-                    if (iw * scale > pw * 0.46) scale = (pw * 0.46) / iw;
+                    int topLimit = 46;
+                    int groundY = Math.max(topLimit + 90, cardTopY - 16);
+                    int availableH = groundY - topLimit;
+                    boolean bossMob = "\uC5D4\uB354\uB4DC\uB798\uACE4".equals(mob.getName());
+                    double heightRatio = bossMob ? 1.08 : 0.92;
+                    double widthRatio = bossMob ? 0.58 : 0.44;
+                    double scale = (availableH * heightRatio) / ih;
+                    if (iw * scale > pw * widthRatio) scale = (pw * widthRatio) / iw;
                     int dw = (int) (iw * scale);
                     int dh = (int) (ih * scale);
-                    if (dh > availableH) {
-                        double fit = (double) availableH / dh;
+                    int maxH = Math.max(90, groundY - 18);
+                    if (dh > maxH) {
+                        double fit = (double) maxH / dh;
                         dw = (int) (dw * fit);
-                        dh = availableH;
+                        dh = maxH;
                     }
                     int dx = (pw - dw) / 2;
-                    int dy = topLimit + (availableH - dh) / 2;
+                    int dy = groundY - dh;
                     if (isDead) {
                         g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, Math.max(0f, deadAlpha)));
                         g2.drawImage(img, dx, dy + deadDropY, dw, dh, null);
@@ -734,6 +740,57 @@ public class BattleView extends JPanel {
         }
     }
 
+    private class EquipmentPanel extends JPanel {
+        EquipmentPanel() {
+            setOpaque(false);
+            setPreferredSize(new Dimension(112, 122));
+            setMaximumSize(new Dimension(112, 122));
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+            int x = 8;
+            int y = 8;
+            int w = getWidth() - 14;
+            int h = getHeight() - 16;
+            g2.setColor(new Color(8, 8, 14, 185));
+            g2.fillRect(x, y, w, h);
+            g2.setColor(PANEL_EDGE);
+            g2.drawRect(x, y, w, h);
+
+            String weaponName = steve.getWeapon() == null ? "None" : steve.getWeapon().getClass().getSimpleName();
+            ImageIcon weaponIcon = BattleView.loadScaledIcon("resources/shop/" + weaponName + ".png", 34, 34);
+            drawIcon(g2, weaponIcon, x + 8, y + 12, 34, 34);
+
+            g2.setFont(new Font("Monospaced", Font.BOLD, 9));
+            g2.setColor(new Color(255, 226, 120));
+            drawTrimmed(g2, weaponName, x + 46, y + 26, w - 50);
+
+            g2.setFont(new Font("Monospaced", Font.BOLD, 11));
+            drawIcon(g2, atkIcon, x + 12, y + 62, 16, 16);
+            g2.setColor(Color.WHITE);
+            g2.drawString(String.valueOf(steve.getTotalAttackPower()), x + 34, y + 75);
+
+            drawIcon(g2, defIcon, x + 12, y + 86, 16, 16);
+            g2.drawString(String.valueOf(steve.getDefencePower()), x + 34, y + 99);
+
+            g2.dispose();
+        }
+
+        private void drawTrimmed(Graphics2D g2, String text, int x, int y, int maxW) {
+            FontMetrics fm = g2.getFontMetrics();
+            String trimmed = text;
+            while (trimmed.length() > 3 && fm.stringWidth(trimmed) > maxW) {
+                trimmed = trimmed.substring(0, trimmed.length() - 2) + ".";
+            }
+            g2.drawString(trimmed, x, y);
+        }
+    }
+
     private static class ItemSlot {
         String className;
         Rectangle bounds;
@@ -813,11 +870,14 @@ public class BattleView extends JPanel {
     }
 
     private static class CoinLabel extends JLabel {
+        private final ImageIcon coinIcon;
+
         CoinLabel() {
             super("", SwingConstants.RIGHT);
             setFont(new Font("Monospaced", Font.BOLD, 12));
             setForeground(new Color(255, 224, 82));
             setOpaque(false);
+            coinIcon = loadScaledIcon(COIN_ICON_PATH, 14, 14);
         }
 
         @Override
@@ -827,29 +887,34 @@ public class BattleView extends JPanel {
 
             FontMetrics fm = g2.getFontMetrics(getFont());
             int textW = fm.stringWidth(getText());
-            int icon = 12;
+            int icon = 14;
             int gap = 5;
             int totalW = icon + gap + textW;
             int x = getWidth() - totalW;
             int y = (getHeight() - icon) / 2 + 1;
 
-            drawCoinIcon(g2, x, y, icon);
+            if (coinIcon != null) {
+                g2.drawImage(coinIcon.getImage(), x, y, icon, icon, this);
+            }
             g2.setFont(getFont());
             g2.setColor(getForeground());
             g2.drawString(getText(), x + icon + gap, (getHeight() + fm.getAscent() - fm.getDescent()) / 2);
             g2.dispose();
         }
+    }
 
-        private void drawCoinIcon(Graphics2D g2, int x, int y, int size) {
-            g2.setColor(new Color(86, 56, 18));
-            g2.fillRect(x + 2, y, size - 4, size);
-            g2.fillRect(x, y + 2, size, size - 4);
-            g2.setColor(new Color(246, 198, 58));
-            g2.fillRect(x + 3, y + 2, size - 6, size - 4);
-            g2.fillRect(x + 2, y + 4, size - 4, size - 8);
-            g2.setColor(new Color(255, 238, 121));
-            g2.fillRect(x + 4, y + 3, 3, 3);
+    static ImageIcon loadScaledIcon(String path, int width, int height) {
+        if (path.startsWith("resources/shop/") && path.endsWith(".png")) {
+            String cleanPath = path.substring(0, path.length() - 4) + "_clean.png";
+            if (new java.io.File(cleanPath).exists()) {
+                path = cleanPath;
+            }
         }
+        ImageIcon icon = new ImageIcon(path);
+        if (icon.getIconWidth() <= 0) return null;
+
+        Image scaled = icon.getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH);
+        return new ImageIcon(scaled);
     }
 
     private static class MinecraftButton extends JButton {
@@ -1026,13 +1091,15 @@ public class BattleView extends JPanel {
     private JPanel buildPlayerSidebar() {
         JPanel panel = new JPanel();
         panel.setOpaque(false);
-        panel.setPreferredSize(new Dimension(96, 0));
+        panel.setPreferredSize(new Dimension(116, 0));
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
         itemPanel = new ItemPanel();
+        equipmentPanel = new EquipmentPanel();
         heartPanel = new HeartPanel();
 
         panel.add(itemPanel);
+        panel.add(equipmentPanel);
         panel.add(Box.createVerticalGlue());
         panel.add(heartPanel);
         return panel;
@@ -1303,6 +1370,7 @@ public class BattleView extends JPanel {
 
         if (heartPanel != null) heartPanel.repaint();
         if (itemPanel != null) itemPanel.repaint();
+        if (equipmentPanel != null) equipmentPanel.repaint();
         if (mobBattlePanel != null) mobBattlePanel.repaint();
         if (cardPanel != null) cardPanel.repaint();
     }

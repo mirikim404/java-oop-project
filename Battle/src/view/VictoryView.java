@@ -42,7 +42,9 @@ public class VictoryView extends JPanel {
         hpLabel.setFont(new Font("Dialog", Font.BOLD, 16));
         hpLabel.setForeground(new Color(100, 220, 100));
 
-        JLabel coinLabel = new JLabel("💰 Coin : " + steve.getCoin(), SwingConstants.CENTER);
+        JLabel coinLabel = new JLabel("Coin : " + steve.getCoin(), SwingConstants.CENTER);
+        coinLabel.setIcon(BattleView.loadScaledIcon("resources/icon/Coin.png", 18, 18));
+        coinLabel.setIconTextGap(6);
         coinLabel.setFont(new Font("Dialog", Font.BOLD, 16));
         coinLabel.setForeground(new Color(255, 215, 0));
 

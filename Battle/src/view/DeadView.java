@@ -45,7 +45,9 @@ public class DeadView extends JPanel {
         deadLabel.setFont(new Font("Dialog", Font.BOLD, 28));
         deadLabel.setForeground(new Color(220, 50, 50));
 
-        coinLabel = new JLabel("💰 " + steve.getCoin(), SwingConstants.RIGHT);
+        coinLabel = new JLabel(String.valueOf(steve.getCoin()), SwingConstants.RIGHT);
+        coinLabel.setIcon(BattleView.loadScaledIcon("resources/icon/Coin.png", 22, 22));
+        coinLabel.setIconTextGap(6);
         coinLabel.setFont(new Font("Dialog", Font.BOLD, 20));
         coinLabel.setForeground(new Color(255, 215, 0));
 
@@ -147,7 +149,9 @@ public class DeadView extends JPanel {
         nameLabel.setFont(new Font("Dialog", Font.PLAIN, 15));
         nameLabel.setForeground(Color.WHITE);
 
-        JLabel priceLabel = new JLabel(price);
+        JLabel priceLabel = new JLabel(price.replace(" Coin", "").replace(" 肄붿씤", ""));
+        priceLabel.setIcon(BattleView.loadScaledIcon("resources/icon/Coin.png", 16, 16));
+        priceLabel.setIconTextGap(5);
         priceLabel.setFont(new Font("Dialog", Font.BOLD, 14));
         priceLabel.setForeground(new Color(255, 215, 0));
 
@@ -197,6 +201,6 @@ public class DeadView extends JPanel {
 
     // ─── 코인 갱신 ───
     private void refreshCoin() {
-        coinLabel.setText("💰 " + steve.getCoin());
+        coinLabel.setText(String.valueOf(steve.getCoin()));
     }
 }
