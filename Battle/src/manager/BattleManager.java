@@ -2,12 +2,14 @@ package manager;
 
 import entity.*;
 import entity.mob.*;
+import skill.active.*;
+
 import java.util.*;
 
 public class BattleManager {
 	// 화상 데미지 (추후 수정)
 	private static final int BURN_DAMAGE = 3;
-	
+
 	private GameState gameState;
 	private Steve steve;
 	private WaveManager waveManager;
@@ -97,46 +99,52 @@ public class BattleManager {
 		System.out.println("[1] 공격  [2] 막기  [3] 스킬");
 
 		int input = scanner.nextInt();
+		
 		switch (input) {
-			case 1 -> {
-				steve.attack(mob);
-				System.out.println(mob.getName() + " HP: " + mob.getHealth());
-			}
-			case 2 -> {
-			    steve.block();
-			    isBlocking = true; // 막기 플래그 on
-			    System.out.println("막기 자세를 취했다!");
-			}
-			case 3 -> steve.useSkill(mob, waveManager.getAliveMobs());
-			default -> {
-				System.out.println("잘못된 입력");
-				processPlayerTurn(mob);
-			}
+		case 1 -> {
+			steve.attack(mob);
+			System.out.println(mob.getName() + " HP: " + mob.getHealth());
+		}
+		case 2 -> {
+			steve.block();
+			isBlocking = true; // 막기 플래그 on
+			System.out.println("막기 자세를 취했다!");
+		}
+		case 3 -> { //스킬 사용
+			steve.useSkill(steve, mob);
+		}
+		default -> {
+			System.out.println("잘못된 입력");
+			processPlayerTurn(mob);
+		}
+
 		}
 	}
 
+
+
 	// 스턴/화상 체크 후 몹 행동 실행
 	public void processMobTurn(Mob mob) {
-	    System.out.println("\n[" + mob.getName() + "의 턴]");
+		System.out.println("\n[" + mob.getName() + "의 턴]");
 
-	    mob.processEffects();
+		mob.processEffects();
 
-	    if (mob.isStunned()) {
-	        System.out.println(mob.getName() + "은(는) 스턴 상태! 행동 불가");
-	        mob.setStunned(false);
-	        isBlocking = false;
-	        return;
-	    }
+		if (mob.isStunned()) {
+			System.out.println(mob.getName() + "은(는) 스턴 상태! 행동 불가");
+			mob.setStunned(false);
+			isBlocking = false;
+			return;
+		}
 
-	    // 막기 체크
-	    if (isBlocking) {
-	        System.out.println(mob.getName() + "이 공격했지만 막혔다!");
-	        isBlocking = false; // 막기 해제
-	        return;
-	    }
+		// 막기 체크
+		if (isBlocking) {
+			System.out.println(mob.getName() + "이 공격했지만 막혔다!");
+			isBlocking = false; // 막기 해제
+			return;
+		}
 
-	    mob.act(steve);
-	    System.out.println("스티브 HP: " + steve.getHealth());
+		mob.act(steve);
+		System.out.println("스티브 HP: " + steve.getHealth());
 	}
 
 	// EXP + 코인 지급, aliveMobs 제거, 레벨업 체크
@@ -159,22 +167,22 @@ public class BattleManager {
 
 		int input = scanner.nextInt();
 		switch (input) {
-			case 1 -> {
-				steve.setAttackPower(steve.getAttackPower() + 5);
-				System.out.println("공격력 증가!");
-			}
-			case 2 -> {
-				steve.setDefencePower(steve.getDefencePower() + 3);
-				System.out.println("방어력 증가!");
-			}
-			case 3 -> {
-				steve.setMaxHealth(steve.getMaxHealth() + 20);
-				System.out.println("최대 체력 증가!");
-			}
-			default -> {
-				System.out.println("잘못된 입력");
-				handleLevelUp();
-			}
+		case 1 -> {
+			steve.setAttackPower(steve.getAttackPower() + 5);
+			System.out.println("공격력 증가!");
+		}
+		case 2 -> {
+			steve.setDefencePower(steve.getDefencePower() + 3);
+			System.out.println("방어력 증가!");
+		}
+		case 3 -> {
+			steve.setMaxHealth(steve.getMaxHealth() + 20);
+			System.out.println("최대 체력 증가!");
+		}
+		default -> {
+			System.out.println("잘못된 입력");
+			handleLevelUp();
+		}
 		}
 	}
 
@@ -209,16 +217,16 @@ public class BattleManager {
 		System.out.println("\n=== 사망했습니다 ===");
 
 		// 새 Steve 객체로 교체
-	    steve = steve.resetAfterDeath();
+		steve = steve.resetAfterDeath();
 
 		// 상점 진입
-	    shopManager.setSteve(steve); 
+		shopManager.setSteve(steve); 
 		shopManager.enterShop(GameState.DEAD);
 		shopManager.showRestartMenu();
 
 		// 재시작 선택 시 웨이브 1부터 다시
 		this.waveManager = new WaveManager();
-		
+
 		setGameState(GameState.BATTLE);
 		startGame();
 	}
