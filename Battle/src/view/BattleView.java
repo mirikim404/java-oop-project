@@ -1625,60 +1625,271 @@ public class BattleView extends JPanel {
                 "Level Up",
                 Dialog.ModalityType.APPLICATION_MODAL
         );
+        dialog.setUndecorated(true);
 
-        JPanel root = new JPanel(new BorderLayout(12, 12));
-        root.setBorder(BorderFactory.createEmptyBorder(18, 18, 18, 18));
-        root.setBackground(new Color(24, 24, 32));
+        // ── 최상위 패널 : 마인크래프트 기본 회색 GUI 스타일 ──────────────────────────
+        JPanel root = new JPanel(new BorderLayout(0, 5)) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                int w = getWidth(), h = getHeight();
 
-        JLabel title = new JLabel("LEVEL UP!", SwingConstants.CENTER);
-        title.setFont(new Font("Dialog", Font.BOLD, 28));
-        title.setForeground(new Color(255, 215, 0));
-        root.add(title, BorderLayout.NORTH);
+                // 이미 구현되어 있는 마인크래프트 창 테두리 메서드 재사용
+                drawMinecraftWindow(g2, 0, 0, w, h);
+                g2.dispose();
+            }
+        };
+        root.setOpaque(false);
+        root.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
 
-        JPanel cards = new JPanel(new GridLayout(1, 3, 12, 0));
-        cards.setOpaque(false);
+        // ESC 로 닫기
+        root.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
+            .put(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_ESCAPE, 0), "close");
+        root.getActionMap().put("close", new javax.swing.AbstractAction() {
+            @Override public void actionPerformed(java.awt.event.ActionEvent e) { dialog.dispose(); }
+        });
 
-        cards.add(buildLevelUpCard("Max HP +10", "체력을 올리고 전부 회복합니다.", () -> {
-            steve.applyLevelUpChoice(1);
-            dialog.dispose();
-            refreshUI();
-            if (steve.hasPendingLevelUp()) showLevelUpDialog();
-        }));
+        // ── 타이틀 패널 ──────────────────────────────────────────────────────────
+        JPanel titlePanel = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
+                                    RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+                int cx = getWidth() / 2;
 
-        cards.add(buildLevelUpCard("Attack +2", "기본 공격력이 증가합니다.", () -> {
-            steve.applyLevelUpChoice(2);
-            dialog.dispose();
-            refreshUI();
-            if (steve.hasPendingLevelUp()) showLevelUpDialog();
-        }));
+                // LEVEL UP! 텍스트 (별 제거, 마인크래프트 텍스트 스타일)
+                String main = "LEVEL UP!";
+                g2.setFont(new Font("Dialog", Font.BOLD, 30));
+                FontMetrics fm = g2.getFontMetrics();
+                int tx = cx - fm.stringWidth(main) / 2;
+                // 약간의 그림자
+                g2.setColor(new Color(100, 100, 100));
+                g2.drawString(main, tx + 2, 34 + 2);
+                // 메인 글씨 색상 (어두운 회색)
+                g2.setColor(new Color(50, 50, 50));
+                g2.drawString(main, tx, 34);
 
-        cards.add(buildLevelUpCard("Defense +1", "받는 피해를 줄입니다.", () -> {
-            steve.applyLevelUpChoice(3);
-            dialog.dispose();
-            refreshUI();
-            if (steve.hasPendingLevelUp()) showLevelUpDialog();
-        }));
+                // 서브타이틀
+                String sub = "보상을 하나 선택하세요!";
+                g2.setFont(new Font("Dialog", Font.BOLD, 14));
+                fm = g2.getFontMetrics();
+                // 서브타이틀 그림자
+                g2.setColor(new Color(120, 120, 120));
+                g2.drawString(sub, cx - fm.stringWidth(sub) / 2 + 1, 58 + 1);
+                // 서브타이틀 메인
+                g2.setColor(new Color(50, 50, 50));
+                g2.drawString(sub, cx - fm.stringWidth(sub) / 2, 58);
 
-        root.add(cards, BorderLayout.CENTER);
+                g2.dispose();
+            }
+            @Override
+            public Dimension getPreferredSize() { return new Dimension(0, 65); }
+        };
+        titlePanel.setOpaque(false);
+
+        // ── 카드 3장 패널 ─────────────────────────────────────────────────────────────
+        JPanel cardsPanel = new JPanel(new GridLayout(1, 3, 15, 0)); // 카드 사이 간격 15
+        cardsPanel.setOpaque(false);
+        cardsPanel.setBorder(BorderFactory.createEmptyBorder(5, 10, 15, 10));
+
+        ImageIcon heartIc = loadScaledIcon("resources/icon/Heart.png", 54, 54);
+        ImageIcon atkIc   = loadScaledIcon("resources/icon/ATK.png",   54, 54);
+        ImageIcon defIc   = loadScaledIcon("resources/icon/DEF.png",   54, 54);
+
+        // 설명글에 \n을 넣어 이미지처럼 줄바꿈이 깔끔하게 떨어지게 맞춤
+        cardsPanel.add(buildLevelUpCard(
+            "HP 강화", "최대 체력 +10", "체력을 올리고\n전부 회복합니다.",
+            heartIc, new Color(180, 20, 20), new Color(180, 20, 20),
+            () -> {
+                steve.applyLevelUpChoice(1);
+                dialog.dispose();
+                refreshUI();
+                if (steve.hasPendingLevelUp()) showLevelUpDialog();
+            }
+        ));
+        cardsPanel.add(buildLevelUpCard(
+            "공격 강화", "공격력 +2", "기본 공격력이\n증가합니다.",
+            atkIc, new Color(139, 69, 19), new Color(50, 50, 50),
+            () -> {
+                steve.applyLevelUpChoice(2);
+                dialog.dispose();
+                refreshUI();
+                if (steve.hasPendingLevelUp()) showLevelUpDialog();
+            }
+        ));
+        cardsPanel.add(buildLevelUpCard(
+            "방어 강화", "방어력 +1", "받는 피해를\n줄입니다.",
+            defIc, new Color(30, 90, 180), new Color(30, 90, 180),
+            () -> {
+                steve.applyLevelUpChoice(3);
+                dialog.dispose();
+                refreshUI();
+                if (steve.hasPendingLevelUp()) showLevelUpDialog();
+            }
+        ));
+
+        root.add(titlePanel, BorderLayout.NORTH);
+        root.add(cardsPanel, BorderLayout.CENTER);
 
         dialog.setContentPane(root);
-        dialog.setSize(560, 260);
+        dialog.setSize(580, 360);
         dialog.setLocationRelativeTo(this);
         dialog.setResizable(false);
         dialog.setVisible(true);
     }
-    
-    private JButton buildLevelUpCard(String title, String desc, Runnable onClick) {
-        JButton button = new JButton("<html><center><b>" + title + "</b><br><br>" + desc + "</center></html>");
-        button.setFocusPainted(false);
-        button.setFont(new Font("Dialog", Font.BOLD, 13));
-        button.setForeground(Color.WHITE);
-        button.setBackground(new Color(58, 54, 78));
-        button.setBorder(BorderFactory.createLineBorder(GOLD, 2));
-        button.addActionListener(e -> onClick.run());
-        return button;
-    }
 
+    private JPanel buildLevelUpCard(String title, String statLine, String desc,
+            ImageIcon icon, Color headerColor, Color statColor, Runnable onClick) {
+        
+        JPanel card = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+
+                int w = getWidth(), h = getHeight();
+
+                // ── 카드 기본 바탕 ──
+                g2.setColor(new Color(198, 198, 198));
+                g2.fillRect(0, 0, w, h);
+
+                // ── 바깥쪽 테두리 (검정) ──
+                g2.setColor(Color.BLACK);
+                g2.drawRect(0, 0, w - 1, h - 1);
+                
+                // ── 안쪽 입체감 테두리 (좌/상은 하얀색, 우/하는 진회색) ──
+                g2.setColor(Color.WHITE);
+                g2.drawLine(1, 1, w - 2, 1);
+                g2.drawLine(1, 1, 1, h - 2);
+                g2.setColor(new Color(110, 110, 110));
+                g2.drawLine(1, h - 2, w - 2, h - 2);
+                g2.drawLine(w - 2, 1, w - 2, h - 2);
+
+                // ── 색상 헤더 박스 ──
+                int headerY = 8;
+                int headerH = 28;
+                g2.setColor(Color.BLACK); // 검은 테두리
+                g2.drawRect(6, headerY, w - 13, headerH);
+                g2.setColor(headerColor); // 내부 색상
+                g2.fillRect(7, headerY + 1, w - 14, headerH - 1);
+
+                // ── 제목 ──
+                g2.setFont(new Font("Dialog", Font.PLAIN, 13));
+                FontMetrics fm = g2.getFontMetrics();
+                int tx = (w - fm.stringWidth(title)) / 2;
+                g2.setColor(new Color(0, 0, 0, 180)); // 텍스트 그림자
+                g2.drawString(title, tx + 1, headerY + 19 + 1);
+                g2.setColor(Color.WHITE);
+                g2.drawString(title, tx, headerY + 19);
+
+                // ── 아이콘 ──
+                if (icon != null && icon.getIconWidth() > 0) {
+                    int iw = icon.getIconWidth(), ih = icon.getIconHeight();
+                    int dx = (w - iw) / 2;
+                    int dy = 55;
+                    // 아이콘 입체감을 위한 살짝의 그림자 효과
+                    g2.setColor(new Color(0, 0, 0, 50));
+                    g2.drawImage(icon.getImage(), dx + 2, dy + 2, iw, ih, null);
+                    g2.drawImage(icon.getImage(), dx, dy, iw, ih, null);
+                }
+
+                // ── 스탯 수치 텍스트 ──
+                int textY = 145;
+                g2.setFont(new Font("Dialog", Font.PLAIN, 13));
+                fm = g2.getFontMetrics();
+                tx = (w - fm.stringWidth(statLine)) / 2;
+                g2.setColor(statColor);
+                g2.drawString(statLine, tx, textY);
+
+                // ── 가로 구분선 ──
+                textY += 12;
+                g2.setColor(new Color(130, 130, 130)); // 상단 어두운 선
+                g2.drawLine(15, textY, w - 15, textY);
+                g2.setColor(new Color(230, 230, 230)); // 하단 밝은 선 (음각 효과)
+                g2.drawLine(15, textY + 1, w - 15, textY + 1);
+
+                // ── 하단 설명글 ──
+                textY += 22;
+                g2.setFont(new Font("Dialog", Font.PLAIN, 12));
+                fm = g2.getFontMetrics();
+                g2.setColor(new Color(50, 50, 50));
+                String[] lines = desc.split("\n"); // 명시적인 줄바꿈 적용
+                for (String line : lines) {
+                    g2.drawString(line, (w - fm.stringWidth(line)) / 2, textY);
+                    textY += 16;
+                }
+
+                g2.dispose();
+            }
+        };
+
+        card.setLayout(null); // 버튼 위치를 직접 제어하기 위해 레이아웃 해제
+        card.setOpaque(false);
+        card.setPreferredSize(new Dimension(160, 250));
+
+        // ── "선택" 버튼 구현 (이미지에 있는 밝은 회색 마인크래프트 기본 버튼) ──
+        JButton selectBtn = new JButton("선택") {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                
+                // Hover 및 Press 상태 색상 적용
+                Color base = getModel().isPressed() ? new Color(130, 130, 130) :
+                             getModel().isRollover() ? new Color(170, 170, 170) : new Color(150, 150, 150);
+                g2.setColor(base);
+                g2.fillRect(0, 0, getWidth(), getHeight());
+                
+                // 마인크래프트 버튼 테두리
+                g2.setColor(Color.BLACK);
+                g2.drawRect(0, 0, getWidth() - 1, getHeight() - 1);
+                g2.setColor(Color.WHITE);
+                g2.drawLine(1, 1, getWidth() - 2, 1);
+                g2.drawLine(1, 1, 1, getHeight() - 2);
+                g2.setColor(new Color(85, 85, 85));
+                g2.drawLine(1, getHeight() - 2, getWidth() - 2, getHeight() - 2);
+                g2.drawLine(getWidth() - 2, 1, getWidth() - 2, getHeight() - 2);
+
+                // 텍스트 중앙 정렬
+                FontMetrics fm = g2.getFontMetrics();
+                int tx = (getWidth() - fm.stringWidth(getText())) / 2;
+                int ty = (getHeight() + fm.getAscent() - fm.getDescent()) / 2;
+                
+                // 텍스트 그림자
+                g2.setColor(new Color(80, 80, 80));
+                g2.drawString(getText(), tx + 1, ty + 1);
+                // 메인 텍스트 (하얀색)
+                g2.setColor(Color.WHITE);
+                g2.drawString(getText(), tx, ty);
+                
+                g2.dispose();
+            }
+        };
+        
+        selectBtn.setFocusPainted(false);
+        selectBtn.setBorderPainted(false);
+        selectBtn.setContentAreaFilled(false);
+        selectBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        selectBtn.addActionListener(e -> onClick.run());
+
+        int btnW = 120;
+        int btnH = 28;
+        
+        // 카드 패널 크기 변경 시 버튼을 항상 하단 중앙에 배치
+        card.addComponentListener(new java.awt.event.ComponentAdapter() {
+            @Override
+            public void componentResized(java.awt.event.ComponentEvent e) {
+                int cw = card.getWidth();
+                int ch = card.getHeight();
+                selectBtn.setBounds((cw - btnW) / 2, ch - btnH - 12, btnW, btnH);
+            }
+        });
+
+        card.add(selectBtn);
+
+        return card;
+    }
     private int getMobDefense() {
         return readIntMethod(mob, 0, "getDefensePower", "getDefense", "getArmor");
     }
