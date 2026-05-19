@@ -28,9 +28,6 @@ public class AoeSlash extends WeaponSkill {
 		if (currentCooldown > 0) currentCooldown--;
 	}
 	
-	// TODO: Entity.health를 protected로 변경 필요 (담당 팀원에게 요청)
-	// TODO: Mob.isAlive() 메서드 추가 필요
-	// TODO: Steve.getAttackPower() 메서드 추가 필요
 	@Override
 	public void use(Steve steve, List<Mob> mobs, Sword sword) {
 		for (Mob mob : mobs) {
