@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
- 
+
 public class BattleView extends JPanel {
 
 	private GameFrame gameFrame;
@@ -92,33 +92,46 @@ public class BattleView extends JPanel {
 	// ─── 한국어 조사 헬퍼 ───────────────────────────────────────────────────────
 	/** 이름 마지막 글자 받침 여부에 따라 은/는 반환 */
 	private static String eunNun(String name) {
-		if (name == null || name.isEmpty()) return "은/는";
+		if (name == null || name.isEmpty())
+			return "은/는";
 		char last = name.charAt(name.length() - 1);
-		if (last < 0xAC00 || last > 0xD7A3) return "은/는";
+		if (last < 0xAC00 || last > 0xD7A3)
+			return "은/는";
 		return (last - 0xAC00) % 28 == 0 ? "는" : "은";
 	}
+
 	/** 이/가 */
 	private static String iGa(String name) {
-		if (name == null || name.isEmpty()) return "이/가";
+		if (name == null || name.isEmpty())
+			return "이/가";
 		char last = name.charAt(name.length() - 1);
-		if (last < 0xAC00 || last > 0xD7A3) return "이/가";
+		if (last < 0xAC00 || last > 0xD7A3)
+			return "이/가";
 		return (last - 0xAC00) % 28 == 0 ? "가" : "이";
 	}
+
 	/** 을/를 */
 	private static String eulReul(String name) {
-		if (name == null || name.isEmpty()) return "을/를";
+		if (name == null || name.isEmpty())
+			return "을/를";
 		char last = name.charAt(name.length() - 1);
-		if (last < 0xAC00 || last > 0xD7A3) return "을/를";
+		if (last < 0xAC00 || last > 0xD7A3)
+			return "을/를";
 		return (last - 0xAC00) % 28 == 0 ? "를" : "을";
 	}
+
 	/** 으로/로 */
 	private static String euroRo(String name) {
-		if (name == null || name.isEmpty()) return "으로/로";
+		if (name == null || name.isEmpty())
+			return "으로/로";
 		char last = name.charAt(name.length() - 1);
-		if (last < 0xAC00 || last > 0xD7A3) return "으로/로";
+		if (last < 0xAC00 || last > 0xD7A3)
+			return "으로/로";
 		int jongseong = (last - 0xAC00) % 28;
-		if (jongseong == 0) return "로";
-		if (jongseong == 8) return "로"; // ㄹ 받침
+		if (jongseong == 0)
+			return "로";
+		if (jongseong == 8)
+			return "로"; // ㄹ 받침
 		return "으로";
 	}
 	// ────────────────────────────────────────────────────────────────────────────
@@ -157,7 +170,8 @@ public class BattleView extends JPanel {
 		if (waveMobs.size() > 1) {
 			StringBuilder sb = new StringBuilder("Wave " + wave + " - 등장: ");
 			for (int i = 0; i < waveMobs.size(); i++) {
-				if (i > 0) sb.append(", ");
+				if (i > 0)
+					sb.append(", ");
 				sb.append(waveMobs.get(i).getName());
 			}
 			showMessage(sb.toString());
@@ -176,8 +190,10 @@ public class BattleView extends JPanel {
 			if (paths != null) {
 				ImageIcon ni = loadIcon(paths[0]);
 				ImageIcon hi = loadIcon(paths[1]);
-				if (ni != null) normal = ni.getImage();
-				if (hi != null) hurt = hi.getImage();
+				if (ni != null)
+					normal = ni.getImage();
+				if (hi != null)
+					hurt = hi.getImage();
 			}
 			images.add(new Image[] { normal, hurt });
 		}
@@ -185,9 +201,12 @@ public class BattleView extends JPanel {
 	}
 
 	private String getBackgroundPath() {
-		if (wave <= 2) return "resources/bg/battle_easy.png";
-		if (wave == 3) return "resources/bg/battle_normal.png";
-		if (wave <= 5) return "resources/bg/battle_hard.png";
+		if (wave <= 2)
+			return "resources/bg/battle_easy.png";
+		if (wave == 3)
+			return "resources/bg/battle_normal.png";
+		if (wave <= 5)
+			return "resources/bg/battle_hard.png";
 		return "resources/bg/battle_boss.png";
 	}
 
@@ -198,8 +217,10 @@ public class BattleView extends JPanel {
 			setOpaque(true);
 			try {
 				ImageIcon ic = new ImageIcon(imagePath);
-				if (ic.getIconWidth() > 0) bgImage = ic.getImage();
-			} catch (Exception ignored) {}
+				if (ic.getIconWidth() > 0)
+					bgImage = ic.getImage();
+			} catch (Exception ignored) {
+			}
 		}
 
 		@Override
@@ -209,7 +230,8 @@ public class BattleView extends JPanel {
 			if (bgImage != null) {
 				g2.drawImage(bgImage, 0, 0, getWidth(), getHeight(), this);
 			} else {
-				GradientPaint gp = new GradientPaint(0, 0, new Color(31, 27, 44), 0, getHeight(), new Color(13, 13, 20));
+				GradientPaint gp = new GradientPaint(0, 0, new Color(31, 27, 44), 0, getHeight(),
+						new Color(13, 13, 20));
 				g2.setPaint(gp);
 				g2.fillRect(0, 0, getWidth(), getHeight());
 			}
@@ -294,7 +316,8 @@ public class BattleView extends JPanel {
 				}
 				dmgNumbers.removeIf(d -> d.alpha <= 0f);
 				repaint();
-				if (dmgNumbers.isEmpty()) animTimer.stop();
+				if (dmgNumbers.isEmpty())
+					animTimer.stop();
 			});
 		}
 
@@ -327,14 +350,16 @@ public class BattleView extends JPanel {
 			float cy = getHeight() * 0.40f + (float) (Math.random() * 30 - 15);
 			Color c = isPlayerAttack ? new Color(255, 80, 80) : new Color(255, 220, 60);
 			dmgNumbers.add(new DamageNumber("-" + dmg, c, cx, cy));
-			if (!animTimer.isRunning()) animTimer.start();
+			if (!animTimer.isRunning())
+				animTimer.start();
 		}
 
 		void showDamage(int dmg, Color color) {
 			float cx = getWidth() * 0.5f + (float) (Math.random() * 60 - 30);
 			float cy = getHeight() * 0.40f + (float) (Math.random() * 30 - 15);
 			dmgNumbers.add(new DamageNumber("-" + dmg, color, cx, cy));
-			if (!animTimer.isRunning()) animTimer.start();
+			if (!animTimer.isRunning())
+				animTimer.start();
 		}
 
 		void playHitFlash() {
@@ -374,7 +399,8 @@ public class BattleView extends JPanel {
 				if (deadAlpha <= 0f) {
 					deadAlpha = 0f;
 					deathTimer.stop();
-					if (onComplete != null) SwingUtilities.invokeLater(onComplete);
+					if (onComplete != null)
+						SwingUtilities.invokeLater(onComplete);
 				}
 			});
 			deathTimer.start();
@@ -410,13 +436,16 @@ public class BattleView extends JPanel {
 				for (int i = 0; i < count; i++) {
 					Image[] pair = mobImages.get(i);
 					Image img = (showHurt && i == currentMobIndex && pair[1] != null) ? pair[1] : pair[0];
-					if (img == null) continue;
+					if (img == null)
+						continue;
 
 					int iw = img.getWidth(null), ih = img.getHeight(null);
-					if (iw <= 0 || ih <= 0) continue;
+					if (iw <= 0 || ih <= 0)
+						continue;
 
 					double scale = (availableH * heightRatio) / ih;
-					if (iw * scale > pw * widthRatio) scale = (pw * widthRatio) / iw;
+					if (iw * scale > pw * widthRatio)
+						scale = (pw * widthRatio) / iw;
 					int dw = (int) (iw * scale);
 					int dh = (int) (ih * scale);
 					int maxH = Math.max(90, groundY - 18);
@@ -429,13 +458,13 @@ public class BattleView extends JPanel {
 					int slotW = pw / count;
 					int dx = slotW * i + (slotW - dw) / 2;
 					int dy = groundY - dh;
-					
+
 					if (count > 1) {
-						int offset = 70; // 좁히고 싶은 픽셀 값 
+						int offset = 70; // 좁히고 싶은 픽셀 값
 						if (i == 0) {
-							dx += offset; 
+							dx += offset;
 						} else if (i == 1) {
-							dx -= offset; 
+							dx -= offset;
 						}
 					}
 
@@ -443,7 +472,7 @@ public class BattleView extends JPanel {
 					boolean dyingNow = isDead && i == currentMobIndex;
 
 					if (alreadyDead) {
-						continue; 
+						continue;
 					} else if (dyingNow) {
 						g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, Math.max(0f, deadAlpha)));
 						dy += deadDropY;
@@ -464,21 +493,21 @@ public class BattleView extends JPanel {
 
 				// 현재 타겟 몹 중앙에 스코프 이미지 포커스 표시
 				if (targetDx >= 0 && scopeImage != null) {
-				    int scopeW = 100;
-				    int scopeH = 100;
+					int scopeW = 100;
+					int scopeH = 100;
 
-				    // 몹별 offset 예외처리
-				    int scopeOffsetX = 0;
-				    if ("스켈레톤".equals(mob.getName())) {
-				        scopeOffsetX = -15;
-				    } else if ("위더스켈레톤".equals(mob.getName())) {
-				        scopeOffsetX = +15;
-				    }
+					// 몹별 offset 예외처리
+					int scopeOffsetX = 0;
+					if ("스켈레톤".equals(mob.getName())) {
+						scopeOffsetX = -15;
+					} else if ("위더스켈레톤".equals(mob.getName())) {
+						scopeOffsetX = +15;
+					}
 
-				    int scopeX = targetDx + (targetDw - scopeW) / 2 + scopeOffsetX;
-				    int scopeY = targetDy + (targetDh - scopeH) / 2;
+					int scopeX = targetDx + (targetDw - scopeW) / 2 + scopeOffsetX;
+					int scopeY = targetDy + (targetDh - scopeH) / 2;
 
-				    g2.drawImage(scopeImage, scopeX, scopeY, scopeW, scopeH, null);
+					g2.drawImage(scopeImage, scopeX, scopeY, scopeW, scopeH, null);
 				}
 			}
 
@@ -518,8 +547,13 @@ public class BattleView extends JPanel {
 		}
 	}
 
-	enum CardType { ATTACK, GUARD, AOE, ICE, FIRE }
-	enum CardAction { ATTACK, GUARD, AOE_SLASH, ACTIVE_SKILL }
+	enum CardType {
+		ATTACK, GUARD, AOE, ICE, FIRE
+	}
+
+	enum CardAction {
+		ATTACK, GUARD, AOE_SLASH, ACTIVE_SKILL
+	}
 
 	static class Card {
 		String name, type, description, tooltip;
@@ -530,11 +564,13 @@ public class BattleView extends JPanel {
 		ActiveSkill activeSkill;
 		Rectangle bounds;
 
-		Card(String name, String type, int cost, Color color, String description, CardType cardType, CardAction action) {
+		Card(String name, String type, int cost, Color color, String description, CardType cardType,
+				CardAction action) {
 			this(name, type, cost, color, description, null, cardType, action);
 		}
 
-		Card(String name, String type, int cost, Color color, String description, String tooltip, CardType cardType, CardAction action) {
+		Card(String name, String type, int cost, Color color, String description, String tooltip, CardType cardType,
+				CardAction action) {
 			this.name = name;
 			this.type = type;
 			this.cost = cost;
@@ -545,11 +581,13 @@ public class BattleView extends JPanel {
 			this.action = action;
 		}
 
-		Card(String name, String type, int cost, Color color, String description, CardType cardType, ActiveSkill activeSkill) {
+		Card(String name, String type, int cost, Color color, String description, CardType cardType,
+				ActiveSkill activeSkill) {
 			this(name, type, cost, color, description, null, cardType, activeSkill);
 		}
 
-		Card(String name, String type, int cost, Color color, String description, String tooltip, CardType cardType, ActiveSkill activeSkill) {
+		Card(String name, String type, int cost, Color color, String description, String tooltip, CardType cardType,
+				ActiveSkill activeSkill) {
 			this(name, type, cost, color, description, tooltip, cardType, CardAction.ACTIVE_SKILL);
 			this.activeSkill = activeSkill;
 		}
@@ -581,12 +619,11 @@ public class BattleView extends JPanel {
 		private Card selectedCard = null;
 		private int mouseX, mouseY;
 		private javax.swing.Timer discardTimer;
-		
-		
+
 		private ImageIcon cardFrame;
 
 		CardPanel() {
-			
+
 			cardFrame = loadIcon("resources/ui/card_frame_dec.png");
 
 			setOpaque(false);
@@ -608,14 +645,16 @@ public class BattleView extends JPanel {
 							break;
 						}
 					}
-					if (hoveredCard != prev) repaint();
+					if (hoveredCard != prev)
+						repaint();
 				}
 			});
 
 			addMouseListener(new MouseAdapter() {
 				@Override
 				public void mouseClicked(MouseEvent e) {
-					if (inputLocked) return;
+					if (inputLocked)
+						return;
 					for (Card c : new ArrayList<>(handCards)) {
 						if (!disappearingCards.containsKey(c) && c.bounds != null && c.bounds.contains(e.getPoint())) {
 							selectedCard = c;
@@ -636,25 +675,29 @@ public class BattleView extends JPanel {
 			deckCards.clear();
 			deckCards.add(new Card("Attack", "Basic", 0, new Color(0x8B2020),
 					"물리 피해 **" + steve.getTotalAttackPower() + "** 입힘", CardType.ATTACK, CardAction.ATTACK));
-			deckCards.add(new Card("Guard", "Basic", 0, new Color(0x1A3A8A),
-					"다음 공격 **방어**", CardType.GUARD, CardAction.GUARD));
+			deckCards.add(new Card("Guard", "Basic", 0, new Color(0x1A3A8A), "다음 공격 **방어**", CardType.GUARD,
+					CardAction.GUARD));
 			Card aoeSlash = new Card("AoeSlash", "Skill", 0, new Color(0x7A3A0A),
 					"광역 피해 **" + steve.getTotalAttackPower() + "** 입힘", CardType.AOE, CardAction.AOE_SLASH);
-			if (isCardAvailable(aoeSlash)) deckCards.add(aoeSlash);
+			if (isCardAvailable(aoeSlash))
+				deckCards.add(aoeSlash);
 
 			ActiveSkill[] skills = steve.getActiveSkills();
 			if (skills != null) {
 				for (ActiveSkill skill : skills) {
-					if (skill == null) continue;
+					if (skill == null)
+						continue;
 					String simpleName = skill.getClass().getSimpleName();
 					if ("SnowBall".equals(simpleName)) {
-						Card snowBall = new Card("SnowBall", "Skill", 0, new Color(0x1D5F8F),
-								"적 대상 **스턴**", "스턴: 적이 한 턴 동안 공격하지 못함", CardType.ICE, skill);
-						if (isCardAvailable(snowBall)) deckCards.add(snowBall);
+						Card snowBall = new Card("SnowBall", "Skill", 0, new Color(0x1D5F8F), "적 대상 **스턴**",
+								"스턴: 적이 한 턴 동안 공격하지 못함", CardType.ICE, skill);
+						if (isCardAvailable(snowBall))
+							deckCards.add(snowBall);
 					} else if ("FireCharge".equals(simpleName)) {
-						Card fireCharge = new Card("FireCharge", "Skill", 0, new Color(0xA63D16),
-								"적 대상 **화상**", "화상: 턴마다 추가 피해", CardType.FIRE, skill);
-						if (isCardAvailable(fireCharge)) deckCards.add(fireCharge);
+						Card fireCharge = new Card("FireCharge", "Skill", 0, new Color(0xA63D16), "적 대상 **화상**",
+								"화상: 턴마다 추가 피해", CardType.FIRE, skill);
+						if (isCardAvailable(fireCharge))
+							deckCards.add(fireCharge);
 					}
 				}
 			}
@@ -673,7 +716,8 @@ public class BattleView extends JPanel {
 			disappearingCards.put(card, 0f);
 			selectedCard = null;
 			hoveredCard = null;
-			if (!discardTimer.isRunning()) discardTimer.start();
+			if (!discardTimer.isRunning())
+				discardTimer.start();
 			repaint();
 		}
 
@@ -713,7 +757,8 @@ public class BattleView extends JPanel {
 			g2.fillRect(16, bandY + 4, getWidth() - 32, getHeight() - bandY - 8);
 
 			drawCards(g2);
-			if (hoveredCard != null) drawTooltip(g2, hoveredCard);
+			if (hoveredCard != null)
+				drawTooltip(g2, hoveredCard);
 			g2.dispose();
 		}
 
@@ -745,95 +790,96 @@ public class BattleView extends JPanel {
 					g2.scale(scaleX, scaleY);
 					drawCard(g2, c, 0, 0, cardW, cardH, lifted, 1f - discardProgress);
 				} else {
-					drawCard(g2, c, drawX, cy - (int) (28 * discardProgress), cardW, cardH, lifted, 1f - discardProgress);
+					drawCard(g2, c, drawX, cy - (int) (28 * discardProgress), cardW, cardH, lifted,
+							1f - discardProgress);
 				}
 				g2.setTransform(oldTransform);
 			}
 		}
 
 		private void drawCard(Graphics2D g2, Card card, int x, int y, int w, int h, boolean highlighted, float alpha) {
-		    Composite oldComposite = g2.getComposite();
-		    g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, Math.max(0f, Math.min(1f, alpha))));
-		 
-		    // ── 1. 카드 프레임 이미지 ──────────────────────────────
-		    ImageIcon frameIcon = getCardFrameIcon(card);
-		    if (frameIcon != null && frameIcon.getIconWidth() > 0) {
-		        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-		                RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
-		        g2.drawImage(frameIcon.getImage(), x, y, w, h, null);
-		    } else {
-		        // 이미지 없을 때 fallback — 기존 슬롯 그리기
-		        drawHotbarSlot(g2, x, y, w, h);
-		    }
-		 
-		    // ── 2.최상단 헤더 ─────────────────────
-		    // 이미지 기준 비율: x=1%, y=1%, w=22%, h=19%
-		    int bx = x + (int)(w * 0.01);
-		    int by = y + (int)(h * 0.01);
-		    int bw = (int)(w * 0.22);
-		    int bh = (int)(h * 0.19);
-		 
-		    int cooldown = getCardCooldown(card);
-		    g2.setFont(pixelFont(11));
-		    String badge = String.valueOf(cooldown);
-		    FontMetrics badgeMetrics = g2.getFontMetrics();
-		    // 좌상단 뱃지
-		    int badgeCenterX = bx + bw / 2 - badgeMetrics.stringWidth(badge) / 2 + 5;
-		    int badgeCenterY = by + bh / 2 + badgeMetrics.getAscent() / 2;
-		    g2.setColor(new Color(0, 0, 0, 160));
-		    g2.drawString(badge, badgeCenterX + 1, badgeCenterY + 1);
-		    g2.setColor(Color.WHITE);
-		    g2.drawString(badge, badgeCenterX, badgeCenterY);
-		    // 우상단 카드 이름
-		    int badgeRightX = bx + bw;           
-		    int cardRightX  = x + w;            
-		    int remainWidth = cardRightX - badgeRightX;  
+			Composite oldComposite = g2.getComposite();
+			g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, Math.max(0f, Math.min(1f, alpha))));
 
-		    g2.setFont(pixelFont(9));
-		    FontMetrics nameFm = g2.getFontMetrics();
-		    int nameX = badgeRightX + (remainWidth - nameFm.stringWidth(card.name)) / 2;  // 중앙정렬
-		    int nameY = by + bh / 2 + nameFm.getAscent() / 2 +2;  // 뱃지 수직 중앙
+			// ── 1. 카드 프레임 이미지 ──────────────────────────────
+			ImageIcon frameIcon = getCardFrameIcon(card);
+			if (frameIcon != null && frameIcon.getIconWidth() > 0) {
+				g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+						RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+				g2.drawImage(frameIcon.getImage(), x, y, w, h, null);
+			} else {
+				// 이미지 없을 때 fallback — 기존 슬롯 그리기
+				drawHotbarSlot(g2, x, y, w, h);
+			}
 
-		    g2.setColor(new Color(0, 0, 0, 160));
-		    g2.drawString(card.name, nameX + 1, nameY + 1);
-		    g2.setColor(Color.WHITE);
-		    g2.drawString(card.name, nameX, nameY);
-		 
-		    // ── 3. 중앙 아이콘 영역 ───────────────────────────────
-		    // 이미지 기준 비율: x=12%, y=16%, w=76%, h=52%
-		    int ix = x + (int)(w * 0.12);
-		    int iy = y + (int)(h * 0.16);
-		    int iw = (int)(w * 0.76);
-		    int ih = (int)(h * 0.52);
-		    drawCardArt(g2, card, ix, iy, iw, ih);
-		 
-		    // ── 4. 하단 이름 바 텍스트 ───────────────────────────
-		    // 이미지 기준: y=73~85%, 가로폭 중앙
-		    int nameBarCenterY = y + (int)(h * 0.756); // 바의 수직 중앙
-		    g2.setFont(pixelFont(10));
-		    g2.setColor(Color.WHITE);
-		    drawShadowedCentered(g2, card.type, x + 5, nameBarCenterY, w - 10);
-		 
-		    // ── 5. 하단 설명 텍스트 ──────────────────────────────
-		    // 이미지 기준: y=88% 이하 (바 아래 작은 영역)
-		    int descY = y + (int)(h * 0.885);
-		    g2.setFont(pixelFont(8));
-		    drawMarkedWrappedCentered(g2, card.description, x + 8, descY, w - 16, 9, 2);
-		 
-		    // ── 6. hover 테두리 강조 ─────────────────────────────
-		    if (highlighted) {
-		        g2.setStroke(new BasicStroke(3f));
-		        g2.setColor(new Color(255, 255, 80));
-		        g2.drawRect(x - 2, y - 2, w + 3, h + 3);
-		    }
-		 
-		    g2.setComposite(oldComposite);
+			// ── 2.최상단 헤더 ─────────────────────
+			// 이미지 기준 비율: x=1%, y=1%, w=22%, h=19%
+			int bx = x + (int) (w * 0.01);
+			int by = y + (int) (h * 0.01);
+			int bw = (int) (w * 0.22);
+			int bh = (int) (h * 0.19);
+
+			int cooldown = getCardCooldown(card);
+			g2.setFont(pixelFont(11));
+			String badge = String.valueOf(cooldown);
+			FontMetrics badgeMetrics = g2.getFontMetrics();
+			// 좌상단 뱃지
+			int badgeCenterX = bx + bw / 2 - badgeMetrics.stringWidth(badge) / 2 + 5;
+			int badgeCenterY = by + bh / 2 + badgeMetrics.getAscent() / 2;
+			g2.setColor(new Color(0, 0, 0, 160));
+			g2.drawString(badge, badgeCenterX + 1, badgeCenterY + 1);
+			g2.setColor(Color.WHITE);
+			g2.drawString(badge, badgeCenterX, badgeCenterY);
+			// 우상단 카드 이름
+			int badgeRightX = bx + bw;
+			int cardRightX = x + w;
+			int remainWidth = cardRightX - badgeRightX;
+
+			g2.setFont(pixelFont(9));
+			FontMetrics nameFm = g2.getFontMetrics();
+			int nameX = badgeRightX + (remainWidth - nameFm.stringWidth(card.name)) / 2; // 중앙정렬
+			int nameY = by + bh / 2 + nameFm.getAscent() / 2 + 2; // 뱃지 수직 중앙
+
+			g2.setColor(new Color(0, 0, 0, 160));
+			g2.drawString(card.name, nameX + 1, nameY + 1);
+			g2.setColor(Color.WHITE);
+			g2.drawString(card.name, nameX, nameY);
+
+			// ── 3. 중앙 아이콘 영역 ───────────────────────────────
+			// 이미지 기준 비율: x=12%, y=16%, w=76%, h=52%
+			int ix = x + (int) (w * 0.12);
+			int iy = y + (int) (h * 0.16);
+			int iw = (int) (w * 0.76);
+			int ih = (int) (h * 0.52);
+			drawCardArt(g2, card, ix, iy, iw, ih);
+
+			// ── 4. 하단 이름 바 텍스트 ───────────────────────────
+			// 이미지 기준: y=73~85%, 가로폭 중앙
+			int nameBarCenterY = y + (int) (h * 0.756); // 바의 수직 중앙
+			g2.setFont(pixelFont(10));
+			g2.setColor(Color.WHITE);
+			drawShadowedCentered(g2, card.type, x + 5, nameBarCenterY, w - 10);
+
+			// ── 5. 하단 설명 텍스트 ──────────────────────────────
+			// 이미지 기준: y=88% 이하 (바 아래 작은 영역)
+			int descY = y + (int) (h * 0.885);
+			g2.setFont(pixelFont(8));
+			drawMarkedWrappedCentered(g2, card.description, x + 8, descY, w - 16, 9, 2);
+
+			// ── 6. hover 테두리 강조 ─────────────────────────────
+			if (highlighted) {
+				g2.setStroke(new BasicStroke(3f));
+				g2.setColor(new Color(255, 255, 80));
+				g2.drawRect(x - 2, y - 2, w + 3, h + 3);
+			}
+
+			g2.setComposite(oldComposite);
 		}
-		
+
 		private ImageIcon getCardFrameIcon(Card card) {
-		    return cardFrame; // ATTACK + 기본
+			return cardFrame; // ATTACK + 기본
 		}
-		
+
 		private void drawCardArt(Graphics2D g2, Card card, int x, int y, int w, int h) {
 			int mx = x + w / 2, my = y + h / 2;
 			if (card.cardType == CardType.ATTACK) {
@@ -868,7 +914,8 @@ public class BattleView extends JPanel {
 					g2.drawArc(mx - 24, my - 18, 48, 36, 20, 140);
 				}
 			} else if (card.cardType == CardType.FIRE) {
-				GradientPaint flame = new GradientPaint(mx, y, new Color(255, 225, 72), mx, y + h, new Color(210, 54, 24));
+				GradientPaint flame = new GradientPaint(mx, y, new Color(255, 225, 72), mx, y + h,
+						new Color(210, 54, 24));
 				g2.setPaint(flame);
 				Path2D.Double fire = new Path2D.Double();
 				fire.moveTo(mx, my - 23);
@@ -892,14 +939,16 @@ public class BattleView extends JPanel {
 		}
 
 		private void drawTooltip(Graphics2D g2, Card card) {
-			if (card.tooltip == null || card.tooltip.isEmpty() || card.bounds == null) return;
+			if (card.tooltip == null || card.tooltip.isEmpty() || card.bounds == null)
+				return;
 			int tw = 220, th = 34;
 			int tx = card.bounds.x + card.bounds.width + 8;
-		    if (tx + tw > getWidth()) {
-		        tx = card.bounds.x - tw - 8; 
-		    }
+			if (tx + tw > getWidth()) {
+				tx = card.bounds.x - tw - 8;
+			}
 			int ty = card.bounds.y + 6;
-			if (ty < 4) ty = 4;
+			if (ty < 4)
+				ty = 4;
 
 			g2.setColor(new Color(12, 12, 12, 232));
 			g2.fillRect(tx, ty, tw, th);
@@ -938,7 +987,8 @@ public class BattleView extends JPanel {
 			addMouseListener(new MouseAdapter() {
 				@Override
 				public void mouseClicked(MouseEvent e) {
-					if (inputLocked) return;
+					if (inputLocked)
+						return;
 					for (ItemSlot slot : slots) {
 						if (slot.bounds.contains(e.getPoint())) {
 							useConsumable(slot.className);
@@ -1103,18 +1153,24 @@ public class BattleView extends JPanel {
 		@Override
 		public String getToolTipText(MouseEvent event) {
 			Point p = event.getPoint();
-			if (new Rectangle(7, 0, 44, 44).contains(p)) return "공격력 " + steve.getTotalAttackPower();
-			if (new Rectangle(7, 44, 44, 44).contains(p)) return "방어력 " + steve.getDefencePower();
-			if (new Rectangle(7, 88, 44, 44).contains(p)) return "최대체력 " + steve.getMaxHealth();
+			if (new Rectangle(7, 0, 44, 44).contains(p))
+				return "공격력 " + steve.getTotalAttackPower();
+			if (new Rectangle(7, 44, 44, 44).contains(p))
+				return "방어력 " + steve.getDefencePower();
+			if (new Rectangle(7, 88, 44, 44).contains(p))
+				return "최대체력 " + steve.getMaxHealth();
 			return null;
 		}
 
 		@Override
 		public Point getToolTipLocation(MouseEvent event) {
 			Point p = event.getPoint();
-			if (new Rectangle(7, 0, 44, 44).contains(p)) return new Point(54, 0);
-			if (new Rectangle(7, 44, 44, 44).contains(p)) return new Point(54, 44);
-			if (new Rectangle(7, 88, 44, 44).contains(p)) return new Point(54, 88);
+			if (new Rectangle(7, 0, 44, 44).contains(p))
+				return new Point(54, 0);
+			if (new Rectangle(7, 44, 44, 44).contains(p))
+				return new Point(54, 44);
+			if (new Rectangle(7, 88, 44, 44).contains(p))
+				return new Point(54, 88);
 			return new Point(54, 12);
 		}
 
@@ -1144,7 +1200,8 @@ public class BattleView extends JPanel {
 		}
 
 		private double getHealthRatio() {
-			if (steve.getMaxHealth() <= 0) return 0;
+			if (steve.getMaxHealth() <= 0)
+				return 0;
 			return Math.max(0, Math.min(1, (double) steve.getHealth() / steve.getMaxHealth()));
 		}
 
@@ -1156,14 +1213,10 @@ public class BattleView extends JPanel {
 
 		private void drawPixelHeart(Graphics2D g2, int x, int y, int size, double fillRatio) {
 			int unit = Math.max(1, size / 8);
-			int[][] pixels = {
-				{ 1, 0 }, { 2, 0 }, { 5, 0 }, { 6, 0 },
-				{ 0, 1 }, { 1, 1 }, { 2, 1 }, { 3, 1 }, { 4, 1 }, { 5, 1 }, { 6, 1 }, { 7, 1 },
-				{ 0, 2 }, { 1, 2 }, { 2, 2 }, { 3, 2 }, { 4, 2 }, { 5, 2 }, { 6, 2 }, { 7, 2 },
-				{ 1, 3 }, { 2, 3 }, { 3, 3 }, { 4, 3 }, { 5, 3 }, { 6, 3 },
-				{ 2, 4 }, { 3, 4 }, { 4, 4 }, { 5, 4 },
-				{ 3, 5 }, { 4, 5 }
-			};
+			int[][] pixels = { { 1, 0 }, { 2, 0 }, { 5, 0 }, { 6, 0 }, { 0, 1 }, { 1, 1 }, { 2, 1 }, { 3, 1 }, { 4, 1 },
+					{ 5, 1 }, { 6, 1 }, { 7, 1 }, { 0, 2 }, { 1, 2 }, { 2, 2 }, { 3, 2 }, { 4, 2 }, { 5, 2 }, { 6, 2 },
+					{ 7, 2 }, { 1, 3 }, { 2, 3 }, { 3, 3 }, { 4, 3 }, { 5, 3 }, { 6, 3 }, { 2, 4 }, { 3, 4 }, { 4, 4 },
+					{ 5, 4 }, { 3, 5 }, { 4, 5 } };
 
 			g2.setColor(new Color(70, 70, 70));
 			for (int[] p : pixels) {
@@ -1231,7 +1284,8 @@ public class BattleView extends JPanel {
 			}
 		}
 		ImageIcon icon = new ImageIcon(path);
-		if (icon.getIconWidth() <= 0) return null;
+		if (icon.getIconWidth() <= 0)
+			return null;
 
 		Image scaled = icon.getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH);
 		return new ImageIcon(scaled);
@@ -1277,9 +1331,9 @@ public class BattleView extends JPanel {
 		fireChargeIcon = loadIcon("resources/shop/FireCharge.png");
 		healPotionIcon = loadIcon("resources/shop/HealPotion.png");
 		attackPotionIcon = loadIcon("resources/shop/AttackPotion.png");
-		
+
 		this.scopeImage = loadIcon("resources/ui/target_v2.png").getImage();
-		
+
 		String[] paths = MOB_IMAGE_MAP.get(mob.getName());
 		if (paths != null) {
 			mobNormalIcon = loadIcon(paths[0]);
@@ -1300,7 +1354,8 @@ public class BattleView extends JPanel {
 	}
 
 	private void updateDragonPhaseImage(boolean animate) {
-		if (!"\uC5D4\uB354\uB4DC\uB798\uACE4".equals(mob.getName())) return;
+		if (!"\uC5D4\uB354\uB4DC\uB798\uACE4".equals(mob.getName()))
+			return;
 
 		double hpRatio = mob.getMaxHealth() <= 0 ? 0 : (double) mob.getHealth() / mob.getMaxHealth();
 		int nextPhase;
@@ -1312,14 +1367,14 @@ public class BattleView extends JPanel {
 			nextPhase = 2;
 		}
 
-		if (nextPhase == dragonPhase) return;
+		if (nextPhase == dragonPhase)
+			return;
 		dragonPhase = nextPhase;
 
 		mobNormalIcon = loadIcon("resources/monster/enderdragon_phase" + dragonPhase + "_clean.png");
 		mobHurtIcon = mobNormalIcon;
 		if (mobBattlePanel != null) {
-			mobBattlePanel.setImages(
-					mobNormalIcon != null ? mobNormalIcon.getImage() : null,
+			mobBattlePanel.setImages(mobNormalIcon != null ? mobNormalIcon.getImage() : null,
 					mobHurtIcon != null ? mobHurtIcon.getImage() : null);
 		}
 
@@ -1335,7 +1390,8 @@ public class BattleView extends JPanel {
 		}
 		phaseFlashTimer = new javax.swing.Timer(35, e -> {
 			phaseFlashAlpha = Math.max(0f, phaseFlashAlpha - 0.045f);
-			if (mobBattlePanel != null) mobBattlePanel.repaint();
+			if (mobBattlePanel != null)
+				mobBattlePanel.repaint();
 			if (phaseFlashAlpha <= 0f) {
 				phaseFlashTimer.stop();
 			}
@@ -1349,7 +1405,8 @@ public class BattleView extends JPanel {
 	}
 
 	private static void drawIcon(Graphics2D g2, ImageIcon icon, int x, int y, int w, int h) {
-		if (icon == null || icon.getIconWidth() <= 0) return;
+		if (icon == null || icon.getIconWidth() <= 0)
+			return;
 
 		int iw = icon.getIconWidth();
 		int ih = icon.getIconHeight();
@@ -1435,9 +1492,9 @@ public class BattleView extends JPanel {
 		tip.setFont(new Font("Monospaced", Font.BOLD, 11));
 		tip.setForeground(Color.WHITE);
 		tip.setBackground(new Color(18, 18, 18, 232));
-		tip.setBorder(BorderFactory.createCompoundBorder(
-				BorderFactory.createLineBorder(new Color(235, 235, 235, 150), 1),
-				BorderFactory.createEmptyBorder(5, 8, 5, 8)));
+		tip.setBorder(
+				BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(new Color(235, 235, 235, 150), 1),
+						BorderFactory.createEmptyBorder(5, 8, 5, 8)));
 		tip.setOpaque(true);
 		return tip;
 	}
@@ -1525,7 +1582,8 @@ public class BattleView extends JPanel {
 
 	private int getConsumableQuantity(String className) {
 		ConsumableSkill[] consumables = steve.getConsumables();
-		if (consumables == null) return 0;
+		if (consumables == null)
+			return 0;
 		for (ConsumableSkill item : consumables) {
 			if (item != null && className.equals(item.getClass().getSimpleName())) {
 				return item.getQuantity();
@@ -1536,7 +1594,8 @@ public class BattleView extends JPanel {
 
 	private ConsumableSkill findConsumable(String className) {
 		ConsumableSkill[] consumables = steve.getConsumables();
-		if (consumables == null) return null;
+		if (consumables == null)
+			return null;
 		for (ConsumableSkill item : consumables) {
 			if (item != null && className.equals(item.getClass().getSimpleName())) {
 				return item;
@@ -1568,30 +1627,34 @@ public class BattleView extends JPanel {
 	}
 
 	private boolean handleCardAction(Card card) {
-		if (inputLocked) return false;
-		if (card == null) return false;
+		if (inputLocked)
+			return false;
+		if (card == null)
+			return false;
 
 		switch (card.action) {
-			case ATTACK:
-				playerAttack();
-				break;
-			case GUARD:
-				steve.block();
-				guardReady = true;
-				showMessage(steve.getName() + " is guarding. Choose another card.");
-				System.out.println("[방어] " + steve.getName() + iGa(steve.getName()) + " 방어 태세를 취했습니다. 다른 카드를 선택하세요.");
+		case ATTACK:
+			playerAttack();
+			break;
+		case GUARD:
+			steve.block();
+			guardReady = true;
+			showMessage(steve.getName() + " is guarding. Choose another card.");
+			System.out.println("[방어] " + steve.getName() + iGa(steve.getName()) + " 방어 태세를 취했습니다. 다른 카드를 선택하세요.");
+			refreshUI();
+			return true;
+		case AOE_SLASH:
+			if (!useAoeSlash())
+				return false;
+			break;
+		case ACTIVE_SKILL:
+			if (!useActiveSkill(card.activeSkill))
+				return false;
+			if (card.activeSkill != null && "SnowBall".equals(card.activeSkill.getClass().getSimpleName())) {
 				refreshUI();
 				return true;
-			case AOE_SLASH:
-				if (!useAoeSlash()) return false;
-				break;
-			case ACTIVE_SKILL:
-				if (!useActiveSkill(card.activeSkill)) return false;
-				if (card.activeSkill != null && "SnowBall".equals(card.activeSkill.getClass().getSimpleName())) {
-					refreshUI();
-					return true;
-				}
-				break;
+			}
+			break;
 		}
 
 		refreshUI();
@@ -1615,8 +1678,9 @@ public class BattleView extends JPanel {
 		updateDragonPhaseImage(true);
 		int actualDmg = mobHpBefore - mob.getHealth();
 		showMessage(steve.getName() + " attacks! " + mob.getName() + " takes " + actualDmg + " damage.");
-		System.out.println("[공격] " + steve.getName() + iGa(steve.getName()) + " " + mob.getName() + eulReul(mob.getName()) + " 공격했습니다! "
-				+ mob.getName() + iGa(mob.getName()) + " " + actualDmg + "의 피해를 입었습니다. (남은 체력: " + mob.getHealth() + ")");
+		System.out.println("[공격] " + steve.getName() + iGa(steve.getName()) + " " + mob.getName()
+				+ eulReul(mob.getName()) + " 공격했습니다! " + mob.getName() + iGa(mob.getName()) + " " + actualDmg
+				+ "의 피해를 입었습니다. (남은 체력: " + mob.getHealth() + ")");
 	}
 
 	private boolean useAoeSlash() {
@@ -1635,7 +1699,8 @@ public class BattleView extends JPanel {
 
 		List<Mob> targets = new ArrayList<>();
 		for (Mob m : waveMobs) {
-			if (m.isAlive()) targets.add(m);
+			if (m.isAlive())
+				targets.add(m);
 		}
 
 		int before = mob.getHealth();
@@ -1646,9 +1711,13 @@ public class BattleView extends JPanel {
 		StringBuilder sb = new StringBuilder("AoeSlash! 피해 대상: ");
 		StringBuilder sbConsole = new StringBuilder("[AoeSlash] 광역 공격! 피해 대상: ");
 		for (int i = 0; i < targets.size(); i++) {
-			if (i > 0) { sb.append(", "); sbConsole.append(", "); }
+			if (i > 0) {
+				sb.append(", ");
+				sbConsole.append(", ");
+			}
 			sb.append(targets.get(i).getName());
-			sbConsole.append(targets.get(i).getName()).append("(남은 체력: ").append(targets.get(i).getHealth()).append(")");
+			sbConsole.append(targets.get(i).getName()).append("(남은 체력: ").append(targets.get(i).getHealth())
+					.append(")");
 		}
 		showMessage(sb.toString());
 		System.out.println(sbConsole.toString());
@@ -1660,7 +1729,8 @@ public class BattleView extends JPanel {
 	}
 
 	private boolean useActiveSkill(ActiveSkill skill) {
-		if (skill == null) return false;
+		if (skill == null)
+			return false;
 		if (!skill.isReady()) {
 			showMessage(skill.getClass().getSimpleName() + " is on cooldown.");
 			System.out.println("[스킬] " + skill.getClass().getSimpleName() + "이/가 쿨다운 중입니다. 아직 사용할 수 없습니다.");
@@ -1673,8 +1743,8 @@ public class BattleView extends JPanel {
 		int actualDmg = before - mob.getHealth();
 		showMessage(skill.getClass().getSimpleName() + " used.");
 		System.out.println("[스킬] " + skill.getClass().getSimpleName() + eulReul(skill.getClass().getSimpleName())
-				+ " 사용했습니다. " + mob.getName() + iGa(mob.getName()) + " " + actualDmg
-				+ "의 피해를 입었습니다. (남은 체력: " + mob.getHealth() + ")");
+				+ " 사용했습니다. " + mob.getName() + iGa(mob.getName()) + " " + actualDmg + "의 피해를 입었습니다. (남은 체력: "
+				+ mob.getHealth() + ")");
 		if (actualDmg > 0) {
 			mobBattlePanel.showDamage(actualDmg, true);
 			mobBattlePanel.playHitFlash();
@@ -1691,7 +1761,8 @@ public class BattleView extends JPanel {
 			mobBattlePanel.showDamage(effectDmg, new Color(255, 128, 32));
 			mobBattlePanel.playHitFlash();
 			showMessage(mob.getName() + " takes " + effectDmg + " burn damage.");
-			System.out.println("[화상] " + mob.getName() + iGa(mob.getName()) + " 화상으로 " + effectDmg + "의 피해를 입었습니다. (남은 체력: " + mob.getHealth() + ")");
+			System.out.println("[화상] " + mob.getName() + iGa(mob.getName()) + " 화상으로 " + effectDmg
+					+ "의 피해를 입었습니다. (남은 체력: " + mob.getHealth() + ")");
 		}
 		updateDragonPhaseImage(true);
 		refreshUI();
@@ -1719,8 +1790,8 @@ public class BattleView extends JPanel {
 			steve.takeDamage(rawDmg);
 			int actualDmg = steveHpBefore - steve.getHealth();
 			showMessage(mob.getName() + " attacks! " + steve.getName() + " takes " + actualDmg + " damage.");
-			System.out.println("[몹 공격] " + mob.getName() + iGa(mob.getName()) + " " + steve.getName() + eulReul(steve.getName())
-					+ " 공격했습니다! " + steve.getName() + iGa(steve.getName()) + " " + actualDmg
+			System.out.println("[몹 공격] " + mob.getName() + iGa(mob.getName()) + " " + steve.getName()
+					+ eulReul(steve.getName()) + " 공격했습니다! " + steve.getName() + iGa(steve.getName()) + " " + actualDmg
 					+ "의 피해를 입었습니다. (남은 체력: " + steve.getHealth() + ")");
 			mobBattlePanel.showDamage(actualDmg, false);
 		}
@@ -1737,7 +1808,8 @@ public class BattleView extends JPanel {
 	private void decrementAoeSlashCooldown() {
 		if (steve.getWeapon() instanceof Sword) {
 			Sword sword = (Sword) steve.getWeapon();
-			if (sword.getAoeSlash() != null) sword.getAoeSlash().decrementCooldown();
+			if (sword.getAoeSlash() != null)
+				sword.getAoeSlash().decrementCooldown();
 		}
 	}
 
@@ -1750,7 +1822,8 @@ public class BattleView extends JPanel {
 		}
 
 		ActiveSkill[] skills = steve.getActiveSkills();
-		if (skills == null) return;
+		if (skills == null)
+			return;
 		for (ActiveSkill skill : skills) {
 			if (skill != null) {
 				writeIntField(skill, "currentCooldown", 0);
@@ -1759,7 +1832,8 @@ public class BattleView extends JPanel {
 	}
 
 	private void handleMobDead() {
-		if (inputLocked) return;
+		if (inputLocked)
+			return;
 		inputLocked = true;
 
 		int coin = mob.getDropCoin();
@@ -1767,7 +1841,8 @@ public class BattleView extends JPanel {
 		steve.gainCoin(coin);
 		steve.gainExp(exp);
 
-		if (steve.hasPendingLevelUp()) showLevelUpDialog();
+		if (steve.hasPendingLevelUp())
+			showLevelUpDialog();
 
 		showMessage(mob.getName() + " defeated! Coin +" + coin + "  EXP +" + exp);
 		System.out.println("[처치] " + mob.getName() + eulReul(mob.getName()) + " 처치했습니다! 코인 +" + coin + ", 경험치 +" + exp
@@ -1785,7 +1860,8 @@ public class BattleView extends JPanel {
 				loadImages();
 				mobBattlePanel.setMobIndex(mobIndex);
 				showMessage("다음 적 등장: " + mob.getName() + "!");
-				System.out.println("[다음 적] " + mob.getName() + iGa(mob.getName()) + " 등장했습니다! (체력: " + mob.getHealth() + " / " + mob.getMaxHealth() + ")");
+				System.out.println("[다음 적] " + mob.getName() + iGa(mob.getName()) + " 등장했습니다! (체력: " + mob.getHealth()
+						+ " / " + mob.getMaxHealth() + ")");
 				inputLocked = false;
 				refreshUI();
 			} else {
@@ -1799,7 +1875,8 @@ public class BattleView extends JPanel {
 	}
 
 	private void handleSteveDead() {
-		if (inputLocked) return;
+		if (inputLocked)
+			return;
 		inputLocked = true;
 		setGlassPaneBlocking(true);
 
@@ -1822,20 +1899,23 @@ public class BattleView extends JPanel {
 		expLabel.setText("Lv " + steve.getLevel() + "   EXP " + exp + " / " + expBar.getMaximum());
 		steveCoinLabel.setText(String.valueOf(steve.getCoin()));
 
-		if (heartPanel != null) heartPanel.repaint();
-		if (itemPanel != null) itemPanel.repaint();
-		if (equipmentPanel != null) equipmentPanel.repaint();
-		if (mobBattlePanel != null) mobBattlePanel.repaint();
-		if (cardPanel != null) cardPanel.repaint();
+		if (heartPanel != null)
+			heartPanel.repaint();
+		if (itemPanel != null)
+			itemPanel.repaint();
+		if (equipmentPanel != null)
+			equipmentPanel.repaint();
+		if (mobBattlePanel != null)
+			mobBattlePanel.repaint();
+		if (cardPanel != null)
+			cardPanel.repaint();
 
 		this.revalidate();
 		this.repaint();
 	}
 
 	private void showLevelUpDialog() {
-		JDialog dialog = new JDialog(
-				SwingUtilities.getWindowAncestor(this),
-				"Level Up",
+		JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(this), "Level Up",
 				Dialog.ModalityType.APPLICATION_MODAL);
 		dialog.setUndecorated(true);
 
@@ -1843,8 +1923,8 @@ public class BattleView extends JPanel {
 			@Override
 			protected void paintComponent(Graphics g) {
 				Graphics2D g2 = (Graphics2D) g.create();
-				int w = getWidth(), h = getHeight();
-				drawMinecraftWindow(g2, 0, 0, w, h);
+				ImageIcon frameIcon = new ImageIcon("resources/ui/levelup_frame.png");
+				g2.drawImage(frameIcon.getImage(), 0, 0, getWidth(), getHeight(), this);
 				g2.dispose();
 			}
 		};
@@ -1867,22 +1947,25 @@ public class BattleView extends JPanel {
 				g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 				int cx = getWidth() / 2;
 
-				String main = "LEVEL UP!";
-				g2.setFont(new Font("Dialog", Font.BOLD, 30));
-				FontMetrics fm = g2.getFontMetrics();
-				int tx = cx - fm.stringWidth(main) / 2;
-				g2.setColor(new Color(100, 100, 100));
-				g2.drawString(main, tx + 2, 34 + 2);
-				g2.setColor(new Color(50, 50, 50));
-				g2.drawString(main, tx, 34);
+				// ── LEVEL UP! 이미지 ──
+				ImageIcon titleIcon = new ImageIcon("resources/ui/levelup_title.png");
+				if (titleIcon.getIconWidth() > 0) {
+					int iw = titleIcon.getIconWidth();
+					int ih = titleIcon.getIconHeight();
+					int drawW = (int) (getWidth() * 0.45); // 크기 조절
+					int drawH = (int) (drawW * ((double) ih / iw));
+					int drawX = (getWidth() - drawW) / 2;
+					int drawY = 2; // 수직 위치 조절
+					g2.drawImage(titleIcon.getImage(), drawX, drawY, drawW, drawH, this);
+				}
 
 				String sub = "보상을 하나 선택하세요!";
-				g2.setFont(new Font("Dialog", Font.BOLD, 14));
-				fm = g2.getFontMetrics();
-				g2.setColor(new Color(120, 120, 120));
-				g2.drawString(sub, cx - fm.stringWidth(sub) / 2 + 1, 58 + 1);
-				g2.setColor(new Color(50, 50, 50));
-				g2.drawString(sub, cx - fm.stringWidth(sub) / 2, 58);
+				g2.setFont(new Font("Dialog", Font.BOLD, 12));
+				FontMetrics fm = g2.getFontMetrics();
+				g2.setColor(new Color(0, 0, 0, 160));
+				g2.drawString(sub, cx - fm.stringWidth(sub) / 2 + 1, 61 + 1);
+				g2.setColor(Color.WHITE);
+				g2.drawString(sub, cx - fm.stringWidth(sub) / 2, 61);
 
 				g2.dispose();
 			}
@@ -1894,7 +1977,7 @@ public class BattleView extends JPanel {
 		};
 		titlePanel.setOpaque(false);
 
-		JPanel cardsPanel = new JPanel(new GridLayout(1, 3, 15, 0));
+		JPanel cardsPanel = new JPanel(new GridLayout(1, 3, 10, 0));
 		cardsPanel.setOpaque(false);
 		cardsPanel.setBorder(BorderFactory.createEmptyBorder(5, 10, 15, 10));
 
@@ -1902,40 +1985,50 @@ public class BattleView extends JPanel {
 		ImageIcon atkIc = loadScaledIcon("resources/icon/ATK.png", 54, 54);
 		ImageIcon defIc = loadScaledIcon("resources/icon/DEF.png", 54, 54);
 
-		cardsPanel.add(buildLevelUpCard("HP 강화", "최대 체력 +10", "체력을 올리고\n전부 회복합니다.",
-				heartIc, new Color(180, 20, 20), new Color(180, 20, 20), () -> {
+		cardsPanel.add(buildLevelUpCard("HP 강화", "최대 체력 +10", "체력을 올리고\n전부 회복합니다.", heartIc,
+				"resources/ui/levelup_card_red.png", new Color(180, 40, 40), 
+				() -> {
 					steve.applyLevelUpChoice(1);
 					dialog.dispose();
 					refreshUI();
-					if (steve.hasPendingLevelUp()) showLevelUpDialog();
+					if (steve.hasPendingLevelUp())
+						showLevelUpDialog();
 				}));
-		cardsPanel.add(buildLevelUpCard("공격 강화", "공격력 +2", "기본 공격력이\n증가합니다.",
-				atkIc, new Color(139, 69, 19), new Color(50, 50, 50), () -> {
+
+		cardsPanel.add(buildLevelUpCard("공격 강화", "공격력 +2", "기본 공격력이\n증가합니다.", atkIc,
+				"resources/ui/levelup_card_orange.png", new Color(210, 110, 30), 
+				() -> {
 					steve.applyLevelUpChoice(2);
 					dialog.dispose();
 					refreshUI();
-					if (steve.hasPendingLevelUp()) showLevelUpDialog();
+					if (steve.hasPendingLevelUp())
+						showLevelUpDialog();
 				}));
-		cardsPanel.add(buildLevelUpCard("방어 강화", "방어력 +1", "받는 피해를\n줄입니다.",
-				defIc, new Color(30, 90, 180), new Color(30, 90, 180), () -> {
+
+		cardsPanel.add(buildLevelUpCard("방어 강화", "방어력 +1", "받는 피해를\n줄입니다.", defIc, "resources/ui/levelup_card_blue.png",
+				new Color(60, 120, 210), 
+				() -> {
 					steve.applyLevelUpChoice(3);
 					dialog.dispose();
 					refreshUI();
-					if (steve.hasPendingLevelUp()) showLevelUpDialog();
+					if (steve.hasPendingLevelUp())
+						showLevelUpDialog();
 				}));
 
 		root.add(titlePanel, BorderLayout.NORTH);
 		root.add(cardsPanel, BorderLayout.CENTER);
 
 		dialog.setContentPane(root);
-		dialog.setSize(580, 360);
+		dialog.setSize(480, 320);
 		dialog.setLocationRelativeTo(this);
 		dialog.setResizable(false);
 		dialog.setVisible(true);
 	}
 
-	private JPanel buildLevelUpCard(String title, String statLine, String desc,
-			ImageIcon icon, Color headerColor, Color statColor, Runnable onClick) {
+	private JPanel buildLevelUpCard(String title, String statLine, String desc, ImageIcon icon, String framePath,
+			Color statColor, Runnable onClick) {
+
+		final Color capturedStatColor = statColor;
 
 		JPanel card = new JPanel() {
 			@Override
@@ -1946,62 +2039,62 @@ public class BattleView extends JPanel {
 
 				int w = getWidth(), h = getHeight();
 
-				g2.setColor(new Color(198, 198, 198));
-				g2.fillRect(0, 0, w, h);
-				g2.setColor(Color.BLACK);
-				g2.drawRect(0, 0, w - 1, h - 1);
-				g2.setColor(Color.WHITE);
-				g2.drawLine(1, 1, w - 2, 1);
-				g2.drawLine(1, 1, 1, h - 2);
-				g2.setColor(new Color(110, 110, 110));
-				g2.drawLine(1, h - 2, w - 2, h - 2);
-				g2.drawLine(w - 2, 1, w - 2, h - 2);
-
-				int headerY = 8;
-				int headerH = 28;
-				g2.setColor(Color.BLACK);
-				g2.drawRect(6, headerY, w - 13, headerH);
-				g2.setColor(headerColor);
-				g2.fillRect(7, headerY + 1, w - 14, headerH - 1);
-
-				g2.setFont(new Font("Dialog", Font.PLAIN, 13));
-				FontMetrics fm = g2.getFontMetrics();
-				int tx = (w - fm.stringWidth(title)) / 2;
-				g2.setColor(new Color(0, 0, 0, 180));
-				g2.drawString(title, tx + 1, headerY + 19 + 1);
-				g2.setColor(Color.WHITE);
-				g2.drawString(title, tx, headerY + 19);
-
-				if (icon != null && icon.getIconWidth() > 0) {
-					int iw = icon.getIconWidth(), ih = icon.getIconHeight();
-					int dx = (w - iw) / 2;
-					int dy = 55;
-					g2.setColor(new Color(0, 0, 0, 50));
-					g2.drawImage(icon.getImage(), dx + 2, dy + 2, iw, ih, null);
-					g2.drawImage(icon.getImage(), dx, dy, iw, ih, null);
+				// ── 1. 카드 프레임 이미지 ──────────────────────────
+				ImageIcon frameIcon = new ImageIcon(framePath);
+				if (frameIcon.getIconWidth() > 0) {
+					g2.drawImage(frameIcon.getImage(), 0, 0, w, h, this);
 				}
 
-				int textY = 145;
-				g2.setFont(new Font("Dialog", Font.PLAIN, 13));
+				// ── 2. 헤더 타이틀 텍스트
+				int headerCenterY = (int) (h * 0.12);
+				g2.setFont(new Font("Dialog", Font.BOLD, 12));
+				FontMetrics fm = g2.getFontMetrics();
+				int tx = (w - fm.stringWidth(title)) / 2;
+				g2.setColor(new Color(0, 0, 0, 160));
+				g2.drawString(title, tx + 1, headerCenterY + 1);
+				g2.setColor(Color.WHITE);
+				g2.drawString(title, tx, headerCenterY);
+
+				// ── 3. 중앙 아이콘 ────────────────────────────────
+				// 아이콘 영역: y=16~58%
+				int iconX = (int) (w * 0.15);
+				int iconY = (int) (h * 0.18);
+				int iconW = (int) (w * 0.70);
+				int iconH = (int) (h * 0.35);
+				if (icon != null && icon.getIconWidth() > 0) {
+					int iw = icon.getIconWidth(), ih = icon.getIconHeight();
+					double scale = Math.min((double) iconW / iw, (double) iconH / ih);
+					int dw = (int) (iw * scale);
+					int dh = (int) (ih * scale);
+					int dx = iconX + (iconW - dw) / 2;
+					int dy = iconY + (iconH - dh) / 2;
+					g2.drawImage(icon.getImage(), dx, dy, dw, dh, null);
+				}
+
+				// ── 4. 하단 바 statLine 텍스트 ───────────────────
+				int barCenterY = (int) (h * 0.60);
+				g2.setFont(new Font("Dialog", Font.BOLD, 10));
 				fm = g2.getFontMetrics();
 				tx = (w - fm.stringWidth(statLine)) / 2;
-				g2.setColor(statColor);
-				g2.drawString(statLine, tx, textY);
+				g2.setColor(new Color(0, 0, 0, 160));
+				g2.drawString(statLine, tx + 1, barCenterY + 1);
+				g2.setColor(capturedStatColor);
+				g2.drawString(statLine, tx, barCenterY);
 
-				textY += 12;
-				g2.setColor(new Color(130, 130, 130));
-				g2.drawLine(15, textY, w - 15, textY);
-				g2.setColor(new Color(230, 230, 230));
-				g2.drawLine(15, textY + 1, w - 15, textY + 1);
+				// ── 5. 구분선 (statLine 아래) ────────────────────────────────
+				int lineY = (int) (h * 0.63);
+				g2.setColor(new Color(100, 80, 50));
+				g2.drawLine((int) (w * 0.2), lineY, (int) (w * 0.8), lineY);
 
-				textY += 22;
-				g2.setFont(new Font("Dialog", Font.PLAIN, 12));
+				// ── 6. 설명 텍스트 ────────────────────────────────
+				int descY = (int) (h * 0.70);
+				g2.setFont(new Font("Dialog", Font.PLAIN, 9));
 				fm = g2.getFontMetrics();
-				g2.setColor(new Color(50, 50, 50));
+				g2.setColor(new Color(200, 200, 200));
 				String[] lines = desc.split("\n");
 				for (String line : lines) {
-					g2.drawString(line, (w - fm.stringWidth(line)) / 2, textY);
-					textY += 16;
+					g2.drawString(line, (w - fm.stringWidth(line)) / 2, descY);
+					descY += 14;
 				}
 
 				g2.dispose();
@@ -2010,53 +2103,37 @@ public class BattleView extends JPanel {
 
 		card.setLayout(null);
 		card.setOpaque(false);
-		card.setPreferredSize(new Dimension(160, 250));
+		card.setPreferredSize(new Dimension(150, 185)); // 이미지 비율 맞춤
 
+		// ── 선택 버튼 ──────────────────────────────────────────
 		JButton selectBtn = new JButton("선택") {
 			@Override
 			protected void paintComponent(Graphics g) {
-				Graphics2D g2 = (Graphics2D) g.create();
-				Color base = getModel().isPressed() ? new Color(130, 130, 130)
-						: getModel().isRollover() ? new Color(170, 170, 170) : new Color(150, 150, 150);
-				g2.setColor(base);
-				g2.fillRect(0, 0, getWidth(), getHeight());
-				g2.setColor(Color.BLACK);
-				g2.drawRect(0, 0, getWidth() - 1, getHeight() - 1);
-				g2.setColor(Color.WHITE);
-				g2.drawLine(1, 1, getWidth() - 2, 1);
-				g2.drawLine(1, 1, 1, getHeight() - 2);
-				g2.setColor(new Color(85, 85, 85));
-				g2.drawLine(1, getHeight() - 2, getWidth() - 2, getHeight() - 2);
-				g2.drawLine(getWidth() - 2, 1, getWidth() - 2, getHeight() - 2);
 
+				Graphics2D g2 = (Graphics2D) g.create();
+				g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+				g2.setFont(new Font("Dialog", Font.BOLD, 11));
 				FontMetrics fm = g2.getFontMetrics();
-				int tx = (getWidth() - fm.stringWidth(getText())) / 2;
+				int tx = (getWidth() - fm.stringWidth("선택")) / 2;
 				int ty = (getHeight() + fm.getAscent() - fm.getDescent()) / 2;
-				g2.setColor(new Color(80, 80, 80));
-				g2.drawString(getText(), tx + 1, ty + 1);
+				// hover 시 효과
 				g2.setColor(Color.WHITE);
-				g2.drawString(getText(), tx, ty);
-				g2.dispose();
+				g2.drawString("선택", tx, ty);
+				if (getModel().isRollover()) {
+				    g2.drawLine(tx, ty + 3, tx + fm.stringWidth("선택"), ty + 3);
+				}
 			}
 		};
 
-		selectBtn.setFocusPainted(false);
-		selectBtn.setBorderPainted(false);
+		selectBtn.setOpaque(false);
 		selectBtn.setContentAreaFilled(false);
+		selectBtn.setBorderPainted(false);
+		selectBtn.setFocusPainted(false);
 		selectBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
+		selectBtn.setBounds(18, 162, 100, 26);
+
 		selectBtn.addActionListener(e -> onClick.run());
-
-		int btnW = 120;
-		int btnH = 28;
-
-		card.addComponentListener(new java.awt.event.ComponentAdapter() {
-			@Override
-			public void componentResized(java.awt.event.ComponentEvent e) {
-				int cw = card.getWidth();
-				int ch = card.getHeight();
-				selectBtn.setBounds((cw - btnW) / 2, ch - btnH - 12, btnW, btnH);
-			}
-		});
 
 		card.add(selectBtn);
 		return card;
@@ -2079,10 +2156,12 @@ public class BattleView extends JPanel {
 	}
 
 	private int getCardCooldown(Card card) {
-		if (card == null) return 0;
+		if (card == null)
+			return 0;
 		if (card.action == CardAction.AOE_SLASH && steve.getWeapon() instanceof Sword) {
 			Sword sword = (Sword) steve.getWeapon();
-			if (sword.getAoeSlash() == null) return 0;
+			if (sword.getAoeSlash() == null)
+				return 0;
 			int cooldown = readIntField(sword.getAoeSlash(), 0, "cooldown");
 			return cooldown <= 0 ? 0 : Math.max(1, cooldown - 1);
 		}
@@ -2094,10 +2173,12 @@ public class BattleView extends JPanel {
 	}
 
 	private int getCurrentCooldown(Card card) {
-		if (card == null) return 0;
+		if (card == null)
+			return 0;
 		if (card.action == CardAction.AOE_SLASH && steve.getWeapon() instanceof Sword) {
 			Sword sword = (Sword) steve.getWeapon();
-			if (sword.getAoeSlash() == null) return 0;
+			if (sword.getAoeSlash() == null)
+				return 0;
 			return Math.max(0, readIntField(sword.getAoeSlash(), 0, "currentCooldown"));
 		}
 		if (card.action == CardAction.ACTIVE_SKILL && card.activeSkill != null) {
@@ -2111,8 +2192,10 @@ public class BattleView extends JPanel {
 			try {
 				Method m = target.getClass().getMethod(methodName);
 				Object value = m.invoke(target);
-				if (value instanceof Number) return ((Number) value).intValue();
-			} catch (Exception ignored) {}
+				if (value instanceof Number)
+					return ((Number) value).intValue();
+			} catch (Exception ignored) {
+			}
 		}
 		return fallback;
 	}
@@ -2124,8 +2207,10 @@ public class BattleView extends JPanel {
 				java.lang.reflect.Field field = type.getDeclaredField(fieldName);
 				field.setAccessible(true);
 				Object value = field.get(target);
-				if (value instanceof Number) return ((Number) value).intValue();
-			} catch (Exception ignored) {}
+				if (value instanceof Number)
+					return ((Number) value).intValue();
+			} catch (Exception ignored) {
+			}
 			type = type.getSuperclass();
 		}
 		return fallback;
@@ -2139,7 +2224,8 @@ public class BattleView extends JPanel {
 				field.setAccessible(true);
 				field.setInt(target, value);
 				return;
-			} catch (Exception ignored) {}
+			} catch (Exception ignored) {
+			}
 			type = type.getSuperclass();
 		}
 	}
@@ -2180,7 +2266,8 @@ public class BattleView extends JPanel {
 		drawWrappedCentered(g2, s, x, y, w, lineHeight, Integer.MAX_VALUE);
 	}
 
-	private static void drawWrappedCentered(Graphics2D g2, String s, int x, int y, int w, int lineHeight, int maxLines) {
+	private static void drawWrappedCentered(Graphics2D g2, String s, int x, int y, int w, int lineHeight,
+			int maxLines) {
 		FontMetrics fm = g2.getFontMetrics();
 		String[] words = s.split(" ");
 		String line = "";
@@ -2201,10 +2288,12 @@ public class BattleView extends JPanel {
 				line = next;
 			}
 		}
-		if (!line.isEmpty()) drawCentered(g2, trimToWidth(g2, line, w), x, lineY, w);
+		if (!line.isEmpty())
+			drawCentered(g2, trimToWidth(g2, line, w), x, lineY, w);
 	}
 
-	private static void drawMarkedWrappedCentered(Graphics2D g2, String s, int x, int y, int w, int lineHeight, int maxLines) {
+	private static void drawMarkedWrappedCentered(Graphics2D g2, String s, int x, int y, int w, int lineHeight,
+			int maxLines) {
 		FontMetrics fm = g2.getFontMetrics();
 		String[] words = s.split(" ");
 		List<String> lines = new ArrayList<>();
@@ -2214,12 +2303,14 @@ public class BattleView extends JPanel {
 			if (fm.stringWidth(stripMarks(next)) > w && !line.isEmpty()) {
 				lines.add(line);
 				line = word;
-				if (lines.size() == maxLines - 1) break;
+				if (lines.size() == maxLines - 1)
+					break;
 			} else {
 				line = next;
 			}
 		}
-		if (!line.isEmpty() && lines.size() < maxLines) lines.add(line);
+		if (!line.isEmpty() && lines.size() < maxLines)
+			lines.add(line);
 
 		for (int i = 0; i < lines.size(); i++) {
 			drawMarkedCenteredLine(g2, lines.get(i), x, y + i * lineHeight, w);
@@ -2230,7 +2321,8 @@ public class BattleView extends JPanel {
 		List<TextRun> runs = parseMarkedRuns(s);
 		FontMetrics fm = g2.getFontMetrics();
 		int totalW = 0;
-		for (TextRun run : runs) totalW += fm.stringWidth(run.text);
+		for (TextRun run : runs)
+			totalW += fm.stringWidth(run.text);
 		int tx = x + (w - totalW) / 2;
 		for (TextRun run : runs) {
 			g2.setColor(run.marked ? new Color(255, 223, 82) : new Color(255, 255, 245));
@@ -2259,7 +2351,8 @@ public class BattleView extends JPanel {
 				current.append(s.charAt(i));
 			}
 		}
-		if (current.length() > 0) runs.add(new TextRun(current.toString(), marked));
+		if (current.length() > 0)
+			runs.add(new TextRun(current.toString(), marked));
 		return runs;
 	}
 
@@ -2275,7 +2368,8 @@ public class BattleView extends JPanel {
 
 	private static String trimToWidth(Graphics2D g2, String text, int maxW) {
 		FontMetrics fm = g2.getFontMetrics();
-		if (fm.stringWidth(text) <= maxW) return text;
+		if (fm.stringWidth(text) <= maxW)
+			return text;
 		String suffix = ".";
 		String trimmed = text;
 		while (trimmed.length() > 1 && fm.stringWidth(trimmed + suffix) > maxW) {
