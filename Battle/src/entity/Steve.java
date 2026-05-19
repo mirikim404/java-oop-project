@@ -20,10 +20,9 @@ public class Steve extends Entity implements Skillable {
 	private ConsumableSkill[] consumables;
 	private List<StatusEffect> effects = new ArrayList<>();
 	private int pendingLevelUps;
-	private boolean isUsed = false;
-	
+	private boolean ableUse = false;
 	Scanner input = new Scanner(System.in);
-	
+
 	private static final int DEFAULT_MAX_HEALTH = 100;
 	private static final int DEFAULT_ATTACK_POWER = 24;
 	private static final int DEFAULT_DEFENCE_POWER = 6;
@@ -61,8 +60,8 @@ public class Steve extends Entity implements Skillable {
 	@Override
 	public void useSkill(Steve steve, Mob mob) {
 		ActiveSkill[] skills = steve.getActiveSkills();
-		isUsed = false;
-		
+
+
 		if (skills[0] == null) { // 사용할 수 있는 스킬이 없으면
 			System.out.println("사용할 수 있는 스킬이 없습니다");
 			return; 
@@ -76,48 +75,57 @@ public class Steve extends Entity implements Skillable {
 				String readyText = skills[i].isReady() ? "사용 가능" : "사용 불가능";
 				System.out.printf("[%d] %s (쿨타임 %d턴 남음 / %s)\n", i+1, skills[i].getClass().getSimpleName(), skills[i].getCurrentCooldown() , readyText);
 			}
-			
+
 		}
-			System.out.println("\n === 사용할 스킬을 선택하세요. ===");
-			
-			int ans = input.nextInt();
-			ActiveSkill chosenSkill = skills[ans-1];
-			if (chosenSkill.isReady() == true) {
-				chosenSkill.use(steve, mob);
-				isUsed = true; // 뭔가 선택되었는가?
-			}
-			else System.out.println("==아직 준비되지 않은 스킬입니다. === ");
+		System.out.println("\n === 사용할 스킬을 선택하세요. ===");
+
+		int ans = input.nextInt();
+		ActiveSkill chosenSkill = skills[ans-1];
+		if (chosenSkill.isReady() == true) {
+			chosenSkill.use(steve, mob);
+
+		}
+		else System.out.println("==아직 준비되지 않은 스킬입니다. === ");
 	}
 
 	@Override
 	public void usePotion(Steve steve) {
 		ConsumableSkill[] potions = this.getConsumables();
-		isUsed = false; //
-		if (potions[0] == null) { // 사용할 수 있는 포션이 없으면
-			System.out.println("사용할 수 있는 포션이 없습니다");
-			return; 
-		} 
-		System.out.println(getName() + "이/가 포션을 사용합니다.");
-		System.out.println("\n --- 사용 가능한 포션 목록 --- ");
-		
-		
+		ConsumableSkill[] availablePotions = new ConsumableSkill[2];
+		int cnt = 0;
+
 		for (int i = 0; i < potions.length; i++) {
-			if (potions[i] != null) {
-				System.out.printf("[%d] %s %d개 ", i+1, potions[i].getClass().getSimpleName(), potions[i].getQuantity());
+			if (potions[i] != null && potions[i].hasStock()) {
+				availablePotions[cnt] = potions[i];
+				cnt++;
 			}
-			
 		}
-		System.out.println("\n === 사용할 스킬을 선택하세요. ===");
-		
-		int ans = input.nextInt();
-		ConsumableSkill chosenPotion = potions[ans-1];
+		if (cnt == 0) {
+			System.out.println("=== 보유한 포션이 없습니다. === ");
+			return;
+		}
+		System.out.println(getName() + "이/가 포션을 사용합니다.");
+		System.out.println("\n === 사용 가능한 포션 목록 === ");
+		for (int i = 0; i < cnt; i++) {
+			System.out.printf("[%d] %s %d개 ", i+1, availablePotions[i].getClass().getSimpleName(), availablePotions[i].getQuantity());
+		}
+
+		System.out.println("\n === 사용할 포션을 선택하세요. ===");
+		int ans;
+		while(true) {
+			ans = input.nextInt();
+			if (ans > cnt || ans<1) {
+				System.out.println("=== 잘못된 입력입니다. === ");
+			}
+			else break;
+		}
+		ConsumableSkill chosenPotion = availablePotions[ans-1];
 		if (chosenPotion.hasStock() == true) {
 			chosenPotion.use(steve);
-			isUsed = true;
 		}
 		else System.out.println("=== 보유하지 않은 포션입니다. === ");
 	}
-	
+
 
 	public void gainExp() {
 		gainExp(0);
@@ -138,9 +146,9 @@ public class Steve extends Entity implements Skillable {
 	}
 
 	public void levelUp() {
-	    level++;
-	    pendingLevelUps++;
-	    System.out.println(getName() + " 레벨업! 현재 레벨: " + level);
+		level++;
+		pendingLevelUps++;
+		System.out.println(getName() + " 레벨업! 현재 레벨: " + level);
 	}
 
 	public void gainCoin() {
@@ -157,15 +165,15 @@ public class Steve extends Entity implements Skillable {
 	}
 
 	public void onTurnEnd() {
-	    processEffects();  // ← 추가
-	    if (activeSkills != null) {
-	        for (ActiveSkill skill : activeSkills) {
-	            if (skill != null) {
-	                skill.decrementCooldown();
-	            }
-	        }
-	    }
-	    System.out.println(getName() + "의 턴이 종료되었습니다.");
+		processEffects();  // ← 추가
+		if (activeSkills != null) {
+			for (ActiveSkill skill : activeSkills) {
+				if (skill != null) {
+					skill.decrementCooldown();
+				}
+			}
+		}
+		System.out.println(getName() + "의 턴이 종료되었습니다.");
 	}
 
 	public Steve resetAfterDeath() {
@@ -189,39 +197,39 @@ public class Steve extends Entity implements Skillable {
 		}
 		return getAttackPower() + weapon.getAttackBonus();
 	}
-	
+
 	public void processEffects() {
-	    effects.removeIf(effect -> {
-	        effect.activate(this);
-	        return effect.isExpired();
-	    });
+		effects.removeIf(effect -> {
+			effect.activate(this);
+			return effect.isExpired();
+		});
 	}
-	
+
 	public boolean hasPendingLevelUp() {
-	    return pendingLevelUps > 0;
+		return pendingLevelUps > 0;
 	}
 
 	public void applyLevelUpChoice(int choice) {
-	    if (pendingLevelUps <= 0) return;
+		if (pendingLevelUps <= 0) return;
 
-	    switch (choice) {
-	        case 1:
-	            setMaxHealth(getMaxHealth() + 20);
-	            setHealth(getMaxHealth());
-	            break;
-	        case 2:
-	            setAttackPower(getAttackPower() + 5);
-	            break;
-	        case 3:
-	            setDefencePower(getDefencePower() + 2);
-	            break;
-	        default:
-	            setMaxHealth(getMaxHealth() + 10);
-	            setHealth(getMaxHealth());
-	            break;
-	    }
+		switch (choice) {
+		case 1:
+			setMaxHealth(getMaxHealth() + 20);
+			setHealth(getMaxHealth());
+			break;
+		case 2:
+			setAttackPower(getAttackPower() + 5);
+			break;
+		case 3:
+			setDefencePower(getDefencePower() + 2);
+			break;
+		default:
+			setMaxHealth(getMaxHealth() + 10);
+			setHealth(getMaxHealth());
+			break;
+		}
 
-	    pendingLevelUps--;
+		pendingLevelUps--;
 	}
 
 	// getter, setter
@@ -241,11 +249,9 @@ public class Steve extends Entity implements Skillable {
 	public void setConsumables(ConsumableSkill[] consumables) { this.consumables = consumables; }
 
 	public String getUsername() { return getName(); }
-	
+
 	public List<StatusEffect> getEffects() { return effects; }
 
-	public boolean getIsUsed() { return isUsed; }
-	public void setIsUsed(boolean isUsed) { this.isUsed = isUsed; }
 
-	
+
 }

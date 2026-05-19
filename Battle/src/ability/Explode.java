@@ -26,7 +26,6 @@ public class Explode implements Mobability {
 
 	@Override
 	public void use(Mob attacker, Steve player) {
-		
 		if (beforeExplosionTurns > 0) {
 	        System.out.println("쉬시식... (폭발까지 " + beforeExplosionTurns + "턴)");
 	        beforeExplosionTurns--;
@@ -34,7 +33,7 @@ public class Explode implements Mobability {
 	        System.out.println("쉬시시시식...펑!!!");
 	        player.takeDamage(explosionDamage + player.getDefencePower());
 	        attacker.setHealth(0);
-	        System.out.println(attacker.getName() + "가 폭발하여 " + player.getName() + "에게 " + explosionDamage + "만큼의 피해를 입혔습니다.");
+	        System.out.println(attacker.getName() + "가 폭발하여 " + player.getName() + "에게 " + explosionDamage + "만큼의 피해를 입혔습니다.(막기 무시)");
 	    }
 			
 		
