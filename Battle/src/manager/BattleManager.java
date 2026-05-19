@@ -112,11 +112,11 @@ public class BattleManager {
 		}
 		case 3 -> { //스킬 사용
 			steve.useSkill(steve, mob);
-			if(steve.getIsUsed() == false) processPlayerTurn(mob);
+			processPlayerTurn(mob);
 		}
 		case 4 -> { //포션 사용
 			steve.usePotion(steve);
-			if(steve.getIsUsed() == false) processPlayerTurn(mob);
+			processPlayerTurn(mob);
 		}
 		default -> {
 			System.out.println("잘못된 입력");
@@ -143,7 +143,7 @@ public class BattleManager {
 		}
 
 		// 막기 체크
-		if (isBlocking) {
+		if (!(mob instanceof Creeper) &&  isBlocking) { // 크리퍼는 막기 무시
 			System.out.println(mob.getName() + "이 공격했지만 막혔다!");
 			isBlocking = false; // 막기 해제
 			return;
