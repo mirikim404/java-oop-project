@@ -27,4 +27,8 @@ public class Burn implements StatusEffect {
     public boolean isExpired() {
         return remainingTurns <= 0;
     }
+
+    public int getRemainingTurns() {
+        return remainingTurns;
+    }
 }

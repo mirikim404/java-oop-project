@@ -1,5 +1,8 @@
 package view;
 
+import effect.Burn;
+import effect.StatusEffect;
+import effect.Stun;
 import entity.Steve;
 import entity.mob.Mob;
 import manager.WaveManager;
@@ -11,6 +14,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.Path2D;
+import java.io.File;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -46,12 +50,19 @@ public class BattleView extends JPanel {
 	private ImageIcon fireChargeIcon;
 	private ImageIcon healPotionIcon;
 	private ImageIcon attackPotionIcon;
+	private ImageIcon mobHeartbarIcon;
+	private ImageIcon effectBurnIcon;
+	private ImageIcon effectStunIcon;
 	private Image scopeImage;
 	private boolean attackPotionReady = false;
 	private boolean guardReady = false;
 	private int dragonPhase = -1;
 	private float phaseFlashAlpha = 0f;
 	private javax.swing.Timer phaseFlashTimer;
+	private IntroLabel introLabel;
+	private boolean introActive = false;
+	private float introAlpha = 1f;
+	private javax.swing.Timer introTimer;
 	private boolean inputLocked = false;
 
 	private static final Color GOLD = new Color(230, 184, 76);
@@ -70,6 +81,15 @@ public class BattleView extends JPanel {
 	private static final Color HOTBAR_DARK = new Color(0, 0, 0, 168);
 	private static final Color XP_GREEN = new Color(116, 255, 70);
 	private static final String COIN_ICON_PATH = "resources/icon/Coin.png";
+	private static final String PIXEL_FONT_PATH = "fonts/Minecraftia-Regular.ttf";
+	private static final String KOREAN_PIXEL_FONT_PATH = "fonts/GalmuriMono11.ttf";
+	private static final String MOB_ENCOUNTER_FRAME_PATH = "resources/ui/mob_encounter.png";
+	private static final int TOP_HUD_LEVEL_X_OFFSET = -20;
+	private static final int BATTLE_CONTENT_X_OFFSET = -50;
+	private static Font pixelFontBase;
+	private static Font koreanPixelFontBase;
+	private static final Map<String, ImageIcon> ICON_CACHE = new HashMap<>();
+	private static final Map<String, ImageIcon> SCALED_ICON_CACHE = new HashMap<>();
 
 	private static final Map<String, String[]> MOB_IMAGE_MAP = new HashMap<>();
 	static {
@@ -137,6 +157,11 @@ public class BattleView extends JPanel {
 	// ────────────────────────────────────────────────────────────────────────────
 
 	public BattleView(GameFrame gameFrame, Steve steve, WaveManager waveManager, Mob mob, int wave) {
+		this(gameFrame, steve, waveManager, mob, wave, false);
+	}
+
+	public BattleView(GameFrame gameFrame, Steve steve, WaveManager waveManager, Mob mob, int wave,
+			boolean showEncounterFirst) {
 		this.gameFrame = gameFrame;
 		this.steve = steve;
 		this.wave = wave;
@@ -146,26 +171,111 @@ public class BattleView extends JPanel {
 		this.mobIndex = 0;
 		this.mob = waveMobs.isEmpty() ? mob : waveMobs.get(0);
 
+		showBattleContent(showEncounterFirst);
+	}
+
+	private String buildEncounterMessage() {
+		if (waveMobs.size() > 1) {
+			StringBuilder sb = new StringBuilder();
+			for (int i = 0; i < waveMobs.size(); i++) {
+				if (i > 0)
+					sb.append(" + ");
+				sb.append(waveMobs.get(i).getName());
+			}
+			sb.append(" 등장!");
+			return sb.toString();
+		}
+		return mob.getName() + " 등장!";
+	}
+
+	private void playEncounterIntro() {
+		if (introLabel == null)
+			return;
+		if (introTimer != null && introTimer.isRunning())
+			introTimer.stop();
+
+		javax.swing.Timer holdTimer = new javax.swing.Timer(1000, e -> {
+			introTimer = new javax.swing.Timer(35, fadeEvent -> {
+				introAlpha = Math.max(0f, introAlpha - 0.08f);
+				introLabel.setAlpha(introAlpha);
+				if (introAlpha <= 0f) {
+					introTimer.stop();
+					introActive = false;
+					inputLocked = false;
+					introLabel.setVisible(false);
+					cardPanel.setVisible(true);
+					cardPanel.repaint();
+					requestFocusInWindow();
+				}
+			});
+			introTimer.start();
+		});
+		holdTimer.setRepeats(false);
+		holdTimer.start();
+	}
+
+	private void showBattleContent() {
+		showBattleContent(false);
+	}
+
+	private void showBattleContent(boolean playIntro) {
+		introActive = playIntro;
+		introAlpha = 1f;
+		inputLocked = playIntro;
+
 		loadImages();
 		updateDragonPhaseImage(false);
 		resetSkillCooldownsForWave();
 
 		BackgroundPanel root = new BackgroundPanel(getBackgroundPath());
-		root.setLayout(new BorderLayout());
-		root.setBorder(BorderFactory.createEmptyBorder(8, 10, 10, 10));
 
 		setLayout(new BorderLayout());
 		add(root, BorderLayout.CENTER);
 
-		root.add(buildTopHud(), BorderLayout.NORTH);
-		root.add(buildPlayerSidebar(), BorderLayout.WEST);
+		JPanel topHud = buildTopHud();
+		JPanel playerSidebar = buildPlayerSidebar();
 
 		mobBattlePanel = new MobBattlePanel(buildMobImageList());
 
 		cardPanel = new CardPanel();
-		root.add(new BattleLayerPanel(), BorderLayout.CENTER);
+		cardPanel.setVisible(!playIntro);
+		introLabel = playIntro ? new IntroLabel("WAVE " + wave, "-" + buildEncounterMessage() + "-") : null;
+		BattleLayerPanel battleLayer = new BattleLayerPanel();
+		root.setLayout(new LayoutManager() {
+			@Override
+			public void addLayoutComponent(String name, Component comp) {
+			}
+
+			@Override
+			public void removeLayoutComponent(Component comp) {
+			}
+
+			@Override
+			public Dimension preferredLayoutSize(Container parent) {
+				return new Dimension(854, 560);
+			}
+
+			@Override
+			public Dimension minimumLayoutSize(Container parent) {
+				return new Dimension(854, 560);
+			}
+
+			@Override
+			public void layoutContainer(Container parent) {
+				layoutBattleFrame(parent, topHud, playerSidebar, battleLayer);
+			}
+		});
+
+		root.add(battleLayer);
+		root.add(topHud);
+		root.add(playerSidebar);
 
 		refreshUI();
+
+		if (playIntro) {
+			SwingUtilities.invokeLater(this::playEncounterIntro);
+			return;
+		}
 
 		if (waveMobs.size() > 1) {
 			StringBuilder sb = new StringBuilder("Wave " + wave + " - 등장: ");
@@ -210,8 +320,30 @@ public class BattleView extends JPanel {
 		return "resources/bg/battle_boss.png";
 	}
 
+	private void layoutBattleFrame(Container root, JPanel topHud, JPanel playerSidebar, BattleLayerPanel battleLayer) {
+		int w = root.getWidth();
+		int h = root.getHeight();
+		if (w <= 0 || h <= 0)
+			return;
+
+		topHud.setBounds(0, 0, w, scaleY(h, 96));
+		playerSidebar.setBounds(0, 0, scaleX(w, 146), h);
+		battleLayer.setBounds(scaleX(w, 132), scaleY(h, 104), w - scaleX(w, 132), h - scaleY(h, 104));
+	}
+
+	private static int scaleX(int width, int designX) {
+		return Math.round(width * designX / 854f);
+	}
+
+	private static int scaleY(int height, int designY) {
+		return Math.round(height * designY / 560f);
+	}
+
 	private static class BackgroundPanel extends JPanel {
+		private static final int FRAME_SOURCE_W = 1536;
+		private static final int FRAME_SOURCE_H = 1024;
 		private Image bgImage;
+		private Image frameImage;
 
 		BackgroundPanel(String imagePath) {
 			setOpaque(true);
@@ -221,12 +353,18 @@ public class BattleView extends JPanel {
 					bgImage = ic.getImage();
 			} catch (Exception ignored) {
 			}
+			try {
+				ImageIcon frameIcon = loadIcon("resources/ui/battle_frame.png");
+				if (frameIcon.getIconWidth() > 0)
+					frameImage = frameIcon.getImage();
+			} catch (Exception ignored) {
+			}
 		}
 
 		@Override
 		protected void paintComponent(Graphics g) {
 			super.paintComponent(g);
-			Graphics2D g2 = (Graphics2D) g;
+			Graphics2D g2 = (Graphics2D) g.create();
 			if (bgImage != null) {
 				g2.drawImage(bgImage, 0, 0, getWidth(), getHeight(), this);
 			} else {
@@ -235,8 +373,22 @@ public class BattleView extends JPanel {
 				g2.setPaint(gp);
 				g2.fillRect(0, 0, getWidth(), getHeight());
 			}
-			g2.setColor(new Color(0, 0, 0, 80));
-			g2.fillRect(0, 0, getWidth(), getHeight());
+			if (frameImage != null) {
+				// UI POSITION: top frame crop. If the LV frame border is clipped, decrease sy or increase sh.
+				drawFrameSection(g2, 236, 48, 990, 116);
+				drawFrameSection(g2, 1270, 60, 206, 104);
+				drawFrameSection(g2, 38, 234, 216, 348);
+				drawFrameSection(g2, 38, 596, 216, 254);
+			}
+			g2.dispose();
+		}
+
+		private void drawFrameSection(Graphics2D g2, int sx, int sy, int sw, int sh) {
+			int dx = Math.round(getWidth() * sx / (float) FRAME_SOURCE_W);
+			int dy = Math.round(getHeight() * sy / (float) FRAME_SOURCE_H);
+			int dw = Math.round(getWidth() * sw / (float) FRAME_SOURCE_W);
+			int dh = Math.round(getHeight() * sh / (float) FRAME_SOURCE_H);
+			g2.drawImage(frameImage, dx, dy, dx + dw, dy + dh, sx, sy, sx + sw, sy + sh, this);
 		}
 	}
 
@@ -254,6 +406,114 @@ public class BattleView extends JPanel {
 		}
 	}
 
+	private static class StatusBadge {
+		ImageIcon icon;
+		int remainingTurns;
+		int cropX, cropY, cropW, cropH;
+
+		StatusBadge(ImageIcon icon, int remainingTurns, int cropX, int cropY, int cropW, int cropH) {
+			this.icon = icon;
+			this.remainingTurns = remainingTurns;
+			this.cropX = cropX;
+			this.cropY = cropY;
+			this.cropW = cropW;
+			this.cropH = cropH;
+		}
+	}
+
+	private static class IntroLabel extends JLabel {
+		private float alpha = 1f;
+		private final String title;
+		private final String subtitle;
+		private final ImageIcon frameIcon;
+
+		IntroLabel(String title, String subtitle) {
+			super("", SwingConstants.CENTER);
+			this.title = title;
+			this.subtitle = subtitle;
+			this.frameIcon = loadIcon(MOB_ENCOUNTER_FRAME_PATH);
+			setOpaque(false);
+			setForeground(Color.WHITE);
+		}
+
+		void setAlpha(float alpha) {
+			this.alpha = Math.max(0f, Math.min(1f, alpha));
+			repaint();
+		}
+
+		@Override
+		protected void paintComponent(Graphics g) {
+			Graphics2D g2 = (Graphics2D) g.create();
+			g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
+			g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+			g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+
+			int frameW = Math.min(getWidth(), 360);
+			int frameH = 96;
+			if (frameIcon != null && frameIcon.getIconWidth() > 0) {
+				double ratio = frameIcon.getIconHeight() / (double) frameIcon.getIconWidth();
+				frameH = (int) Math.round(frameW * ratio);
+				frameH = Math.min(frameH, getHeight());
+			}
+			int x = (getWidth() - frameW) / 2;
+			int y = (getHeight() - frameH) / 2;
+
+			if (frameIcon != null && frameIcon.getIconWidth() > 0) {
+				g2.drawImage(frameIcon.getImage(), x, y, frameW, frameH, null);
+			} else {
+				g2.setColor(new Color(33, 18, 12, 235));
+				g2.fillRect(x, y, frameW, frameH);
+				g2.setColor(GOLD);
+				g2.drawRect(x + 1, y + 1, frameW - 3, frameH - 3);
+			}
+
+			drawIntroText(g2, title, uiPixelFont(24), Color.WHITE, x, y + frameH / 2 - 3, frameW);
+			drawIntroText(g2, subtitle, koreanPixelFont(Font.BOLD, 15), new Color(255, 203, 68), x, y + frameH / 2 + 25,
+					frameW);
+			g2.dispose();
+		}
+
+		private void drawIntroText(Graphics2D g2, String text, Font font, Color color, int x, int baseline, int w) {
+			g2.setFont(font);
+			FontMetrics fm = g2.getFontMetrics();
+			String trimmed = trimToWidth(g2, text, w - 46);
+			int tx = x + (w - fm.stringWidth(trimmed)) / 2;
+			g2.setColor(new Color(0, 0, 0, 230));
+			g2.drawString(trimmed, tx + 3, baseline + 3);
+			g2.setColor(color);
+			g2.drawString(trimmed, tx, baseline);
+		}
+	}
+
+	private List<StatusBadge> getMobStatusBadges(Mob targetMob) {
+		List<StatusBadge> badges = new ArrayList<>();
+		if (targetMob == null || targetMob.getEffects() == null)
+			return badges;
+
+		for (StatusEffect effect : targetMob.getEffects()) {
+			if (effect instanceof Burn) {
+				int turns = ((Burn) effect).getRemainingTurns();
+				if (turns > 0)
+					badges.add(new StatusBadge(effectBurnIcon, turns, 543, 275, 210, 231));
+			} else if (effect instanceof Stun) {
+				int turns = ((Stun) effect).getRemainingTurns();
+				if (turns > 0)
+					badges.add(new StatusBadge(effectStunIcon, turns, 543, 295, 211, 211));
+			}
+		}
+
+		badges.sort((a, b) -> Integer.compare(a.remainingTurns, b.remainingTurns));
+		return badges;
+	}
+
+	private static void drawCroppedImage(Graphics2D g2, ImageIcon icon, int sx, int sy, int sw, int sh, int dx, int dy,
+			int dw, int dh) {
+		if (icon == null || icon.getIconWidth() <= 0 || icon.getIconHeight() <= 0)
+			return;
+		Image img = icon.getImage();
+		g2.drawImage(img, dx, dy, dx + dw, dy + dh, sx, sy, sx + sw, sy + sh, null);
+	}
+
 	private class BattleLayerPanel extends JLayeredPane {
 		BattleLayerPanel() {
 			setOpaque(false);
@@ -264,6 +524,8 @@ public class BattleView extends JPanel {
 			add(mobBattlePanel, JLayeredPane.DEFAULT_LAYER);
 			add(messageLabel, JLayeredPane.MODAL_LAYER);
 			add(cardPanel, JLayeredPane.PALETTE_LAYER);
+			if (introLabel != null)
+				add(introLabel, JLayeredPane.DRAG_LAYER);
 		}
 
 		@Override
@@ -273,7 +535,7 @@ public class BattleView extends JPanel {
 
 			int cardW = Math.min(w - 40, 620);
 			int cardH = 180;
-			int cardX = (w - cardW) / 2;
+			int cardX = (w - cardW) / 2 + BATTLE_CONTENT_X_OFFSET;
 			int cardY = h - cardH;
 
 			mobBattlePanel.setCardTopY(cardY);
@@ -281,14 +543,22 @@ public class BattleView extends JPanel {
 
 			int targetY = cardY - 28;
 
-			if (targetY < 200) {
+			if (targetY < 200 || messageLabel.getText().isEmpty()) {
 				messageLabel.setVisible(false);
 			} else {
 				messageLabel.setVisible(true);
-				messageLabel.setBounds(0, targetY, w, 24);
+				messageLabel.setBounds(BATTLE_CONTENT_X_OFFSET, targetY, w, 24);
 			}
 
 			cardPanel.setBounds(cardX, cardY, cardW, cardH);
+			if (introLabel != null) {
+				introLabel.setVisible(introActive);
+				int introW = Math.min(w - 40, 460);
+				int introH = 130;
+				int introX = (w - introW) / 2 + BATTLE_CONTENT_X_OFFSET;
+				int introY = Math.max(0, cardY - 28);
+				introLabel.setBounds(introX, introY, introW, introH);
+			}
 		}
 	}
 
@@ -414,8 +684,6 @@ public class BattleView extends JPanel {
 			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 			g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
-			drawMobStats(g2);
-
 			int pw = getWidth();
 			int topLimit = 46;
 			int groundY = Math.max(topLimit + 90, cardTopY - 16);
@@ -434,6 +702,7 @@ public class BattleView extends JPanel {
 				int targetDx = -1, targetDy = -1, targetDw = 0, targetDh = 0;
 
 				for (int i = 0; i < count; i++) {
+					Mob drawnMob = i < waveMobs.size() ? waveMobs.get(i) : mob;
 					Image[] pair = mobImages.get(i);
 					Image img = (showHurt && i == currentMobIndex && pair[1] != null) ? pair[1] : pair[0];
 					if (img == null)
@@ -456,7 +725,7 @@ public class BattleView extends JPanel {
 					}
 
 					int slotW = pw / count;
-					int dx = slotW * i + (slotW - dw) / 2;
+					int dx = slotW * i + (slotW - dw) / 2 + BATTLE_CONTENT_X_OFFSET;
 					int dy = groundY - dh;
 
 					if (count > 1) {
@@ -489,6 +758,9 @@ public class BattleView extends JPanel {
 
 					g2.drawImage(img, dx, dy, dw, dh, null);
 					g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));
+					if (!dyingNow) {
+						drawMobHud(g2, drawnMob, dx, dy, dw);
+					}
 				}
 
 				// 현재 타겟 몹 중앙에 스코프 이미지 포커스 표시
@@ -529,21 +801,124 @@ public class BattleView extends JPanel {
 			g2.dispose();
 		}
 
-		private void drawMobStats(Graphics2D g2) {
-			int w = Math.min(118, getWidth() - 50);
-			int x = (getWidth() - w) / 2;
-			int y = 14;
+		private void drawMobHud(Graphics2D g2, Mob targetMob, int mobX, int mobY, int mobW) {
+			int barW = Math.min(150, Math.max(118, mobW + 12));
+			int barH = 14;
+			int centerX = mobX + mobW / 2;
+			int barX = centerX - barW / 2;
 
-			drawMobStat(g2, x, y + 20, mob.getAttackPower(), true);
-			drawMobStat(g2, x + 62, y + 20, getMobDefense(), false);
+			List<StatusBadge> badges = getMobStatusBadges(targetMob);
+			int statusH = 28;
+			int totalH = 18 + 14 + 6 + barH + 8 + statusH;
+			int hudY = Math.max(4, mobY - totalH - 18);
+			int statBaseline = hudY + 14;
+			int nameBaseline = hudY + 31;
+			int barY = hudY + 38;
+			int statusY = barY + barH + 8;
+
+			drawMobStatRow(g2, targetMob, centerX, statBaseline);
+			drawMobName(g2, targetMob.getName(), barX, nameBaseline, barW);
+			drawMobHealthBar(g2, targetMob, barX, barY, barW, barH);
+			if (!badges.isEmpty()) {
+				drawMobStatusBadges(g2, badges, barX, statusY);
+			}
 		}
 
-		private void drawMobStat(Graphics2D g2, int x, int y, int value, boolean attack) {
+		private void drawMobName(Graphics2D g2, String name, int x, int baseline, int w) {
+			g2.setFont(uiPixelFont(11));
+			String text = trimToWidth(g2, name, w);
+			FontMetrics fm = g2.getFontMetrics();
+			int tx = x + (w - fm.stringWidth(text)) / 2;
+			g2.setColor(new Color(0, 0, 0, 230));
+			g2.drawString(text, tx + 2, baseline + 2);
+			g2.setColor(Color.WHITE);
+			g2.drawString(text, tx, baseline);
+		}
+
+		private void drawMobStatRow(Graphics2D g2, Mob targetMob, int centerX, int baseline) {
+			int rowW = 116;
+			int x = centerX - rowW / 2;
+			drawMobStat(g2, x, baseline, targetMob.getAttackPower(), true);
+			drawMobStat(g2, x + 62, baseline, getMobDefense(targetMob), false);
+		}
+
+		private void drawMobStat(Graphics2D g2, int x, int baseline, int value, boolean attack) {
 			ImageIcon icon = attack ? atkIcon : defIcon;
-			drawIcon(g2, icon, x, y - 17, 18, 18);
-			g2.setFont(new Font("Monospaced", Font.BOLD, 12));
+			drawIcon(g2, icon, x, baseline - 17, 18, 18);
+			g2.setFont(uiPixelFont(11));
+			g2.setColor(new Color(0, 0, 0, 210));
+			g2.drawString(String.valueOf(value), x + 24, baseline + 2);
 			g2.setColor(new Color(255, 226, 120));
-			g2.drawString(String.valueOf(value), x + 24, y - 3);
+			g2.drawString(String.valueOf(value), x + 23, baseline + 1);
+		}
+
+		private void drawMobHealthBar(Graphics2D g2, Mob targetMob, int x, int y, int w, int h) {
+			double ratio = targetMob.getMaxHealth() <= 0 ? 0
+					: Math.max(0, Math.min(1, (double) targetMob.getHealth() / targetMob.getMaxHealth()));
+			int cellCount = 12;
+			int gap = 2;
+			int framePad = 3;
+			int cellsX = x + framePad;
+			int cellsY = y + framePad;
+			int cellsH = h - framePad * 2;
+			int cellW = Math.max(5, (w - framePad * 2 - gap * (cellCount - 1)) / cellCount);
+			int frameW = framePad * 2 + cellCount * cellW + (cellCount - 1) * gap;
+
+			g2.setColor(new Color(0, 0, 0, 230));
+			g2.fillRect(x - 1, y - 1, frameW + 2, h + 2);
+			g2.setColor(new Color(94, 45, 31));
+			g2.drawRect(x, y, frameW - 1, h - 1);
+			g2.setColor(new Color(12, 8, 8));
+			g2.fillRect(cellsX, cellsY, frameW - framePad * 2, cellsH);
+
+			for (int i = 0; i < cellCount; i++) {
+				double cellRatio = Math.max(0, Math.min(1, ratio * cellCount - i));
+				int cx = cellsX + i * (cellW + gap);
+				g2.setColor(new Color(42, 6, 6));
+				g2.fillRect(cx, cellsY, cellW, cellsH);
+				if (cellRatio > 0) {
+					int fillW = Math.max(1, (int) Math.round(cellW * cellRatio));
+					g2.setColor(new Color(190, 0, 0));
+					g2.fillRect(cx, cellsY, fillW, cellsH);
+					g2.setColor(new Color(255, 56, 44));
+					g2.fillRect(cx, cellsY, fillW, Math.max(2, cellsH / 3));
+				}
+				g2.setColor(new Color(0, 0, 0, 140));
+				g2.drawRect(cx, cellsY, cellW - 1, cellsH - 1);
+			}
+
+			String hpText = targetMob.getHealth() + " / " + targetMob.getMaxHealth();
+			g2.setFont(uiPixelFont(10));
+			FontMetrics fm = g2.getFontMetrics();
+			int tx = x + frameW + 8;
+			int ty = y + h / 2 + fm.getAscent() / 2 - 2;
+			g2.setColor(new Color(0, 0, 0, 220));
+			g2.drawString(hpText, tx + 2, ty + 2);
+			g2.setColor(Color.WHITE);
+			g2.drawString(hpText, tx, ty);
+		}
+
+		private void drawMobStatusBadges(Graphics2D g2, List<StatusBadge> badges, int x, int y) {
+			int iconSize = 24;
+			int gap = 5;
+			for (int i = 0; i < badges.size(); i++) {
+				StatusBadge badge = badges.get(i);
+				int ix = x + i * (iconSize + gap);
+				drawCroppedImage(g2, badge.icon, badge.cropX, badge.cropY, badge.cropW, badge.cropH, ix, y, iconSize,
+						iconSize);
+				drawBadgeTurnText(g2, String.valueOf(badge.remainingTurns), ix, y, iconSize);
+			}
+		}
+
+		private void drawBadgeTurnText(Graphics2D g2, String text, int x, int y, int size) {
+			g2.setFont(uiPixelFont(9));
+			FontMetrics fm = g2.getFontMetrics();
+			int tx = x + size - fm.stringWidth(text) - 2;
+			int ty = y + size - 3;
+			g2.setColor(new Color(0, 0, 0, 230));
+			g2.drawString(text, tx + 1, ty + 1);
+			g2.setColor(Color.WHITE);
+			g2.drawString(text, tx, ty);
 		}
 	}
 
@@ -624,7 +999,7 @@ public class BattleView extends JPanel {
 
 		CardPanel() {
 
-			cardFrame = loadIcon("resources/ui/card_frame_dec.png");
+			cardFrame = loadScaledIcon("resources/ui/card_frame_v2.png", CardStyle.WIDTH, CardStyle.HEIGHT);
 
 			setOpaque(false);
 			setPreferredSize(new Dimension(0, 180));
@@ -751,10 +1126,6 @@ public class BattleView extends JPanel {
 			super.paintComponent(g);
 			Graphics2D g2 = (Graphics2D) g.create();
 			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
-
-			int bandY = 74;
-			g2.setColor(new Color(0, 0, 0, 38));
-			g2.fillRect(16, bandY + 4, getWidth() - 32, getHeight() - bandY - 8);
 
 			drawCards(g2);
 			if (hoveredCard != null)
@@ -979,11 +1350,8 @@ public class BattleView extends JPanel {
 
 		ItemPanel() {
 			setOpaque(false);
-			setPreferredSize(new Dimension(58, 90));
-			setMaximumSize(new Dimension(58, 90));
-			setToolTipText("");
-			ToolTipManager.sharedInstance().registerComponent(this);
-			ToolTipManager.sharedInstance().setInitialDelay(120);
+			setPreferredSize(new Dimension(106, 120));
+			setMaximumSize(new Dimension(106, 120));
 			addMouseListener(new MouseAdapter() {
 				@Override
 				public void mouseClicked(MouseEvent e) {
@@ -997,40 +1365,6 @@ public class BattleView extends JPanel {
 					}
 				}
 			});
-			addMouseMotionListener(new MouseMotionAdapter() {
-				@Override
-				public void mouseMoved(MouseEvent e) {
-					if (getToolTipText(e) == null) {
-						ToolTipManager.sharedInstance().setEnabled(false);
-						ToolTipManager.sharedInstance().setEnabled(true);
-					}
-				}
-			});
-		}
-
-		@Override
-		public String getToolTipText(MouseEvent event) {
-			for (ItemSlot slot : slots) {
-				if (slot.bounds.contains(event.getPoint())) {
-					return slot.className + "  x" + getConsumableQuantity(slot.className);
-				}
-			}
-			return null;
-		}
-
-		@Override
-		public Point getToolTipLocation(MouseEvent event) {
-			for (ItemSlot slot : slots) {
-				if (slot.bounds.contains(event.getPoint())) {
-					return new Point(54, slot.bounds.y);
-				}
-			}
-			return new Point(54, 0);
-		}
-
-		@Override
-		public JToolTip createToolTip() {
-			return createHotbarToolTip(this);
 		}
 
 		@Override
@@ -1038,27 +1372,27 @@ public class BattleView extends JPanel {
 			super.paintComponent(g);
 			Graphics2D g2 = (Graphics2D) g.create();
 			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+			g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
+			drawTitleText(g2, "ITEMS", getWidth() / 2, 27, 11);
 			slots.clear();
-			drawConsumableSlot(g2, "HealPotion", healPotionIcon, 7, 0);
-			drawConsumableSlot(g2, "AttackPotion", attackPotionIcon, 7, 44);
+			drawConsumableSlot(g2, "HealPotion", healPotionIcon, 7, 28);
+			drawConsumableSlot(g2, "AttackPotion", attackPotionIcon, 7, 73);
 			g2.dispose();
 		}
 
 		private void drawConsumableSlot(Graphics2D g2, String className, ImageIcon icon, int x, int y) {
 			int qty = getConsumableQuantity(className);
-			Rectangle bounds = new Rectangle(x, y, 44, 44);
+			// UI POSITION: item row click/text area. Change x/y from drawConsumableSlot(...) calls to move each item row.
+			Rectangle bounds = new Rectangle(x, y, 96, 44);
 			slots.add(new ItemSlot(className, bounds));
 
-			drawHotbarSlot(g2, bounds.x, bounds.y, bounds.width, bounds.height);
-			drawIcon(g2, icon, bounds.x + 5, bounds.y + 5, 34, 34);
-			g2.setFont(new Font("Monospaced", Font.BOLD, 11));
-			g2.setColor(Color.WHITE);
-			drawItemCount(g2, String.valueOf(qty), bounds.x + bounds.width - 5, bounds.y + bounds.height - 5);
+			drawIcon(g2, icon, x + 5, y + 5, 34, 34);
+			drawPanelValue(g2, "x" + qty, x + 58, y + 29, Color.WHITE, 13);
 
 			if (qty <= 0) {
-				g2.setColor(new Color(0, 0, 0, 120));
-				g2.fillRect(bounds.x + 3, bounds.y + 3, bounds.width - 6, bounds.height - 6);
+				g2.setColor(new Color(0, 0, 0, 110));
+				g2.fillRect(x + 5, y + 5, 34, 34);
 			}
 		}
 	}
@@ -1068,19 +1402,6 @@ public class BattleView extends JPanel {
 			setOpaque(false);
 			setPreferredSize(new Dimension(58, 58));
 			setMaximumSize(new Dimension(58, 58));
-			setToolTipText("");
-			ToolTipManager.sharedInstance().registerComponent(this);
-			ToolTipManager.sharedInstance().setInitialDelay(120);
-
-			addMouseMotionListener(new MouseMotionAdapter() {
-				@Override
-				public void mouseMoved(MouseEvent e) {
-					if (getToolTipText(e) == null) {
-						ToolTipManager.sharedInstance().setEnabled(false);
-						ToolTipManager.sharedInstance().setEnabled(true);
-					}
-				}
-			});
 		}
 
 		@Override
@@ -1131,33 +1452,45 @@ public class BattleView extends JPanel {
 	}
 
 	private class HeartPanel extends JPanel {
+		private static final int STATS_TITLE_BASELINE = 32;
+		private static final int STATS_BASE_X = 7;
+		private static final int STATS_FIRST_ROW_Y = 34;
+		private static final int STATS_ROW_GAP = 42;
+		private static final int STATS_DEF_ROW_EXTRA_Y = 4;
+		private static final int STATS_HP_ROW_EXTRA_Y = 0;
+
+		private static final int STATS_ROW_WIDTH = 96;
+		private static final int STATS_ROW_HEIGHT = 44;
+
+		private static final int STATS_ICON_X_OFFSET = 5;
+		private static final int STATS_ATK_ICON_Y_OFFSET = 3;
+		private static final int STATS_DEF_ICON_Y_OFFSET = 3;
+		private static final int STATS_ICON_SIZE = 34;
+
+		private static final int STATS_TEXT_X_OFFSET = 49;
+		private static final int STATS_LABEL_Y_OFFSET = 20;
+		private static final int STATS_VALUE_Y_OFFSET = 40;
+		private static final int STATS_LABEL_FONT_SIZE = 9;
+
+		private static final int STATS_HEART_X_OFFSET = 10;
+		private static final int STATS_HEART_Y_OFFSET = 18;
+		private static final int STATS_HEART_SIZE = 30;
+		private static final int STATS_TOOLTIP_X = 54;
+
 		HeartPanel() {
 			setOpaque(false);
-			setPreferredSize(new Dimension(58, 134));
-			setMaximumSize(new Dimension(58, 134));
-			setToolTipText("");
-			ToolTipManager.sharedInstance().registerComponent(this);
-			ToolTipManager.sharedInstance().setInitialDelay(120);
-
-			addMouseMotionListener(new MouseMotionAdapter() {
-				@Override
-				public void mouseMoved(MouseEvent e) {
-					if (getToolTipText(e) == null) {
-						ToolTipManager.sharedInstance().setEnabled(false);
-						ToolTipManager.sharedInstance().setEnabled(true);
-					}
-				}
-			});
+			setPreferredSize(new Dimension(106, 166));
+			setMaximumSize(new Dimension(106, 166));
 		}
 
 		@Override
 		public String getToolTipText(MouseEvent event) {
 			Point p = event.getPoint();
-			if (new Rectangle(7, 0, 44, 44).contains(p))
+			if (statsRowBounds(0).contains(p))
 				return "공격력 " + steve.getTotalAttackPower();
-			if (new Rectangle(7, 44, 44, 44).contains(p))
+			if (statsRowBounds(1).contains(p))
 				return "방어력 " + steve.getDefencePower();
-			if (new Rectangle(7, 88, 44, 44).contains(p))
+			if (statsRowBounds(2).contains(p))
 				return "최대체력 " + steve.getMaxHealth();
 			return null;
 		}
@@ -1165,13 +1498,12 @@ public class BattleView extends JPanel {
 		@Override
 		public Point getToolTipLocation(MouseEvent event) {
 			Point p = event.getPoint();
-			if (new Rectangle(7, 0, 44, 44).contains(p))
-				return new Point(54, 0);
-			if (new Rectangle(7, 44, 44, 44).contains(p))
-				return new Point(54, 44);
-			if (new Rectangle(7, 88, 44, 44).contains(p))
-				return new Point(54, 88);
-			return new Point(54, 12);
+			for (int row = 0; row < 3; row++) {
+				Rectangle bounds = statsRowBounds(row);
+				if (bounds.contains(p))
+					return new Point(STATS_TOOLTIP_X, bounds.y);
+			}
+			return new Point(STATS_TOOLTIP_X, 12);
 		}
 
 		@Override
@@ -1184,19 +1516,41 @@ public class BattleView extends JPanel {
 			super.paintComponent(g);
 			Graphics2D g2 = (Graphics2D) g.create();
 			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+			g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
-			int x = 7;
-			int y = 0;
-			drawHotbarSlot(g2, x, y, 44, 44);
-			drawIcon(g2, atkIcon, x + 5, y + 5, 34, 34);
-			drawItemCount(g2, String.valueOf(steve.getTotalAttackPower()), x + 39, y + 39);
+			drawTitleText(g2, "STATS", getWidth() / 2, STATS_TITLE_BASELINE, 11);
+			int x = STATS_BASE_X;
+			int atkY = statsRowY(0);
+			int defY = statsRowY(1);
+			int hpY = statsRowY(2);
+			int iconX = x + STATS_ICON_X_OFFSET;
+			int textX = x + STATS_TEXT_X_OFFSET;
 
-			drawHotbarSlot(g2, x, y + 44, 44, 44);
-			drawIcon(g2, defIcon, x + 5, y + 49, 34, 34);
-			drawItemCount(g2, String.valueOf(steve.getDefencePower()), x + 39, y + 83);
+			drawIcon(g2, atkIcon, iconX, atkY + STATS_ATK_ICON_Y_OFFSET, STATS_ICON_SIZE, STATS_ICON_SIZE);
+			drawPanelLabel(g2, "ATK", textX, atkY + STATS_LABEL_Y_OFFSET, STATS_LABEL_FONT_SIZE);
+			drawPanelValue(g2, String.valueOf(steve.getTotalAttackPower()), textX, atkY + STATS_VALUE_Y_OFFSET,
+					new Color(255, 116, 72), 13);
 
-			drawHeartSlot(g2, x, y + 88);
+			drawIcon(g2, defIcon, iconX, defY + STATS_DEF_ICON_Y_OFFSET, STATS_ICON_SIZE, STATS_ICON_SIZE);
+			drawPanelLabel(g2, "DEF", textX, defY + STATS_LABEL_Y_OFFSET, STATS_LABEL_FONT_SIZE);
+			drawPanelValue(g2, String.valueOf(steve.getDefencePower()), textX, defY + STATS_VALUE_Y_OFFSET,
+					new Color(124, 214, 255), 13);
+
+			drawHeartSlot(g2, x, hpY);
 			g2.dispose();
+		}
+
+		private int statsRowY(int row) {
+			int y = STATS_FIRST_ROW_Y + STATS_ROW_GAP * row;
+			if (row == 1)
+				return y + STATS_DEF_ROW_EXTRA_Y;
+			if (row == 2)
+				return y + STATS_HP_ROW_EXTRA_Y;
+			return y;
+		}
+
+		private Rectangle statsRowBounds(int row) {
+			return new Rectangle(STATS_BASE_X, statsRowY(row), STATS_ROW_WIDTH, STATS_ROW_HEIGHT);
 		}
 
 		private double getHealthRatio() {
@@ -1206,9 +1560,12 @@ public class BattleView extends JPanel {
 		}
 
 		private void drawHeartSlot(Graphics2D g2, int x, int y) {
-			drawHotbarSlot(g2, x, y, 44, 44);
-			drawPixelHeart(g2, x + 10, y + 8, 24, getHealthRatio());
-			drawItemCount(g2, String.valueOf(steve.getHealth()), x + 39, y + 39);
+			int textX = x + STATS_TEXT_X_OFFSET;
+			drawPixelHeart(g2, x + STATS_HEART_X_OFFSET, y + STATS_HEART_Y_OFFSET, STATS_HEART_SIZE,
+					getHealthRatio());
+			drawPanelLabel(g2, "HP", textX, y + STATS_LABEL_Y_OFFSET + 8, STATS_LABEL_FONT_SIZE);
+			drawPanelValue(g2, String.valueOf(steve.getHealth()), textX, y + STATS_VALUE_Y_OFFSET + 8,
+					new Color(255, 70, 70), 13);
 		}
 
 		private void drawPixelHeart(Graphics2D g2, int x, int y, int size, double fillRatio) {
@@ -1247,10 +1604,10 @@ public class BattleView extends JPanel {
 
 		CoinLabel() {
 			super("", SwingConstants.RIGHT);
-			setFont(new Font("Monospaced", Font.BOLD, 12));
+			setFont(new Font("Monospaced", Font.BOLD, 18));
 			setForeground(new Color(255, 224, 82));
 			setOpaque(false);
-			coinIcon = loadScaledIcon(COIN_ICON_PATH, 14, 14);
+			coinIcon = loadScaledIcon(COIN_ICON_PATH, 18, 18);
 		}
 
 		@Override
@@ -1260,18 +1617,21 @@ public class BattleView extends JPanel {
 
 			FontMetrics fm = g2.getFontMetrics(getFont());
 			int textW = fm.stringWidth(getText());
-			int icon = 14;
-			int gap = 5;
+			int icon = 24;
+			int gap = 6;
 			int totalW = icon + gap + textW;
-			int x = getWidth() - totalW;
-			int y = (getHeight() - icon) / 2 + 1;
+			int x = Math.max(0, (getWidth() - totalW) / 2);
+			int y = (getHeight() - icon) / 2;
 
 			if (coinIcon != null) {
 				g2.drawImage(coinIcon.getImage(), x, y, icon, icon, this);
 			}
 			g2.setFont(getFont());
+			int baseline = (getHeight() + fm.getAscent() - fm.getDescent()) / 2;
+			g2.setColor(new Color(0, 0, 0, 210));
+			g2.drawString(getText(), x + icon + gap + 2, baseline + 2);
 			g2.setColor(getForeground());
-			g2.drawString(getText(), x + icon + gap, (getHeight() + fm.getAscent() - fm.getDescent()) / 2);
+			g2.drawString(getText(), x + icon + gap, baseline);
 			g2.dispose();
 		}
 	}
@@ -1283,12 +1643,19 @@ public class BattleView extends JPanel {
 				path = cleanPath;
 			}
 		}
-		ImageIcon icon = new ImageIcon(path);
+		String cacheKey = path + "#" + width + "x" + height;
+		ImageIcon cached = SCALED_ICON_CACHE.get(cacheKey);
+		if (cached != null)
+			return cached;
+
+		ImageIcon icon = loadIcon(path);
 		if (icon.getIconWidth() <= 0)
 			return null;
 
 		Image scaled = icon.getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH);
-		return new ImageIcon(scaled);
+		ImageIcon scaledIcon = new ImageIcon(scaled);
+		SCALED_ICON_CACHE.put(cacheKey, scaledIcon);
+		return scaledIcon;
 	}
 
 	private static class MinecraftButton extends JButton {
@@ -1331,6 +1698,9 @@ public class BattleView extends JPanel {
 		fireChargeIcon = loadIcon("resources/shop/FireCharge.png");
 		healPotionIcon = loadIcon("resources/shop/HealPotion.png");
 		attackPotionIcon = loadIcon("resources/shop/AttackPotion.png");
+		mobHeartbarIcon = loadIcon("resources/ui/mob_heartbar.png");
+		effectBurnIcon = loadIcon("resources/ui/effect_burn.png");
+		effectStunIcon = loadIcon("resources/ui/effect_stun.png");
 
 		this.scopeImage = loadIcon("resources/ui/target_v2.png").getImage();
 
@@ -1344,10 +1714,17 @@ public class BattleView extends JPanel {
 		}
 	}
 
-	private ImageIcon loadIcon(String path) {
+	private static ImageIcon loadIcon(String path) {
+		ImageIcon cached = ICON_CACHE.get(path);
+		if (cached != null)
+			return cached;
 		try {
 			ImageIcon ic = new ImageIcon(path);
-			return ic.getIconWidth() > 0 ? ic : null;
+			if (ic.getIconWidth() > 0) {
+				ICON_CACHE.put(path, ic);
+				return ic;
+			}
+			return null;
 		} catch (Exception e) {
 			return null;
 		}
@@ -1468,8 +1845,36 @@ public class BattleView extends JPanel {
 		g2.drawRect(x + 5, y + 5, Math.max(0, w - 11), Math.max(0, h - 11));
 	}
 
+	private static Font uiPixelFont(int size) {
+		return uiPixelFont(Font.BOLD, size);
+	}
+
+	private static Font uiPixelFont(int style, int size) {
+		if (pixelFontBase == null) {
+			try {
+				pixelFontBase = Font.createFont(Font.TRUETYPE_FONT, new File(PIXEL_FONT_PATH));
+				GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(pixelFontBase);
+			} catch (Exception e) {
+				pixelFontBase = new Font("Monospaced", Font.BOLD, 12);
+			}
+		}
+		return pixelFontBase.deriveFont(style, (float) size);
+	}
+
+	private static Font koreanPixelFont(int style, int size) {
+		if (koreanPixelFontBase == null) {
+			try {
+				koreanPixelFontBase = Font.createFont(Font.TRUETYPE_FONT, new File(KOREAN_PIXEL_FONT_PATH));
+				GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(koreanPixelFontBase);
+			} catch (Exception e) {
+				koreanPixelFontBase = new Font("Dialog", Font.BOLD, 12);
+			}
+		}
+		return koreanPixelFontBase.deriveFont(style, (float) size);
+	}
+
 	private static void drawItemCount(Graphics2D g2, String text, int rightX, int baseline) {
-		g2.setFont(new Font("Monospaced", Font.BOLD, 13));
+		g2.setFont(uiPixelFont(13));
 		FontMetrics fm = g2.getFontMetrics();
 		int x = rightX - fm.stringWidth(text);
 		g2.setColor(new Color(0, 0, 0, 210));
@@ -1477,6 +1882,36 @@ public class BattleView extends JPanel {
 		g2.setColor(new Color(45, 45, 45, 170));
 		g2.drawString(text, x + 1, baseline + 1);
 		g2.setColor(Color.WHITE);
+		g2.drawString(text, x, baseline);
+	}
+
+	private static void drawPanelLabel(Graphics2D g2, String text, int x, int baseline) {
+		drawPanelLabel(g2, text, x, baseline, 10);
+	}
+
+	private static void drawPanelLabel(Graphics2D g2, String text, int x, int baseline, int size) {
+		g2.setFont(uiPixelFont(size));
+		g2.setColor(new Color(0, 0, 0, 190));
+		g2.drawString(text, x + 2, baseline + 2);
+		g2.setColor(new Color(150, 150, 150));
+		g2.drawString(text, x, baseline);
+	}
+
+	private static void drawPanelValue(Graphics2D g2, String text, int x, int baseline, Color color, int size) {
+		g2.setFont(uiPixelFont(size));
+		g2.setColor(new Color(0, 0, 0, 210));
+		g2.drawString(text, x + 2, baseline + 2);
+		g2.setColor(color);
+		g2.drawString(text, x, baseline);
+	}
+
+	private static void drawTitleText(Graphics2D g2, String text, int centerX, int baseline, int size) {
+		g2.setFont(uiPixelFont(size));
+		FontMetrics fm = g2.getFontMetrics();
+		int x = centerX - fm.stringWidth(text) / 2;
+		g2.setColor(new Color(0, 0, 0, 220));
+		g2.drawString(text, x + 2, baseline + 2);
+		g2.setColor(new Color(255, 202, 92));
 		g2.drawString(text, x, baseline);
 	}
 
@@ -1489,7 +1924,7 @@ public class BattleView extends JPanel {
 			}
 		};
 		tip.setComponent(owner);
-		tip.setFont(new Font("Monospaced", Font.BOLD, 11));
+		tip.setFont(uiPixelFont(11));
 		tip.setForeground(Color.WHITE);
 		tip.setBackground(new Color(18, 18, 18, 232));
 		tip.setBorder(
@@ -1500,16 +1935,24 @@ public class BattleView extends JPanel {
 	}
 
 	private JPanel buildTopHud() {
-		JPanel panel = new JPanel(new BorderLayout());
+		JPanel panel = new JPanel(null) {
+			@Override
+			protected void paintComponent(Graphics g) {
+				super.paintComponent(g);
+				Graphics2D g2 = (Graphics2D) g.create();
+				g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+				drawTitleText(g2, "LV " + steve.getLevel(), getWidth() / 2 + TOP_HUD_LEVEL_X_OFFSET,
+						Math.round(getHeight() * 0.535f), 12);
+				g2.dispose();
+			}
+		};
 		panel.setOpaque(false);
 		panel.setPreferredSize(new Dimension(0, 64));
-		panel.setBorder(BorderFactory.createEmptyBorder(4, 96, 4, 24));
 
-		JPanel expWrap = new JPanel(new BorderLayout(0, 3));
-		expWrap.setOpaque(false);
-		expLabel = new JLabel("", SwingConstants.CENTER);
-		expLabel.setFont(new Font("Dialog", Font.BOLD, 11));
-		expLabel.setForeground(Color.WHITE);
+		expLabel = new JLabel("", SwingConstants.RIGHT);
+		expLabel.setFont(uiPixelFont(11));
+		expLabel.setForeground(new Color(126, 255, 70));
+		expLabel.setOpaque(false);
 
 		expBar = new JProgressBar(0, 100) {
 			@Override
@@ -1517,40 +1960,47 @@ public class BattleView extends JPanel {
 				Graphics2D g2 = (Graphics2D) g.create();
 				g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
 				int w = getWidth();
-				int barH = 10;
-				int y = (getHeight() - barH) / 2;
-
-				g2.setColor(new Color(0, 0, 0, 190));
-				g2.fillRect(0, y, w, barH);
-				g2.setColor(new Color(31, 46, 29, 230));
-				g2.fillRect(2, y + 2, Math.max(0, w - 4), barH - 4);
+				int barH = getHeight();
+				int y = 0;
 
 				double ratio = getMaximum() == 0 ? 0 : (double) getValue() / getMaximum();
-				int fillW = (int) ((w - 4) * ratio);
+				int fillW = (int) (w * ratio);
 				g2.setColor(new Color(54, 146, 36));
-				g2.fillRect(2, y + 2, fillW, barH - 4);
+				g2.fillRect(0, y, fillW, barH);
 				g2.setColor(XP_GREEN);
-				g2.fillRect(2, y + 2, fillW, 2);
-				g2.setColor(new Color(5, 16, 5, 190));
-				for (int sx = 2; sx < w - 2; sx += 14) {
-					g2.drawLine(sx, y + 2, sx, y + barH - 3);
+				g2.fillRect(0, y, fillW, 2);
+
+				int segments = 20;
+				for (int i = 1; i < segments; i++) {
+					int sx = Math.round(w * i / (float) segments);
+					g2.setColor(new Color(0, 0, 0, 190));
+					g2.fillRect(sx - 1, y, 2, barH);
+					g2.setColor(new Color(170, 255, 110, 80));
+					g2.fillRect(sx + 1, y, 1, Math.max(1, barH - 1));
 				}
-				g2.setColor(new Color(0, 0, 0, 230));
-				g2.drawRect(0, y, w - 1, barH - 1);
 				g2.dispose();
 			}
 		};
 		expBar.setPreferredSize(new Dimension(0, 12));
 		expBar.setBorderPainted(false);
 		expBar.setStringPainted(false);
-		expWrap.add(expLabel, BorderLayout.NORTH);
-		expWrap.add(expBar, BorderLayout.CENTER);
+		expBar.setOpaque(false);
 
 		steveCoinLabel = new CoinLabel();
-		steveCoinLabel.setBorder(BorderFactory.createEmptyBorder(3, 0, 0, 0));
 
-		panel.add(expWrap, BorderLayout.CENTER);
-		panel.add(steveCoinLabel, BorderLayout.SOUTH);
+		panel.add(expBar);
+		panel.add(expLabel);
+		panel.add(steveCoinLabel);
+		panel.addComponentListener(new ComponentAdapter() {
+			@Override
+			public void componentResized(ComponentEvent e) {
+				int w = panel.getWidth();
+				int h = panel.getHeight();
+				expBar.setBounds(scaleX(w, 156), Math.round(h * 0.54f), scaleX(w, 420), 10);
+				expLabel.setBounds(scaleX(w, 558), Math.round(h * 0.47f), scaleX(w, 88), 22);
+				steveCoinLabel.setBounds(scaleX(w, 718), Math.round(h * 0.47f), scaleX(w, 86), 28);
+			}
+		});
 		return panel;
 	}
 
@@ -1558,19 +2008,24 @@ public class BattleView extends JPanel {
 		JPanel panel = new PlayerSidebarPanel();
 		panel.setOpaque(false);
 		panel.setPreferredSize(new Dimension(74, 0));
-		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-		panel.setBorder(BorderFactory.createEmptyBorder(12, 8, 12, 8));
+		panel.setLayout(null);
 
 		itemPanel = new ItemPanel();
-		equipmentPanel = new EquipmentPanel();
 		heartPanel = new HeartPanel();
 
-		panel.add(equipmentPanel);
-		panel.add(Box.createVerticalStrut(18));
 		panel.add(heartPanel);
-		panel.add(Box.createVerticalStrut(18));
 		panel.add(itemPanel);
-		panel.add(Box.createVerticalGlue());
+		panel.addComponentListener(new ComponentAdapter() {
+			@Override
+			public void componentResized(ComponentEvent e) {
+				int w = panel.getWidth();
+				int h = Math.max(1, panel.getHeight());
+				heartPanel.setBounds(Math.round(w * 28 / 146f), scaleY(h, 124), Math.round(w * 106 / 146f),
+						scaleY(h, 176));
+				itemPanel.setBounds(Math.round(w * 28 / 146f), scaleY(h, 326), Math.round(w * 106 / 146f),
+						scaleY(h, 124));
+			}
+		});
 		return panel;
 	}
 
@@ -1896,7 +2351,7 @@ public class BattleView extends JPanel {
 		int exp = Math.max(0, steve.getExp());
 		expBar.setMaximum(Math.max(1, expMax));
 		expBar.setValue(Math.min(exp, expBar.getMaximum()));
-		expLabel.setText("Lv " + steve.getLevel() + "   EXP " + exp + " / " + expBar.getMaximum());
+		expLabel.setText("EXP " + exp + " / " + expBar.getMaximum());
 		steveCoinLabel.setText(String.valueOf(steve.getCoin()));
 
 		if (heartPanel != null)
@@ -2043,6 +2498,8 @@ public class BattleView extends JPanel {
 				ImageIcon frameIcon = new ImageIcon(framePath);
 				if (frameIcon.getIconWidth() > 0) {
 					g2.drawImage(frameIcon.getImage(), 0, 0, w, h, this);
+				} else {
+					paintLevelUpCardFallback(g2, w, h, capturedStatColor);
 				}
 
 				// ── 2. 헤더 타이틀 텍스트
@@ -2139,8 +2596,23 @@ public class BattleView extends JPanel {
 		return card;
 	}
 
+	private static void paintLevelUpCardFallback(Graphics2D g2, int w, int h, Color accent) {
+		g2.setColor(new Color(32, 26, 30, 235));
+		g2.fillRect(0, 0, w, h);
+		g2.setColor(accent.darker());
+		g2.fillRect(0, 0, w, 25);
+		g2.setColor(new Color(255, 255, 255, 70));
+		g2.drawRect(1, 1, Math.max(0, w - 3), Math.max(0, h - 3));
+		g2.setColor(new Color(0, 0, 0, 170));
+		g2.drawRect(0, 0, Math.max(0, w - 1), Math.max(0, h - 1));
+	}
+
 	private int getMobDefense() {
 		return readIntMethod(mob, 0, "getDefensePower", "getDefense", "getArmor");
+	}
+
+	private int getMobDefense(Mob targetMob) {
+		return readIntMethod(targetMob, 0, "getDefensePower", "getDefense", "getArmor");
 	}
 
 	private int getWeaponAttackBonus() {

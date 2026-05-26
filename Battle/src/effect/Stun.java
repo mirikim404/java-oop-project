@@ -27,6 +27,10 @@ public class Stun implements StatusEffect {
 		// TODO Auto-generated method stub
 		return remainingTurns <= 0;
 	}
+
+    public int getRemainingTurns() {
+        return remainingTurns;
+    }
     
     
 }

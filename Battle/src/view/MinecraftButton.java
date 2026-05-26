@@ -17,7 +17,6 @@ public class MinecraftButton extends JButton {
         setContentAreaFilled(false);
         setBorderPainted(false);
         setForeground(Color.WHITE);
-        setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
         addMouseListener(new MouseAdapter() {
             @Override public void mouseEntered(MouseEvent e) { hovered = true;  repaint(); }
@@ -43,7 +42,7 @@ public class MinecraftButton extends JButton {
         g2.fillRect(0, getHeight() - 3, getWidth(), 3);
         g2.fillRect(getWidth() - 3, 0, 3, getHeight());
 
-        // ✅ 텍스트 (안티앨리어싱 OFF, 그림자 포함)
+        // 텍스트 (안티앨리어싱 OFF, 그림자 포함)
         g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_OFF);
         g2.setFont(getFont());
         FontMetrics fm = g2.getFontMetrics();
