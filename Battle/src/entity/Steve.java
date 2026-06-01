@@ -61,31 +61,31 @@ public class Steve extends Entity implements Skillable {
 	public void useSkill(Steve steve, Mob mob) {
 		ActiveSkill[] skills = steve.getActiveSkills();
 
-
 		if (skills[0] == null) { // 사용할 수 있는 스킬이 없으면
 			System.out.println("사용할 수 있는 스킬이 없습니다");
-			return; 
+			return;
 		}
 		System.out.println(getName() + "이/가 스킬을 사용합니다.");
 		System.out.println("\n === 사용 가능한 스킬 목록 === ");
 
 		for (int i = 0; i < skills.length; i++) {
 			if (skills[i] != null) {
-				//가지고 있는 스킬 꺼내서 보여줌 
+				// 가지고 있는 스킬 꺼내서 보여줌
 				String readyText = skills[i].isReady() ? "사용 가능" : "사용 불가능";
-				System.out.printf("[%d] %s (쿨타임 %d턴 남음 / %s)\n", i+1, skills[i].getClass().getSimpleName(), skills[i].getCurrentCooldown() , readyText);
+				System.out.printf("[%d] %s (쿨타임 %d턴 남음 / %s)\n", i + 1, skills[i].getClass().getSimpleName(),
+						skills[i].getCurrentCooldown(), readyText);
 			}
 
 		}
 		System.out.println("\n === 사용할 스킬을 선택하세요. ===");
 
 		int ans = input.nextInt();
-		ActiveSkill chosenSkill = skills[ans-1];
+		ActiveSkill chosenSkill = skills[ans - 1];
 		if (chosenSkill.isReady() == true) {
 			chosenSkill.use(steve, mob);
 
-		}
-		else System.out.println("==아직 준비되지 않은 스킬입니다. === ");
+		} else
+			System.out.println("==아직 준비되지 않은 스킬입니다. === ");
 	}
 
 	@Override
@@ -107,25 +107,25 @@ public class Steve extends Entity implements Skillable {
 		System.out.println(getName() + "이/가 포션을 사용합니다.");
 		System.out.println("\n === 사용 가능한 포션 목록 === ");
 		for (int i = 0; i < cnt; i++) {
-			System.out.printf("[%d] %s %d개 ", i+1, availablePotions[i].getClass().getSimpleName(), availablePotions[i].getQuantity());
+			System.out.printf("[%d] %s %d개 ", i + 1, availablePotions[i].getClass().getSimpleName(),
+					availablePotions[i].getQuantity());
 		}
 
 		System.out.println("\n === 사용할 포션을 선택하세요. ===");
 		int ans;
-		while(true) {
+		while (true) {
 			ans = input.nextInt();
-			if (ans > cnt || ans<1) {
+			if (ans > cnt || ans < 1) {
 				System.out.println("=== 잘못된 입력입니다. === ");
-			}
-			else break;
+			} else
+				break;
 		}
-		ConsumableSkill chosenPotion = availablePotions[ans-1];
+		ConsumableSkill chosenPotion = availablePotions[ans - 1];
 		if (chosenPotion.hasStock() == true) {
 			chosenPotion.use(steve);
-		}
-		else System.out.println("=== 보유하지 않은 포션입니다. === ");
+		} else
+			System.out.println("=== 보유하지 않은 포션입니다. === ");
 	}
-
 
 	public void gainExp() {
 		gainExp(0);
@@ -165,7 +165,7 @@ public class Steve extends Entity implements Skillable {
 	}
 
 	public void onTurnEnd() {
-		processEffects();  // ← 추가
+		processEffects(); // ← 추가
 		if (activeSkills != null) {
 			for (ActiveSkill skill : activeSkills) {
 				if (skill != null) {
@@ -210,7 +210,8 @@ public class Steve extends Entity implements Skillable {
 	}
 
 	public void applyLevelUpChoice(int choice) {
-		if (pendingLevelUps <= 0) return;
+		if (pendingLevelUps <= 0)
+			return;
 
 		switch (choice) {
 		case 1:
@@ -232,26 +233,108 @@ public class Steve extends Entity implements Skillable {
 		pendingLevelUps--;
 	}
 
+	// ===== 상점 중복 구매 체크를 위한 도움 메서드들 =====
+
+	// 특정 무기를 이미 장착하고 있는지 확인
+	public boolean hasWeapon(String weaponClassName) {
+		if (this.weapon == null)
+			return false;
+		return this.weapon.getClass().getSimpleName().equalsIgnoreCase(weaponClassName);
+	}
+
+	// 특정 스킬을 이미 보유하고 있는지 배열을 돌며 확인
+	public boolean hasSkill(String skillClassName) {
+		if (this.activeSkills == null)
+			return false;
+		for (ActiveSkill skill : this.activeSkills) {
+			if (skill != null && skill.getClass().getSimpleName().equalsIgnoreCase(skillClassName)) {
+				return true; // 이미 배열에 같은 스킬이 있음
+			}
+		}
+		return false;
+	}
+
+	// 스킬 슬롯(최대 2개)이 남아있는지 확인
+	public boolean hasEmptySkillSlot() {
+		if (this.activeSkills == null)
+			return false;
+		for (ActiveSkill skill : this.activeSkills) {
+			if (skill == null)
+				return true; // 빈 자리가 있음
+		}
+		return false;
+	}
+	
+	// 특정 포션을 이미 가지고 있는지 확인하고, 가지고 있다면 해당 객체를 반환 (없으면 null)
+	public ConsumableSkill getOwnedConsumable(String potionClassName) {
+		if (this.consumables == null) return null;
+		for (ConsumableSkill potion : this.consumables) {
+			if (potion != null && potion.getClass().getSimpleName().equalsIgnoreCase(potionClassName)) {
+				return potion; // 이미 가지고 있는 포션 객체 찾음
+			}
+		}
+		return null;
+	}
+
+	// 새 포션을 빈 슬롯(null인 곳)에 넣기 (성공하면 true, 슬롯이 꽉 찼으면 false)
+	public boolean addConsumableToEmptySlot(ConsumableSkill newPotion) {
+		if (this.consumables == null) return false;
+		for (int i = 0; i < this.consumables.length; i++) {
+			if (this.consumables[i] == null) {
+				this.consumables[i] = newPotion;
+				return true;
+			}
+		}
+		return false; // 빈 슬롯이 없음
+	}
+
 	// getter, setter
-	public int getCoin() { return coin; }
-	public void setCoin(int coin) { this.coin = coin; }
+	public int getCoin() {
+		return coin;
+	}
 
-	public int getLevel() { return level; }
-	public int getExp() { return exp; }
+	public void setCoin(int coin) {
+		this.coin = coin;
+	}
 
-	public Weapon getWeapon() { return weapon; }
-	public void setWeapon(Weapon weapon) { this.weapon = weapon; }
+	public int getLevel() {
+		return level;
+	}
 
-	public ActiveSkill[] getActiveSkills() { return activeSkills; }
-	public void setActiveSkills(ActiveSkill[] activeSkills) { this.activeSkills = activeSkills; }
+	public int getExp() {
+		return exp;
+	}
 
-	public ConsumableSkill[] getConsumables() { return consumables; }
-	public void setConsumables(ConsumableSkill[] consumables) { this.consumables = consumables; }
+	public Weapon getWeapon() {
+		return weapon;
+	}
 
-	public String getUsername() { return getName(); }
+	public void setWeapon(Weapon weapon) {
+		this.weapon = weapon;
+	}
 
-	public List<StatusEffect> getEffects() { return effects; }
+	public ActiveSkill[] getActiveSkills() {
+		return activeSkills;
+	}
 
+	public void setActiveSkills(ActiveSkill[] activeSkills) {
+		this.activeSkills = activeSkills;
+	}
 
+	public ConsumableSkill[] getConsumables() {
+		return consumables;
+	}
+
+	public void setConsumables(ConsumableSkill[] consumables) {
+		this.consumables = consumables;
+	}
+
+	public String getUsername() {
+		return getName();
+	}
+
+	public List<StatusEffect> getEffects() {
+		return effects;
+	}
 
 }

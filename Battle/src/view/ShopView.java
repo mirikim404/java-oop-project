@@ -24,43 +24,22 @@ public class ShopView extends JPanel {
 	private ShopManager shopManager;
 	private int wave;
 
-	// 이미지
 	private Image bgImage;
 	private Image tabActiveImg;
 
-	// 색상 (배경 이미지가 보이도록 투명도 조정)
-	// [변경] 이미지 가이드: 텍스트(설명, 수치)는 중립 회색 유지 (#D1D5DB)
 	private static final Color MC_TEXT = new Color(209, 213, 219);
 	private static final Color MC_TEXT_DARK = new Color(63, 63, 63);
 	private static final Color MC_GOLD = new Color(255, 215, 0);
 
-	// [삭제/변경] 기존 MC_SLOT_SEL, MC_SLOT_HOV 상수는 drawItemSlot 내부에서 직접 계산하여 사용하므로
-	// 삭제합니다.
-	// 대신 네온 효과를 위한 기본 파란색 상수를 정의합니다.
-	private static final Color NEON_BLUE_BASE = new Color(77, 163, 255); // #4DA3FF (Rare 색상)
-
-	// 폰트
-	private static Font MC_FONT;
-
-	static {
-		try {
-			MC_FONT = Font.createFont(Font.TRUETYPE_FONT, new java.io.File("resources/font/Galmuri11.ttf"));
-			GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(MC_FONT);
-		} catch (Exception e) {
-			MC_FONT = new Font("Monospaced", Font.BOLD, 14);
-		}
-	}
-
-	// 선택된 탭
-	private int selectedTab = 0; // 0=무기, 1=스킬, 2=포션
+	private int selectedTab = 0;
 	private static final String[] TAB_NAMES = { "무기", "스킬", "포션" };
-	private static final String[] TAB_ICONS = { "⚔", "✨", "🧪" };
 
-	// 선택된 슬롯
+	private static final String[] TAB_ICON_PATHS = { "resources/icon/shop_tab_weapon.png",
+			"resources/icon/shop_tab_skill.png", "resources/icon/shop_tab_potion.png" };
+
 	private int hoveredSlot = -1;
 	private int selectedSlot = -1;
 
-	// 아이템 정의
 	private static class ShopItem {
 		String imageName, name, desc;
 		int atk, def, price;
@@ -83,18 +62,14 @@ public class ShopView extends JPanel {
 	private List<ShopItem>[] tabItems;
 	private List<Rectangle> slotBounds = new ArrayList<>();
 
-	// 메시지
 	private String message = "";
 	private String lastBoughtImageName = "";
 	private javax.swing.Timer msgTimer;
 
-	// [변경] 이미지 가이드: 희귀도별 제목 색상 추천 적용
 	enum Rarity {
-		COMMON("일반", new Color(200, 205, 212)), // #C8CDD4
-		UNCOMMON("고급", new Color(122, 201, 67)), // #7AC943
-		RARE("희귀", new Color(77, 163, 255)), // #4DA3FF
-		EPIC("영웅", new Color(179, 136, 255)), // #B388FF
-		LEGENDARY("전설", new Color(255, 179, 71)); // #FFB347
+		COMMON("일반", new Color(200, 205, 212)), UNCOMMON("고급", new Color(122, 201, 67)),
+		RARE("희귀", new Color(77, 163, 255)), EPIC("영웅", new Color(179, 136, 255)),
+		LEGENDARY("전설", new Color(255, 179, 71));
 
 		final String label;
 		final Color color;
@@ -125,7 +100,7 @@ public class ShopView extends JPanel {
 		ShopPanel shopPanel = new ShopPanel();
 		add(shopPanel, BorderLayout.CENTER);
 
-		msgTimer = new javax.swing.Timer(2500, e -> {
+		msgTimer = new javax.swing.Timer(1500, e -> {
 			message = "";
 			repaint();
 		});
@@ -134,21 +109,18 @@ public class ShopView extends JPanel {
 
 	@SuppressWarnings("unchecked")
 	private void buildTabItems() {
-
 		tabItems[0] = new ArrayList<>();
 		tabItems[1] = new ArrayList<>();
 		tabItems[2] = new ArrayList<>();
 
-		tabItems[0].add(new ShopItem("StoneSword", "Stone Sword", "돌로 만들어진 검입니다.\n가장 기본적인 무기입니다.", Rarity.COMMON, 8, 0,
-				40, () -> tryBuy(() -> shopManager.buyWeapon(new StoneSword()))));
-		tabItems[0].add(new ShopItem("IronSword", "Iron Sword", "철로 만들어진 검입니다.\n적당한 강도를 자랑합니다.", Rarity.UNCOMMON, 16, 0,
-				75, () -> tryBuy(() -> shopManager.buyWeapon(new IronSword()))));
-		tabItems[0].add(new ShopItem("DiamondSword", "Diamond Sword", "다이아몬드로 만들어진 검입니다.\n균형 잡힌 성능을 자랑합니다.",
-				Rarity.RARE, 24, 0, 115, () -> tryBuy(() -> shopManager.buyWeapon(new DiamondSword()))));
-		tabItems[0].add(new ShopItem("NetheriteSword", "Netherite Sword", "지옥의 금속으로 만든 검입니다.\n최강의 무기입니다.", Rarity.EPIC,
-				32, 0, 160, () -> tryBuy(() -> shopManager.buyWeapon(new NetheriteSword()))));
-
-		
+		tabItems[0].add(new ShopItem("StoneSword", "돌 검", "돌로 만들어진 검입니다.\n가장 기본적인 무기입니다.", Rarity.COMMON, 8, 0, 40,
+				() -> tryBuy(() -> shopManager.buyWeapon(new StoneSword()))));
+		tabItems[0].add(new ShopItem("IronSword", "철 검", "철로 만들어진 검입니다.\n적당한 강도를 자랑합니다.", Rarity.UNCOMMON, 16, 0, 75,
+				() -> tryBuy(() -> shopManager.buyWeapon(new IronSword()))));
+		tabItems[0].add(new ShopItem("DiamondSword", "다이아몬드 검", "다이아몬드로 만들어진 검입니다.\n균형 잡힌 성능을 자랑합니다.", Rarity.RARE, 24,
+				0, 115, () -> tryBuy(() -> shopManager.buyWeapon(new DiamondSword()))));
+		tabItems[0].add(new ShopItem("NetheriteSword", "네더라이트 검", "지옥의 금속으로 만든 검입니다.\n최강의 무기입니다.", Rarity.EPIC, 32, 0,
+				160, () -> tryBuy(() -> shopManager.buyWeapon(new NetheriteSword()))));
 
 		tabItems[1].add(new ShopItem("SnowBall", "눈덩이", "적을 스턴 상태로 만듭니다.\n쿨타임 3턴", Rarity.COMMON, 10, 0, 45,
 				() -> tryBuy(() -> shopManager.buySkill(new SnowBall()))));
@@ -180,18 +152,108 @@ public class ShopView extends JPanel {
 		repaint();
 	}
 
-	// ═══════════════════════════════════════════════════
-	// 메인 패널 (배경 + 전체 UI)
-	// ═══════════════════════════════════════════════════
 	private class ShopPanel extends JPanel {
 
 		private List<Rectangle> tabBounds = new ArrayList<>();
 		private Rectangle buyBtnBounds;
 		private Rectangle nextBtnBounds;
 
-		// 실제 배경 이미지 비율 기준 (1024x683)
 		private static final double REF_W = 1536.0;
 		private static final double REF_H = 1024.0;
+
+		private static final int TITLE_X = 88;
+		private static final int TITLE_Y = 43;
+		private static final int TITLE_W = 278;
+		private static final int TITLE_H = 84;
+		private static final int TITLE_FONT_SIZE = 32;
+
+		private static final int COIN_FONT_SIZE = 22;
+		private static final int COIN_ICON_SIZE = 28;
+		private static final int COIN_AREA_X_ANCHOR = 1400;
+		private static final int COIN_AREA_Y = 115;
+		private static final int COIN_GAP_X = 12;
+		private static final int COIN_GAP_Y = 23;
+
+		private static final int TAB_X = 88;
+		private static final int TAB_Y = 171;
+		private static final int TAB_W = 153;
+		private static final int TAB_H = 85;
+		private static final int TAB_GAP_Y = 10;
+		private static final int TAB_ICON_Y_OFFSET = 4;
+		private static final int TAB_TEXT_Y_OFFSET = 50;
+		private static final int TAB_FONT_SIZE = 14;
+		private static final int TAB_ICON_SIZE = 52;
+		private static final int TAB_LABEL_GAP = 6;
+		private static final int TAB_LEFT_OFFSET = 10;
+
+		private static final int GRID_X = 276;
+		private static final int GRID_Y = 170;
+		private static final double SLOT_W_PRECISE = 170.25;
+		private static final double SLOT_GAP_X_PRECISE = 15.55;
+		private static final int SLOT_GAP_Y = 12;
+		private static final int[] ROW_HEIGHTS = { 270, 257 };
+
+		private static final int SLOT_NAME_FONT_SIZE = 18;
+		private static final int SLOT_STAT_ICON_SIZE = 24;
+		private static final int SLOT_STAT_FONT_SIZE = 12;
+		private static final int SLOT_STAT_Y_OFFSET_FROM_BOTTOM = 65;
+		private static final int SLOT_PRICE_FONT_SIZE = 22;
+		private static final int SLOT_PRICE_ICON_SIZE = 24;
+		private static final int SLOT_PRICE_Y_OFFSET_FROM_BOTTOM = 15;
+
+		private static final int DETAIL_X = 1038;
+		private static final int DETAIL_Y = 149;
+		private static final int DETAIL_W = 388;
+		private static final int DETAIL_H = 580;
+
+		private static final int DETAIL_NAME_FONT = 24;
+		private static final int DETAIL_RARITY_FONT = 11;
+		private static final int DETAIL_IMG_Y_OFFSET = 85;
+		private static final int DETAIL_IMG_SIZE = 170;
+
+		private static final int DETAIL_STAT_FONT = 18;
+		private static final int DETAIL_STAT_ICON_SIZE = 22;
+		private static final int DETAIL_STAT_ICON_GAP = 30;
+		private static final int DETAIL_STAT_TEXT_Y_OFFSET = 17;
+		private static final int DETAIL_STAT_START_Y = 275;
+		private static final int DETAIL_STAT_LINE_SPACING = 28;
+
+		private static final int DETAIL_DESC_FONT = 18;
+		private static final int DETAIL_DESC_LINE_SPACING = 24;
+		private static final int DETAIL_DESC_START_Y_OFFSET = 50;
+
+		private static final int DETAIL_PRICE_FONT = 22;
+		private static final int DETAIL_PRICE_ICON_SIZE = 20;
+		private static final int DETAIL_PRICE_GAP = 6;
+		private static final int DETAIL_PRICE_Y_OFFSET_FROM_BOTTOM = 110;
+		private static final int DETAIL_PRICE_ICON_Y_OFFSET = 5;
+		private static final int DETAIL_PRICE_TEXT_Y_OFFSET = 22;
+
+		private static final int BUY_BTN_X = 1072;
+		private static final int BUY_BTN_Y = 664;
+		private static final int BUY_BTN_W = 340;
+		private static final int BUY_BTN_H = 42;
+		private static final int BUY_BTN_FONT_SIZE = 20;
+
+		private static final int NEXT_BTN_X = 1118;
+		private static final int NEXT_BTN_Y = 765;
+		private static final int NEXT_BTN_W = 295;
+		private static final int NEXT_BTN_H = 76;
+		private static final int NEXT_BTN_FONT_SIZE = 20;
+
+		private static final int INV_X = 113;
+		private static final int INV_Y = 767;
+		private static final int INV_SLOT_W = 78;
+		private static final int INV_SLOT_H = 75;
+		private static final int INV_GAP = 11;
+		private static final int INV_TITLE_FONT_SIZE = 13;
+		private static final int INV_QTY_FONT_SIZE = 10;
+
+		private static final int TOAST_W = 320;
+		private static final int TOAST_H = 38;
+		private static final int TOAST_Y = 45;
+		private static final int TOAST_ICON_SIZE = 18;
+		private static final int TOAST_FONT_SIZE = 15;
 
 		ShopPanel() {
 			setOpaque(false);
@@ -208,13 +270,10 @@ public class ShopView extends JPanel {
 							return;
 						}
 					}
-
 					for (int i = 0; i < slotBounds.size(); i++) {
 						if (slotBounds.get(i).contains(e.getPoint())) {
-
 							List<ShopItem> currentItems = tabItems[selectedTab];
 							if (i < currentItems.size()) {
-
 								selectedSlot = i;
 								repaint();
 							}
@@ -223,7 +282,20 @@ public class ShopView extends JPanel {
 					}
 					if (buyBtnBounds != null && buyBtnBounds.contains(e.getPoint())) {
 						if (selectedSlot >= 0 && selectedSlot < tabItems[selectedTab].size()) {
-							tabItems[selectedTab].get(selectedSlot).onBuy.run();
+							ShopItem item = tabItems[selectedTab].get(selectedSlot);
+							String status = getItemStatus(item, TAB_NAMES[selectedTab]);
+
+							if (status.equals("AVAILABLE")) {
+								item.onBuy.run(); // 내부에서 코인 부족하면 토스트 알림 띄움
+							} else {
+								String reason = switch (status) {
+									case "OWNED" -> "이미 보유 중이거나 상위 티어 장비를 가졌습니다.";
+									case "LOCKED" -> "이전 단계 무기를 먼저 구매해야 합니다.";
+									case "SLOT_FULL" -> "가방 슬롯이 가득 차서 공간이 없습니다!";
+									default -> "구매할 수 없는 상태입니다.";
+								};
+								showMsg("§c" + reason);
+							}
 						}
 						return;
 					}
@@ -246,11 +318,9 @@ public class ShopView extends JPanel {
 				public void mouseMoved(MouseEvent e) {
 					int prev = hoveredSlot;
 					hoveredSlot = -1;
-					List<ShopItem> currentItems = tabItems[selectedTab]; // 현재 탭의 아이템 목록
-
+					List<ShopItem> currentItems = tabItems[selectedTab];
 					for (int i = 0; i < slotBounds.size(); i++) {
 						if (slotBounds.get(i).contains(e.getPoint())) {
-							// 아이템이 있을 때만 hoveredSlot을 업데이트
 							if (i < currentItems.size()) {
 								hoveredSlot = i;
 							}
@@ -261,6 +331,56 @@ public class ShopView extends JPanel {
 						repaint();
 				}
 			});
+		}
+
+		private String getItemStatus(ShopItem item, String tabName) {
+			if (tabName.equals("무기")) {
+				String current = steve.getWeapon().getClass().getSimpleName();
+				int curTier = getWeaponTier(current);
+				int targetTier = getWeaponTier(item.imageName);
+
+				if (curTier >= targetTier) return "OWNED";      
+				if (targetTier == curTier + 1) return "AVAILABLE"; 
+				return "LOCKED";                               
+			} else if (tabName.equals("스킬")) {
+				boolean hasSkill = false;
+				boolean hasEmptySlot = false;
+				for (skill.active.ActiveSkill s : steve.getActiveSkills()) {
+					if (s != null) {
+						if (s.getClass().getSimpleName().equals(item.imageName)) hasSkill = true;
+					} else {
+						hasEmptySlot = true;
+					}
+				}
+				if (hasSkill) return "OWNED";
+				if (!hasEmptySlot) return "SLOT_FULL";
+				return "AVAILABLE";
+			} else if (tabName.equals("포션")) {
+				boolean hasPotion = false;
+				boolean hasEmptySlot = false;
+				for (skill.consumable.ConsumableSkill c : steve.getConsumables()) {
+					if (c != null) {
+						if (c.getClass().getSimpleName().equals(item.imageName)) hasPotion = true;
+					} else {
+						hasEmptySlot = true;
+					}
+				}
+				if (hasPotion) return "AVAILABLE"; 
+				if (!hasEmptySlot) return "SLOT_FULL"; 
+				return "AVAILABLE";
+			}
+			return "AVAILABLE";
+		}
+
+		private int getWeaponTier(String name) {
+			return switch (name) {
+				case "WoodSword" -> 0;
+				case "StoneSword" -> 1;
+				case "IronSword" -> 2;
+				case "DiamondSword" -> 3;
+				case "NetheriteSword" -> 4;
+				default -> -1;
+			};
 		}
 
 		@Override
@@ -286,94 +406,64 @@ public class ShopView extends JPanel {
 			double sx = W / REF_W;
 			double sy = H / REF_H;
 
-			// 1. SHOP 타이틀 + 코인 (좌측 상단 박스 내부)
-			int titleBoxX = sc(sx, 88);
-			int titleBoxY = sc(sy, 43);
-			int titleBoxW = sc(sx, 278);
-			int titleBoxH = sc(sy, 84);
+			int titleBoxX = sc(sx, TITLE_X);
+			int titleBoxY = sc(sy, TITLE_Y);
+			int titleBoxW = sc(sx, TITLE_W);
+			int titleBoxH = sc(sy, TITLE_H);
 
-			g2.setFont(mcFont(sc(sx, 28)));
+			g2.setFont(mcFontEN(sc(sx, TITLE_FONT_SIZE)));
 			FontMetrics titleFm = g2.getFontMetrics();
 			int titleX = titleBoxX + (titleBoxW - titleFm.stringWidth("SHOP")) / 2;
 			int titleY = titleBoxY + (titleBoxH + titleFm.getAscent() - titleFm.getDescent()) / 2 + sc(sy, 1);
+
 			g2.setColor(MC_TEXT_DARK);
 			g2.drawString("SHOP", titleX + 2, titleY + 2);
 			g2.setColor(MC_TEXT);
 			g2.drawString("SHOP", titleX, titleY);
 
-			// 코인
-			// 우측 정렬
 			String coinStr = String.valueOf(steve.getCoin());
-			g2.setFont(mcFont(sc(sx, 22)));
+			g2.setFont(mcFont(sc(sx, COIN_FONT_SIZE)));
 			FontMetrics coinFm = g2.getFontMetrics();
-			int coinStrWidth = coinFm.stringWidth(coinStr);
+			int coinAreaX = sc(sx, COIN_AREA_X_ANCHOR) - coinFm.stringWidth(coinStr);
+			int coinAreaY = sc(sy, COIN_AREA_Y);
 
-			// 우측 끝 좌표 기준으로 위치 계산 (W = 화면 전체 너비)
-			int coinBoxRightEnd = W - sc(sx, 30); // 우측 여백
-			int coinAreaX = coinBoxRightEnd - coinStrWidth;
-			coinBoxRightEnd = sc(sx, 1400);
-			coinAreaX = coinBoxRightEnd - coinStrWidth;
-			int coinAreaY = sc(sy, 48); // 텍스트 기준 Y 좌표
-
-			// 코인 텍스트
 			g2.setColor(MC_TEXT_DARK);
-			coinAreaY = sc(sy, 115);
 			g2.drawString(coinStr, coinAreaX + 1, coinAreaY + 1);
 			g2.setColor(MC_GOLD);
 			g2.drawString(coinStr, coinAreaX, coinAreaY);
 
-			// 코인 아이콘
-			int coinIconSize = sc(sx, 22);
-			coinIconSize = sc(sx, 28);
-			drawMCIcon(g2, "resources/icon/Coin.png", coinAreaX - coinIconSize - sc(sx, 12), coinAreaY - sc(sy, 23),
-					coinIconSize, coinIconSize);
+			int coinIconSize = sc(sx, COIN_ICON_SIZE);
+			drawMCIcon(g2, "resources/icon/Coin.png", coinAreaX - coinIconSize - sc(sx, COIN_GAP_X),
+					coinAreaY - sc(sy, COIN_GAP_Y), coinIconSize, coinIconSize);
 
-			// 2. 탭 버튼 (왼쪽)
-			int tabX = sc(sx, 88);
-			int tabY = sc(sy, 171);
-			int tabW = sc(sx, 153);
-			int tabH = sc(sy, 85);
-			int tabGap = sc(sy, 10);
+			int tabX = sc(sx, TAB_X);
+			int tabY = sc(sy, TAB_Y);
+			int tabW = sc(sx, TAB_W);
+			int tabH = sc(sy, TAB_H);
+			int tabGap = sc(sy, TAB_GAP_Y);
 
 			for (int i = 0; i < TAB_NAMES.length; i++) {
 				int ty = tabY + i * (tabH + tabGap);
-				Rectangle tb = new Rectangle(tabX, ty, tabW, tabH);
-				tabBounds.add(tb);
-				drawTabButton(g2, tabX, ty, tabW, tabH, TAB_ICONS[i] + " " + TAB_NAMES[i], selectedTab == i, sx);
+				tabBounds.add(new Rectangle(tabX, ty, tabW, tabH));
+				drawTabButton(g2, tabX, ty, tabW, tabH, TAB_NAMES[i], TAB_ICON_PATHS[i], selectedTab == i, sx, sy);
 			}
 
-			// 3. 아이템 슬롯 그리드 (4열 2행)
-			int gridX = sc(sx, 163); // 전체 그리드의 시작 X 좌표 (왼쪽 여백)
-			int gridY = sc(sy, 107); // 전체 그리드의 시작 Y 좌표 (위쪽 여백)
-			double preciseSlotW = 170.25 * sx; // 슬롯 1칸의 가로 너비
-			double preciseGapX = 15.55 * sx; // 슬롯과 슬롯 사이의 가로 간격
-			int slotGapY = sc(sy, 12); // 슬롯과 슬롯 사이의 세로 간격
-
-			// 행별 슬롯 1칸의 세로 높이
-			int[] rowHeights = { sc(sy, 214), sc(sy, 193) };
-
-			gridX = sc(sx, 276);
-			gridY = sc(sy, 170);
-
-			slotGapY = sc(sy, 12);
-			rowHeights = new int[] { sc(sy, 270), sc(sy, 257) };
+			double preciseSlotW = SLOT_W_PRECISE * sx;
+			double preciseGapX = SLOT_GAP_X_PRECISE * sx;
+			int slotGapY = sc(sy, SLOT_GAP_Y);
+			int gridX = sc(sx, GRID_X);
+			int gridY = sc(sy, GRID_Y);
+			int[] rowHeights = new int[] { sc(sy, ROW_HEIGHTS[0]), sc(sy, ROW_HEIGHTS[1]) };
 
 			List<ShopItem> items = tabItems[selectedTab];
 
 			for (int i = 0; i < 8; i++) {
 				int row = i / 4;
 				int col = i % 4;
-
-				// 현재 행에 맞는 높이 선택
 				int currentSlotH = rowHeights[row];
-
-				// 행에 따른 y 좌표 계산 (1행은 gridY, 2행은 1행 시작점 + 1행 높이 + 간격)
 				int posY = (row == 0) ? gridY : (gridY + rowHeights[0] + slotGapY);
-
-				// 슬롯 크기와 간격을 모두 double로 정밀 계산 후 int 변환
 				int posX = (int) (gridX + col * (preciseSlotW + preciseGapX));
 
-				// 가로 크기를 넘길 때 (int)로 변환하여 대입
 				Rectangle sr = new Rectangle(posX, posY, (int) preciseSlotW, currentSlotH);
 				slotBounds.add(sr);
 
@@ -381,85 +471,152 @@ public class ShopView extends JPanel {
 				boolean selected = (selectedSlot == i);
 				ShopItem item = (i < items.size()) ? items.get(i) : null;
 
-				// drawItemSlot 호출 시에도 (int) preciseSlotW 로 전달
 				drawItemSlot(g2, posX, posY, (int) preciseSlotW, currentSlotH, item, hovered, selected, sx, sy);
 			}
 
-			// 4. 우측 상세 정보 패널
-			int detailX = sc(sx, 746);
-			int detailY = sc(sy, 107);
-			int detailW = sc(sx, 259);
-			int detailH = sc(sy, 405);
-
-			detailX = sc(sx, 1038);
-			detailY = sc(sy, 149);
-			detailW = sc(sx, 388);
-			detailH = sc(sy, 580);
+			int detailX = sc(sx, DETAIL_X);
+			int detailY = sc(sy, DETAIL_Y);
+			int detailW = sc(sx, DETAIL_W);
+			int detailH = sc(sy, DETAIL_H);
 
 			ShopItem sel = (selectedSlot >= 0 && selectedSlot < items.size()) ? items.get(selectedSlot) : null;
 			drawDetailPanel(g2, detailX, detailY, detailW, detailH, sel, sx, sy);
 
-			// 5. 하단 인벤토리 (9칸)
-			int invX = sc(sx, 16);
-			int invY = sc(sy, 562);
-			int invGap = sc(sx, 8);
-			invX = sc(sx, 113);
-			invY = sc(sy, 767);
-			int invSlotW = sc(sx, 78);
-			int invSlotH = sc(sy, 75);
-			invGap = sc(sx, 11);
+			int invX = sc(sx, INV_X);
+			int invY = sc(sy, INV_Y);
+			int invSlotW = sc(sx, INV_SLOT_W);
+			int invSlotH = sc(sy, INV_SLOT_H);
+			int invGap = sc(sx, INV_GAP);
 			drawInventory(g2, invX, invY, invSlotW, invSlotH, invGap, sx, sy);
 
-			// 다음 웨이브 버튼 (우측 하단)
-			int nbX = sc(sx, 788);
-			int nbY = sc(sy, 562);
-			int nbW = sc(sx, 195);
-			int nbH = sc(sy, 57);
-			nbX = sc(sx, 1117);
-			nbY = sc(sy, 767);
-			nbW = sc(sx, 309);
-			nbH = sc(sy, 79);
+			int nbX = sc(sx, NEXT_BTN_X);
+			int nbY = sc(sy, NEXT_BTN_Y);
+			int nbW = sc(sx, NEXT_BTN_W);
+			int nbH = sc(sy, NEXT_BTN_H);
 			nextBtnBounds = new Rectangle(nbX, nbY, nbW, nbH);
-			drawMCButton(g2, nbX, nbY, nbW, nbH, "다음 웨이브 ▶", false, sx, sy);
+			drawMCButton(g2, nbX, nbY, nbW, nbH, "다음 웨이브 ▶", NEXT_BTN_FONT_SIZE, true, sx, sy);
 
-			// 메시지 표시
 			if (!message.isEmpty()) {
+				boolean isSuccess = message.startsWith("§a");
 				String displayMsg = message.replace("§a", "").replace("§c", "");
-				Color msgColor = message.startsWith("§a") ? new Color(85, 255, 85) : new Color(255, 85, 85);
-				g2.setFont(mcFont(sc(sx, 14)));
-				g2.setColor(new Color(0, 0, 0, 200));
-				g2.drawString(displayMsg, sc(sx, 282), sc(sy, 140));
-				g2.setColor(msgColor);
-				g2.drawString(displayMsg, sc(sx, 281), sc(sy, 139));
-			}
 
+				// 1. 폰트 셋팅 후 글자의 실제 가로 픽셀 길이를 계산
+				g2.setFont(mcFont(sc(sx, TOAST_FONT_SIZE)));
+				FontMetrics textFm = g2.getFontMetrics();
+				int textW = textFm.stringWidth(displayMsg);
+
+				// 2. 아이콘 크기와 여백을 더해 전체 너비를 동적으로 계산
+				int iconSize = sc(sx, TOAST_ICON_SIZE);
+				int paddingX = sc(sx, 18); // 좌우 안쪽 여백
+				int gapX = sc(sx, 10);     // 아이콘과 글자 사이 간격
+				
+				int toastW = paddingX * 2 + iconSize + gapX + textW; // 글자 길이에 맞게 늘어남
+				int toastH = sc(sy, TOAST_H);
+				int toastX = (getWidth() - toastW) / 2; // 화면 중앙 정렬
+				int toastY = sc(sy, TOAST_Y);
+
+				Color bgColor = isSuccess ? new Color(14, 36, 14, 230) : new Color(36, 14, 14, 230);
+				Color borderColor = isSuccess ? new Color(85, 255, 85) : new Color(255, 85, 85);
+
+				// 배경 사각형 그리기
+				g2.setColor(bgColor);
+				g2.fillRect(toastX, toastY, toastW, toastH);
+
+				// 테두리 선 그리기
+				g2.setStroke(new BasicStroke(sc(sx, 2)));
+				g2.setColor(borderColor);
+				g2.drawRect(toastX, toastY, toastW, toastH);
+				g2.setStroke(new BasicStroke(1));
+
+				// 3. 아이콘 위치 잡기
+				int iconX = toastX + paddingX;
+				int iconY = toastY + (toastH - iconSize) / 2;
+
+				// 원형 배경 그리기 (성공은 녹색, 실패는 빨간색)
+				g2.setColor(borderColor);
+				g2.fillOval(iconX, iconY, iconSize, iconSize);
+				
+				if (isSuccess) {
+					// [성공] 픽셀-퍼펙트 체크(V) 기호 직접 선으로 그리기
+					g2.setColor(Color.BLACK);
+					g2.setStroke(new BasicStroke(sc(sx, 2))); // 선 도톰하게
+					
+					int startX = iconX + sc(sx, 5);
+					int startY = iconY + sc(sy, 9);
+					int midX   = iconX + sc(sx, 8);
+					int midY   = iconY + sc(sy, 12);
+					int endX   = iconX + sc(sx, 13);
+					int endY   = iconY + sc(sy, 5);
+					
+					g2.drawLine(startX, startY, midX, midY); // \ 선
+					g2.drawLine(midX, midY, endX, endY);     // / 선
+					
+					g2.setStroke(new BasicStroke(1)); // 두께 원상복구
+				} else {
+					// [실패] 깨지지 않는 아스키 코드 '!' 그리기
+					g2.setColor(Color.BLACK);
+					g2.setFont(mcFont(sc(sx, 13)));
+					FontMetrics symFm = g2.getFontMetrics();
+					String symbol = "!";
+					
+					int symX = iconX + (iconSize - symFm.stringWidth(symbol)) / 2 + sc(sx, 1);
+					int symY = iconY + (iconSize + symFm.getAscent() - symFm.getDescent()) / 2 - sc(sy, 1);
+					
+					g2.drawString(symbol, symX, symY);
+				}
+
+				// 4. 텍스트 위치 잡기 (아이콘 바로 오른쪽 배치)
+				int tx = iconX + iconSize + gapX;
+				int ty = toastY + (toastH + textFm.getAscent() - textFm.getDescent()) / 2 - sc(sy, 1);
+
+				g2.setFont(mcFont(sc(sx, TOAST_FONT_SIZE)));
+				
+				// 글자 그림자 효과
+				g2.setColor(new Color(0, 0, 0, 200));
+				g2.drawString(displayMsg, tx + 1, ty + 1);
+
+				// 본래 글자 색상
+				g2.setColor(borderColor);
+				g2.drawString(displayMsg, tx, ty);
+			}
 			g2.dispose();
 		}
 
-		private void drawTabButton(Graphics2D g2, int x, int y, int w, int h, String label, boolean active, double sx) {
-			// 탭 활성화 이미지 그리기
+		private void drawTabButton(Graphics2D g2, int x, int y, int w, int h, String label, String iconPath,
+				boolean active, double sx, double sy) {
+			int fontSize = TAB_FONT_SIZE;
+			int iconSize = (int) sc(sx, TAB_ICON_SIZE);
+			int gap = (int) sc(sx, TAB_LABEL_GAP);
+			int leftOffset = (int) sc(sx, TAB_LEFT_OFFSET);
+
 			if (active && tabActiveImg != null) {
 				g2.drawImage(tabActiveImg, x, y, w, h, null);
 			}
 
-			g2.setFont(mcFont(sc(sx, 14)));
+			Image tabIcon = new ImageIcon(iconPath).getImage();
+			g2.setFont(mcFont(fontSize));
 			FontMetrics fm = g2.getFontMetrics();
-			int tx = x + (w - fm.stringWidth(label)) / 2;
-			int ty = y + (h + fm.getAscent() - fm.getDescent()) / 2;
 
-			// 텍스트 그림자
+			int totalW = iconSize + gap + fm.stringWidth(label);
+			int startX = x + (w - totalW) / 2 - leftOffset;
+
+			int iconY = y + (h - iconSize) / 2 + sc(sy, TAB_ICON_Y_OFFSET);
+			int ty = y + sc(sy, TAB_TEXT_Y_OFFSET);
+
+			if (tabIcon != null) {
+				g2.drawImage(tabIcon, startX, iconY, iconSize, iconSize, null);
+			}
+
+			int tx = startX + iconSize + gap;
+
 			g2.setColor(new Color(0, 0, 0, 200));
-			g2.drawString(label, tx + 1, ty + 1);
-
-			// 텍스트 색상 (활성화=흰색, 비활성화=회색)
+			drawMixedString(g2, label, tx + 1, ty + 1, fontSize);
 			g2.setColor(active ? MC_TEXT : new Color(120, 120, 120));
-			g2.drawString(label, tx, ty);
+			drawMixedString(g2, label, tx, ty, fontSize);
 		}
 
 		private void drawItemSlot(Graphics2D g2, int x, int y, int w, int h, ShopItem item, boolean hovered,
 				boolean selected, double sx, double sy) {
-			
-			// 0. 아이콘 위치 및 크기 사전 계산
 			int nameY = y + sc(sy, 35);
 			int iconSize = (int) (Math.min(w, h) * 0.78);
 			int iconX = x + (w - iconSize) / 2;
@@ -467,257 +624,272 @@ public class ShopView extends JPanel {
 			int iconCenterX = iconX + iconSize / 2;
 			int iconCenterY = iconY + iconSize / 2;
 
-			// 1. 기본 배경 오버레이 및 은은한 유리 질감 반사광
 			if (selected) {
-				// 선택 상태: 부드러운 블루 베이스 바탕
-				g2.setColor(new Color(77, 163, 255, 15)); 
+				g2.setColor(new Color(77, 163, 255, 15));
 				g2.fillRect(x, y, w, h);
-
-				// 대각선 유리창 반사광 (Glossy Sheen)
 				g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-				GradientPaint glassGradient = new GradientPaint(
-					x, y, new Color(255, 255, 255, 30), 
-					x + w / 2, y + h, new Color(255, 255, 255, 0)
-				);
+				GradientPaint glassGradient = new GradientPaint(x, y, new Color(255, 255, 255, 30), x + w / 2, y + h,
+						new Color(255, 255, 255, 0));
 				g2.setPaint(glassGradient);
 				int[] px = { x, x + (w * 2 / 3), x + (w / 3), x };
 				int[] py = { y, y, y + h, y + h };
 				g2.fillPolygon(px, py, 4);
 
-				// [변경] 2. 수채화처럼 부드럽게 퍼지는 Radial Blur 센터 글로우 효과
 				int glowRadius = (int) (iconSize * 0.75);
-				
-				// 중심(0.0)은 화이트 코어 -> 중간(0.25)은 은은한 블루 -> 외곽(1.0)은 완전 투명(Alpha 0)
 				float[] fractions = { 0.0f, 0.25f, 1.0f };
-				Color[] colors = {
-					new Color(255, 255, 255, 90),   // 정중앙 눈부심 방지 톤다운 코어
-					new Color(77, 163, 255, 35),   // 부드럽게 번지는 블루 오라
-					new Color(77, 163, 255, 0)     // 경계선 없이 완전히 사라지는 외곽선
-				};
-
-				// 라디얼 그라데이션 적용 (경계선 현상 완벽 해결)
+				Color[] colors = { new Color(255, 255, 255, 90), new Color(77, 163, 255, 35),
+						new Color(77, 163, 255, 0) };
 				java.awt.RadialGradientPaint radialPaint = new java.awt.RadialGradientPaint(
-					new java.awt.geom.Point2D.Float(iconCenterX, iconCenterY),
-					glowRadius,
-					fractions,
-					colors
-				);
+						new java.awt.geom.Point2D.Float(iconCenterX, iconCenterY), glowRadius, fractions, colors);
 				g2.setPaint(radialPaint);
 				g2.fillOval(iconCenterX - glowRadius, iconCenterY - glowRadius, glowRadius * 2, glowRadius * 2);
-
 			} else if (hovered) {
-				// 호버 상태: 극도의 은은한 블루 오버레이
 				g2.setColor(new Color(77, 163, 255, 6));
 				g2.fillRect(x, y, w, h);
 			}
 
-			// 3. 은은한 전체 외곽선 테두리 (Full Border)
 			if (selected || hovered) {
 				g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-				
-				// 바깥쪽으로 아주 살짝 번지는 네온 글로우 선
 				g2.setStroke(new BasicStroke(sc(sx, 3)));
-				int glowAlpha = selected ? 35 : 15;
-				g2.setColor(new Color(77, 163, 255, glowAlpha));
+				g2.setColor(new Color(77, 163, 255, selected ? 35 : 15));
 				g2.drawRect(x, y, w, h);
-
-				// 중심이 되는 깨끗한 전체 테두리 선
 				g2.setStroke(new BasicStroke(sc(sx, 1)));
-				int coreAlpha = selected ? 150 : 80;
-				g2.setColor(new Color(77, 163, 255, coreAlpha));
+				g2.setColor(new Color(77, 163, 255, selected ? 150 : 80));
 				g2.drawRect(x, y, w, h);
 			}
 
-			// 4. 전체 테두리 '위'에 얹어지는 선택 모서리 가드 (Selected Corner Guards)
 			if (selected) {
 				g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-				g2.setStroke(new BasicStroke(sc(sx, 2))); 
-				g2.setColor(new Color(235, 250, 255, 240)); // 빛을 받는 선명한 화이트 블루
-				
-				int cLen = sc(sx, 9); // 모서리 가드의 꺾쇠 길이
-				int cOff = 0;         // 테두리 위에 딱 붙도록 설정
-
-				// 상측 좌우 코너 가드
-				g2.drawLine(x - cOff, y - cOff, x - cOff + cLen, y - cOff);
-				g2.drawLine(x - cOff, y - cOff, x - cOff, y - cOff + cLen);
-				g2.drawLine(x + w + cOff, y - cOff, x + w + cOff - cLen, y - cOff);
-				g2.drawLine(x + w + cOff, y - cOff, x + w + cOff, y - cOff + cLen);
-				
-				// 하측 좌우 코너 가드 (이전 turn의 len 에러 완벽 수정)
-				g2.drawLine(x - cOff, y + h + cOff, x - cOff + cLen, y + h + cOff);
-				g2.drawLine(x - cOff, y + h + cOff, x - cOff, y + h + cOff - cLen);
-				g2.drawLine(x + w + cOff, y + h + cOff, x + w + cOff - cLen, y + h + cOff);
-				g2.drawLine(x + w + cOff, y + h + cOff, x + w + cOff, y + h + cOff - cLen);
-				
-				g2.setStroke(new BasicStroke(1)); // 스트로크 초기화
+				g2.setStroke(new BasicStroke(sc(sx, 2)));
+				g2.setColor(new Color(235, 250, 255, 240));
+				int cLen = sc(sx, 9);
+				g2.drawLine(x, y, x + cLen, y);
+				g2.drawLine(x, y, x, y + cLen);
+				g2.drawLine(x + w, y, x + w - cLen, y);
+				g2.drawLine(x + w, y, x + w, y + cLen);
+				g2.drawLine(x, y + h, x + cLen, y + h);
+				g2.drawLine(x, y + h, x, y + h - cLen);
+				g2.drawLine(x + w, y + h, x + w - cLen, y + h);
+				g2.drawLine(x + w, y + h, x + w, y + h - cLen);
+				g2.setStroke(new BasicStroke(1));
 			}
 
-			// 5. 아이템 내용물 렌더링 (빛과 효과 뒤로 배치 완료)
-			if (item == null) return;
+			if (item == null)
+				return;
 
-			// 아이템 이름 텍스트 (아이템 내부 등급 데이터 연동)
-			g2.setFont(mcFont(sc(sx, 11)));
+			int nameFontSize = SLOT_NAME_FONT_SIZE;
+			g2.setFont(mcFont(sc(sx, nameFontSize)));
 			FontMetrics fm = g2.getFontMetrics();
 			String name = item.name;
 			while (fm.stringWidth(name) > w - 6 && name.length() > 4) {
 				name = name.substring(0, name.length() - 1);
 			}
 			int nameX = x + (w - fm.stringWidth(name)) / 2;
-			g2.setColor(new Color(0, 0, 0, 160));
-			g2.drawString(name, nameX + 1, nameY + 1);
-			g2.setColor(selected ? item.rarity.color : MC_TEXT);
-			g2.drawString(name, nameX, nameY);
 
-			// 아이템 아이콘 그리기
+			g2.setColor(new Color(0, 0, 0, 160));
+			drawMixedString(g2, name, nameX + 1, nameY + 1, sc(sx, nameFontSize));
+			g2.setColor(MC_TEXT);
+			drawMixedString(g2, name, nameX, nameY, sc(sx, nameFontSize));
+
 			drawMCIcon(g2, "resources/shop/" + item.imageName + ".png", iconX, iconY, iconSize, iconSize);
 
-			// 공격력 / 방어력 스탯 표시
-			int statY = y + h - sc(sy, 65);
-			int iconStatSize = sc(sx, 18);
+			int iconStatSize = sc(sx, SLOT_STAT_ICON_SIZE);
+			int statFontSize = SLOT_STAT_FONT_SIZE;
+			int textYOffset = sc(sy, 20);
 
-			int atkTotalW = iconStatSize + sc(sx, 4) + g2.getFontMetrics(mcFont(sc(sx, 11))).stringWidth(String.valueOf(item.atk));
+			int statY = y + h - sc(sy, SLOT_STAT_Y_OFFSET_FROM_BOTTOM);
+
+			int atkTextW = g2.getFontMetrics(mcFont(statFontSize)).stringWidth(String.valueOf(item.atk));
+			int atkTotalW = iconStatSize + sc(sx, 4) + atkTextW;
 			int atkStartX = x + (w / 2 - atkTotalW) / 2 + sc(sx, 4);
 			drawMCIcon(g2, "resources/icon/ATK.png", atkStartX, statY, iconStatSize, iconStatSize);
-			g2.setFont(mcFont(sc(sx, 12)));
 			g2.setColor(new Color(220, 80, 80));
-			g2.drawString(String.valueOf(item.atk), atkStartX + iconStatSize + sc(sx, 4), statY + sc(sy, 13));
+			drawMixedString(g2, String.valueOf(item.atk), atkStartX + iconStatSize + sc(sx, 4), statY + textYOffset,
+					statFontSize);
 
-			int defTotalW = iconStatSize + sc(sx, 4) + g2.getFontMetrics(mcFont(sc(sx, 11))).stringWidth(String.valueOf(item.def));
+			int defTextW = g2.getFontMetrics(mcFont(statFontSize)).stringWidth(String.valueOf(item.def));
+			int defTotalW = iconStatSize + sc(sx, 4) + defTextW;
 			int defStartX = x + w / 2 + (w / 2 - defTotalW) / 2 - sc(sx, 4);
 			drawMCIcon(g2, "resources/icon/DEF.png", defStartX, statY, iconStatSize, iconStatSize);
 			g2.setColor(new Color(100, 160, 220));
-			g2.drawString(String.valueOf(item.def), defStartX + iconStatSize + sc(sx, 4), statY + sc(sy, 13));
+			drawMixedString(g2, String.valueOf(item.def), defStartX + iconStatSize + sc(sx, 4), statY + textYOffset,
+					statFontSize);
 
-			// 가격 표시 (코인)
+			int priceFontSize = SLOT_PRICE_FONT_SIZE;
+			int priceIconSize = sc(sx, SLOT_PRICE_ICON_SIZE);
+			int iconYOffset = sc(sy, 20);
+
 			String priceStr = String.valueOf(item.price);
-			g2.setFont(mcFont(sc(sx, 12)));
+			g2.setFont(mcFont(sc(sx, priceFontSize)));
 			FontMetrics pFm = g2.getFontMetrics();
-			int pStrWidth = pFm.stringWidth(priceStr);
-			int pIconSize = sc(sx, 14);
-			int pGap = sc(sx, 4);
-			int totalCenterWidth = pIconSize + pGap + pStrWidth;
+			int priceStartX = x + (w - (priceIconSize + sc(sx, 4) + pFm.stringWidth(priceStr))) / 2;
+			int priceY = y + h - sc(sy, SLOT_PRICE_Y_OFFSET_FROM_BOTTOM);
 
-			int priceStartX = x + (w - totalCenterWidth) / 2;
-			int priceY = y + h - sc(sy, 15);
-
-			drawMCIcon(g2, "resources/icon/Coin.png", priceStartX, priceY - sc(sy, 12), pIconSize, pIconSize);
+			drawMCIcon(g2, "resources/icon/Coin.png", priceStartX, priceY - iconYOffset, priceIconSize, priceIconSize);
 			g2.setColor(MC_GOLD);
-			g2.drawString(priceStr, priceStartX + pIconSize + pGap, priceY);
+			drawMixedString(g2, priceStr, priceStartX + priceIconSize + sc(sx, 4), priceY, sc(sx, priceFontSize));
+
+			String status = getItemStatus(item, TAB_NAMES[selectedTab]);
+			if (!status.equals("AVAILABLE")) {
+				g2.setColor(new Color(0, 0, 0, 165)); 
+				g2.fillRect(x, y, w, h);
+
+				String overlayText = switch (status) {
+					case "OWNED" -> "보유 중";
+					case "LOCKED" -> "잠김";
+					case "SLOT_FULL" -> "공간 없음";
+					default -> "";
+				};
+
+				g2.setFont(mcFont(sc(sx, 16)));
+				FontMetrics sfm = g2.getFontMetrics();
+				int tx = x + (w - sfm.stringWidth(overlayText)) / 2;
+				int ty = y + (h + sfm.getAscent() - sfm.getDescent()) / 2;
+
+				g2.setColor(Color.BLACK);
+				g2.drawString(overlayText, tx + 1, ty + 1);
+				g2.setColor(status.equals("LOCKED") ? Color.LIGHT_GRAY : Color.YELLOW);
+				g2.drawString(overlayText, tx, ty);
+			}
 		}
 
 		private void drawDetailPanel(Graphics2D g2, int x, int y, int w, int h, ShopItem sel, double sx, double sy) {
 			if (sel == null) {
-				g2.setFont(mcFont(sc(sx, 12)));
 				g2.setColor(new Color(120, 120, 120));
-				g2.drawString("아이템을 선택하세요", x + sc(sx, 15), y + sc(sy, 30));
+				drawMixedString(g2, "아이템을 선택하세요", x + sc(sx, 15), y + sc(sy, 30), sc(sx, 12));
 				buyBtnBounds = null;
 				return;
 			}
 
-			// 아이템 이름
-			g2.setFont(mcFont(sc(sx, 20)));
+			int nameFontSize = DETAIL_NAME_FONT;
+			int rarityFontSize = DETAIL_RARITY_FONT;
+			int imageYOffset = sc(sy, DETAIL_IMG_Y_OFFSET);
+			int bigSize = sc(sx, DETAIL_IMG_SIZE);
+
+			int statFontSize = DETAIL_STAT_FONT;
+			int statIconSize = sc(sx, DETAIL_STAT_ICON_SIZE);
+			int statIconGap = sc(sx, DETAIL_STAT_ICON_GAP);
+			int statTextYOffset = sc(sy, DETAIL_STAT_TEXT_Y_OFFSET);
+			int statStartYOffset = sc(sy, DETAIL_STAT_START_Y);
+			int statLineSpacing = sc(sy, DETAIL_STAT_LINE_SPACING);
+
+			int descFontSize = DETAIL_DESC_FONT;
+			int descLineSpacing = sc(sy, DETAIL_DESC_LINE_SPACING);
+			int descStartYOffset = sc(sy, DETAIL_DESC_START_Y_OFFSET);
+
+			int priceFontSize = DETAIL_PRICE_FONT;
+			int priceIconSize = sc(sx, DETAIL_PRICE_ICON_SIZE);
+			int priceGap = sc(sx, DETAIL_PRICE_GAP);
+			int priceY = y + h - sc(sy, DETAIL_PRICE_Y_OFFSET_FROM_BOTTOM);
+			int priceIconYOffset = sc(sy, DETAIL_PRICE_ICON_Y_OFFSET);
+			int priceTextYOffset = sc(sy, DETAIL_PRICE_TEXT_Y_OFFSET);
+
+			int buyBtnX = sc(sx, BUY_BTN_X);
+			int buyBtnY = sc(sy, BUY_BTN_Y);
+			int buyBtnW = sc(sx, BUY_BTN_W);
+			int buyBtnH = sc(sy, BUY_BTN_H);
+
+			g2.setFont(mcFontEN(sc(sx, nameFontSize)));
 			g2.setColor(new Color(0, 0, 0, 160));
-			g2.drawString(sel.name, x + sc(sx, 32), y + sc(sy, 47));
+			drawMixedString(g2, sel.name, x + sc(sx, 32), y + sc(sy, 47), sc(sx, nameFontSize));
 			g2.setColor(sel.rarity.color);
-			g2.drawString(sel.name, x + sc(sx, 31), y + sc(sy, 46));
+			drawMixedString(g2, sel.name, x + sc(sx, 31), y + sc(sy, 46), sc(sx, nameFontSize));
 
-			// 희귀도 (이름 바로 아래)
-			g2.setFont(mcFont(sc(sx, 11)));
 			g2.setColor(sel.rarity.color);
-			g2.drawString(sel.rarity.label, x + sc(sx, 32), y + sc(sy, 72));
+			drawMixedString(g2, sel.rarity.label, x + sc(sx, 32), y + sc(sy, 72), sc(sx, rarityFontSize));
 
-			// 아이템 아이콘
-			int bigSize = sc(sx, 132);
-			int bigX = x + (w - bigSize) / 2;
-			int bigY = y + sc(sy, 100);
-			drawMCIcon(g2, "resources/shop/" + sel.imageName + ".png", bigX, bigY, bigSize, bigSize);
+			drawMCIcon(g2, "resources/shop/" + sel.imageName + ".png", x + (w - bigSize) / 2, y + imageYOffset, bigSize,
+					bigSize);
 
-			// 공격력
 			int statX = x + sc(sx, 32);
-			int statY = y + sc(sy, 270);
-			drawMCIcon(g2, "resources/icon/ATK.png", statX, statY, sc(sx, 16), sc(sy, 16));
-			g2.setFont(mcFont(sc(sx, 13)));
+			int statY = y + statStartYOffset;
+
+			drawMCIcon(g2, "resources/icon/ATK.png", statX, statY, statIconSize, statIconSize);
 			g2.setColor(new Color(200, 200, 200));
-			g2.drawString("공격력", statX + sc(sx, 22), statY + sc(sy, 13));
-			g2.setColor(MC_TEXT);
+			drawMixedString(g2, "공격력", statX + statIconGap, statY + statTextYOffset, sc(sx, statFontSize));
+			g2.setFont(mcFont(sc(sx, statFontSize)));
 			FontMetrics fm = g2.getFontMetrics();
-			g2.drawString(String.valueOf(sel.atk), x + w - sc(sx, 20) - fm.stringWidth(String.valueOf(sel.atk)),
-					statY + sc(sy, 13));
-
-			// 방어력
-			statY += sc(sy, 28);
-			drawMCIcon(g2, "resources/icon/DEF.png", statX, statY, sc(sx, 16), sc(sy, 16));
-			g2.setColor(new Color(200, 200, 200));
-			g2.drawString("방어력", statX + sc(sx, 22), statY + sc(sy, 13));
 			g2.setColor(MC_TEXT);
-			g2.drawString(String.valueOf(sel.def), x + w - sc(sx, 20) - fm.stringWidth(String.valueOf(sel.def)),
-					statY + sc(sy, 13));
+			drawMixedString(g2, String.valueOf(sel.atk), x + w - sc(sx, 20) - fm.stringWidth(String.valueOf(sel.atk)),
+					statY + statTextYOffset, sc(sx, statFontSize));
 
-			// 설명 텍스트
-			statY += sc(sy, 54);
-			g2.setFont(mcFont(sc(sx, 11)));
+			statY += statLineSpacing;
+			drawMCIcon(g2, "resources/icon/DEF.png", statX, statY, statIconSize, statIconSize);
+			g2.setColor(new Color(200, 200, 200));
+			drawMixedString(g2, "방어력", statX + statIconGap, statY + statTextYOffset, sc(sx, statFontSize));
+			g2.setColor(MC_TEXT);
+			drawMixedString(g2, String.valueOf(sel.def), x + w - sc(sx, 20) - fm.stringWidth(String.valueOf(sel.def)),
+					statY + statTextYOffset, sc(sx, statFontSize));
 
-			// [변경] 이미지 가이드: 설명 텍스트는 중립 회색 유지 (#D1D5DB)
+			statY += descStartYOffset;
 			g2.setColor(MC_TEXT);
 			String[] descLines = sel.desc.split("\n");
 			for (String line : descLines) {
-				g2.drawString(line, statX, statY);
-				statY += sc(sy, 16);
+				drawMixedString(g2, line, statX, statY, sc(sx, descFontSize));
+				statY += descLineSpacing;
 			}
 
-			// 가격 표시
-			int priceBtnW = w - sc(sx, 52);
-			int priceBtnX = x + sc(sx, 26);
-			int priceBtnY = y + h - sc(sy, 121);
+			g2.setFont(mcFont(sc(sx, priceFontSize)));
+			FontMetrics priceFm = g2.getFontMetrics();
+			int priceTextW = priceFm.stringWidth(String.valueOf(sel.price));
+			int priceTotalW = priceIconSize + priceGap + priceTextW;
+			int priceStartX = x + (w - priceTotalW) / 2;
 
-			drawMCIcon(g2, "resources/icon/Coin.png", priceBtnX + sc(sx, 140), priceBtnY + sc(sy, 13), sc(sx, 24),
-					sc(sy, 24));
-			g2.setFont(mcFont(sc(sx, 16)));
+			drawMCIcon(g2, "resources/icon/Coin.png", priceStartX, priceY + priceIconYOffset, priceIconSize,
+					priceIconSize);
 			g2.setColor(MC_GOLD);
-			g2.drawString(String.valueOf(sel.price), priceBtnX + sc(sx, 170), priceBtnY + sc(sy, 35));
+			drawMixedString(g2, String.valueOf(sel.price), priceStartX + priceIconSize + priceGap,
+					priceY + priceTextYOffset, sc(sx, priceFontSize));
 
-			// 구매하기 버튼
-			int buyBtnW = sc(sx, 340);
-			int buyBtnH = sc(sy, 42);
-			int buyBtnX = priceBtnX + (priceBtnW - buyBtnW) / 2 + sc(sx, 10);
-			int buyBtnY = y + h - sc(sy, 65);
+			// ★ [수정 영역] 코인 부족 관련 예외 블록을 지워 "구매하기" 상태가 상시 유지되도록 변경
+			String status = getItemStatus(sel, TAB_NAMES[selectedTab]);
+			String btnLabel = "구매하기";
+			boolean isButtonActive = true;
+
+			if (!status.equals("AVAILABLE")) {
+				isButtonActive = false;
+				btnLabel = switch (status) {
+					case "OWNED" -> "이미 보유 중";
+					case "LOCKED" -> "이전 무기 필요";
+					case "SLOT_FULL" -> "슬롯 부족";
+					default -> "구매 불가";
+				};
+			}
+
 			buyBtnBounds = new Rectangle(buyBtnX, buyBtnY, buyBtnW, buyBtnH);
-			drawMCButton(g2, buyBtnX, buyBtnY, buyBtnW, buyBtnH, "구매하기", false, sx, sy);
+			drawMCButton(g2, buyBtnX, buyBtnY, buyBtnW, buyBtnH, btnLabel, BUY_BTN_FONT_SIZE, isButtonActive, sx, sy);
 		}
 
 		private void drawInventory(Graphics2D g2, int x, int y, int slotW, int slotH, int gap, double sx, double sy) {
+			int titleFontSize = INV_TITLE_FONT_SIZE;
+			int qtyFontSize = INV_QTY_FONT_SIZE;
 
-			g2.setFont(mcFont(sc(sx, 13)));
 			g2.setColor(new Color(200, 200, 200));
+			g2.setFont(mcFontEN(sc(sx, titleFontSize)));
 			g2.drawString("INVENTORY", x, y - sc(sy, 12));
 
-			int slots = 9;
 			List<String[]> entries = buildHotbarEntries();
 
-			for (int i = 0; i < slots; i++) {
-
+			for (int i = 0; i < 9; i++) {
 				int slotX = x + i * (slotW + gap);
-				boolean flash = i < entries.size() && entries.get(i)[0].equals(lastBoughtImageName);
-
-				if (flash) {
+				if (i < entries.size() && entries.get(i)[0].equals(lastBoughtImageName)) {
 					g2.setColor(new Color(180, 160, 60, 100));
 					g2.fillRect(slotX, y, slotW, slotH);
 				}
-
 				if (i < entries.size()) {
 					String[] entry = entries.get(i);
-
 					int paddingX = sc(sx, 4);
 					int paddingY = sc(sy, 4);
 					drawMCIcon(g2, "resources/shop/" + entry[0] + ".png", slotX + paddingX, y + paddingY,
 							slotW - (paddingX * 2), slotH - (paddingY * 2));
 
 					if (!entry[1].isEmpty()) {
-						g2.setFont(mcFont(sc(sx, 10)));
 						g2.setColor(new Color(0, 0, 0, 180));
-						g2.drawString(entry[1], slotX + slotW - sc(sx, 13), y + slotH - sc(sy, 3));
+						drawMixedString(g2, entry[1], slotX + slotW - sc(sx, 13), y + slotH - sc(sy, 3),
+								sc(sx, qtyFontSize));
 						g2.setColor(Color.WHITE);
-						g2.drawString(entry[1], slotX + slotW - sc(sx, 14), y + slotH - sc(sy, 4));
+						drawMixedString(g2, entry[1], slotX + slotW - sc(sx, 14), y + slotH - sc(sy, 4),
+								sc(sx, qtyFontSize));
 					}
 				}
 			}
@@ -736,42 +908,43 @@ public class ShopView extends JPanel {
 			return entries;
 		}
 
-		private void drawMCButton(Graphics2D g2, int x, int y, int w, int h, String label, boolean pressed, double sx,
+		private void drawMCButton(Graphics2D g2, int x, int y, int w, int h, String label, int fontSize, boolean active, double sx,
 				double sy) {
-			// 버튼 배경은 투명하게 하고 마우스 오버/클릭 효과를 위한 연한 오버레이만 둠
-			g2.setColor(new Color(255, 255, 255, 15));
+			if (active) {
+				g2.setColor(new Color(255, 255, 255, 15));
+			} else {
+				g2.setColor(new Color(45, 45, 45, 200)); 
+			}
 			g2.fillRect(x, y, w, h);
 
-			// 글자 그리기 (마인크래프트 스타일 그림자 효과 포함)
-			g2.setFont(mcFont(sc(sx, 14)));
+			g2.setFont(mcFont(sc(sx, fontSize)));
 			FontMetrics fm = g2.getFontMetrics();
 			int tx = x + (w - fm.stringWidth(label)) / 2;
 			int ty = y + (h + fm.getAscent() - fm.getDescent()) / 2;
 
-			// 검은색 글자 그림자
 			g2.setColor(new Color(0, 0, 0, 180));
-			g2.drawString(label, tx + 1, ty + 1);
-
-			// 본래 텍스트 색상
-			g2.setColor(MC_TEXT);
-			g2.drawString(label, tx, ty);
+			drawMixedString(g2, label, tx + 1, ty + 1, sc(sx, fontSize));
+			
+			if (active) {
+				g2.setColor(MC_TEXT);
+			} else {
+				g2.setColor(new Color(110, 110, 110)); 
+			}
+			drawMixedString(g2, label, tx, ty, sc(sx, fontSize));
 		}
 
 		private void drawMCIcon(Graphics2D g2, String path, int x, int y, int w, int h) {
 			try {
-				if (path.startsWith("resources/shop/") && path.endsWith(".png")) {
-					String cleanPath = path.substring(0, path.length() - 4) + "_clean.png";
-					if (new java.io.File(cleanPath).exists())
-						path = cleanPath;
-				}
 				ImageIcon ic = new ImageIcon(path);
 				if (ic.getIconWidth() <= 0)
 					return;
+
 				Image img = ic.getImage();
 				int iw = ic.getIconWidth(), ih = ic.getIconHeight();
 				double scale = Math.min((double) w / iw, (double) h / ih);
 				int dw = (int) (iw * scale), dh = (int) (ih * scale);
 				int dx = x + (w - dw) / 2, dy = y + (h - dh) / 2;
+
 				Object old = g2.getRenderingHint(RenderingHints.KEY_INTERPOLATION);
 				g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
 						RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
@@ -782,33 +955,21 @@ public class ShopView extends JPanel {
 			}
 		}
 
-		private String[] wrapText(String text, FontMetrics fm, int maxWidth) {
-			if (fm.stringWidth(text) <= maxWidth)
-				return new String[] { text };
-			List<String> lines = new ArrayList<>();
-			String[] words = text.split(" ");
-			StringBuilder cur = new StringBuilder();
-			for (String word : words) {
-				String test = cur.length() == 0 ? word : cur + " " + word;
-				if (fm.stringWidth(test) > maxWidth) {
-					if (cur.length() > 0)
-						lines.add(cur.toString());
-					cur = new StringBuilder(word);
-				} else {
-					cur = new StringBuilder(test);
-				}
-			}
-			if (cur.length() > 0)
-				lines.add(cur.toString());
-			return lines.toArray(new String[0]);
-		}
-
 		private int sc(double scale, int val) {
 			return (int) (scale * val);
 		}
 
 		private Font mcFont(int size) {
-			return MC_FONT.deriveFont(Font.BOLD, (float) Math.max(size, 8));
+			return FontManager.getNeoDgm(size);
+		}
+
+		private Font mcFontEN(int size) {
+			return FontManager.getNeoDgm(size);
+		}
+
+		private void drawMixedString(Graphics2D g2, String text, int x, int y, int size) {
+			g2.setFont(mcFont(size));
+			g2.drawString(text, x, y);
 		}
 	}
 }

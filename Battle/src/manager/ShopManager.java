@@ -6,7 +6,6 @@ import skill.consumable.*;
 import weapon.*;
 import java.util.*;
 
-
 public class ShopManager {
 
     private Steve steve;
@@ -47,7 +46,7 @@ public class ShopManager {
     }
 
     public void showMenu() {
-        System.out.println("\n보유 코인: " + steve.getCoin()); // Steve.coin → steve.getCoin()
+        System.out.println("\n보유 코인: " + steve.getCoin());
         System.out.println("--- 상점 ---");
         System.out.println("[1] 무기 구매");
         System.out.println("[2] 스킬 해금");
@@ -113,16 +112,27 @@ public class ShopManager {
     public boolean buyWeapon(Sword sword) {
         String swordName = sword.getClass().getSimpleName();
 
+        // [체크 1] 이미 동일한 무기를 장착하고 있는지 검사
+        if (steve.getWeapon().getClass().getSimpleName().equals(swordName)) {
+            System.out.println("이미 장착 중인 무기입니다.");
+            return false;
+        }
+
+        // [체크 2] 티어 순서대로 구매하는지 검사
         if (!isWeaponUnlocked(sword)) {
             System.out.println("이전 무기를 먼저 구매해야 합니다.");
             return false;
         }
+
+        // [체크 3] 코인 부족 검사
         int price = weaponPrices.getOrDefault(swordName, 0);
         if (!canAfford(price)) {
             System.out.println("코인이 부족합니다. (필요: " + price + ", 보유: " + steve.getCoin() + ")");
             return false;
         }
-        steve.setCoin(steve.getCoin() - price); // Steve.coin -= price → setCoin
+
+        // 조건 통과 시 결제 및 적용
+        steve.setCoin(steve.getCoin() - price);
         steve.setWeapon(sword);
         System.out.println(swordName + " 구매 완료! 남은 코인: " + steve.getCoin());
         return true;
@@ -131,15 +141,37 @@ public class ShopManager {
     public boolean buySkill(ActiveSkill skill) {
         String skillName = skill.getClass().getSimpleName();
         int price = skillPrices.getOrDefault(skillName, 0);
+        ActiveSkill[] skills = steve.getActiveSkills();
 
+        // [체크 1] 이미 보유 중인 스킬인지 검사
+        for (ActiveSkill s : skills) {
+            if (s != null && s.getClass().getSimpleName().equals(skillName)) {
+                System.out.println("이미 보유 중인 스킬입니다.");
+                return false;
+            }
+        }
+
+        // [체크 2] 빈 슬롯이 있는지 먼저 검사 (결제 전 예외 처리)
+        boolean hasEmptySlot = false;
+        for (ActiveSkill s : skills) {
+            if (s == null) {
+                hasEmptySlot = true;
+                break;
+            }
+        }
+        if (!hasEmptySlot) {
+            System.out.println("스킬 슬롯이 가득 찼습니다! (최대 2개)");
+            return false;
+        }
+
+        // [체크 3] 코인 부족 검사
         if (!canAfford(price)) {
             System.out.println("코인이 부족합니다. (필요: " + price + ", 보유: " + steve.getCoin() + ")");
             return false;
         }
-        steve.setCoin(steve.getCoin() - price);
 
-        // 배열에서 빈 슬롯 찾아서 추가
-        ActiveSkill[] skills = steve.getActiveSkills();
+        // 모든 조건 통과 후 결제 및 스킬 추가
+        steve.setCoin(steve.getCoin() - price);
         for (int i = 0; i < skills.length; i++) {
             if (skills[i] == null) {
                 skills[i] = skill;
@@ -153,35 +185,65 @@ public class ShopManager {
     public boolean buyPotion(ConsumableSkill potion) {
         String potionName = potion.getClass().getSimpleName();
         int price = potionPrices.getOrDefault(potionName, 0);
+        ConsumableSkill[] consumables = steve.getConsumables();
 
+        // [체크 1] 이미 가지고 있는 포션인지 확인
+        boolean alreadyHas = false;
+        for (ConsumableSkill c : consumables) {
+            if (c != null && c.getClass().equals(potion.getClass())) {
+                alreadyHas = true;
+                break;
+            }
+        }
+
+        // [체크 2] 가지고 있지 않은 새로운 포션인데 인벤토리가 꽉 찬 경우 컷트
+        if (!alreadyHas) {
+            boolean hasEmptySlot = false;
+            for (ConsumableSkill c : consumables) {
+                if (c == null) {
+                    hasEmptySlot = true;
+                    break;
+                }
+            }
+            if (!hasEmptySlot) {
+                System.out.println("포션 슬롯이 가득 찼습니다! (최대 2종류)");
+                return false;
+            }
+        }
+
+        // [체크 3] 코인 부족 검사
         if (!canAfford(price)) {
             System.out.println("코인이 부족합니다. (필요: " + price + ", 보유: " + steve.getCoin() + ")");
             return false;
         }
+
+        // 모든 조건 통과 후 결제 진행
         steve.setCoin(steve.getCoin() - price);
 
-        // 배열에서 같은 타입 포션 있으면 수량만 증가, 없으면 빈 슬롯에 추가
-        ConsumableSkill[] consumables = steve.getConsumables();
-        for (ConsumableSkill c : consumables) {
-            if (c != null && c.getClass().equals(potion.getClass())) {
-                c.addQuantity(1);
-                System.out.println(potionName + " 구매 완료! 남은 코인: " + steve.getCoin());
-                return true;
+        // [지급 처리] 이미 있으면 수량 증가, 없으면 빈 공간에 할당
+        if (alreadyHas) {
+            for (ConsumableSkill c : consumables) {
+                if (c != null && c.getClass().equals(potion.getClass())) {
+                    c.addQuantity(1);
+                    break;
+                }
+            }
+        } else {
+            for (int i = 0; i < consumables.length; i++) {
+                if (consumables[i] == null) {
+                    potion.addQuantity(1); // 최초 구매 시 수량 1 장착
+                    consumables[i] = potion;
+                    break;
+                }
             }
         }
-        for (int i = 0; i < consumables.length; i++) {
-            if (consumables[i] == null) {
-                potion.addQuantity(1);
-                consumables[i] = potion;
-                break;
-            }
-        }
+        
         System.out.println(potionName + " 구매 완료! 남은 코인: " + steve.getCoin());
         return true;
     }
 
     public boolean canAfford(int price) {
-        return steve.getCoin() >= price; // Steve.coin → steve.getCoin()
+        return steve.getCoin() >= price;
     }
 
     public boolean isWeaponUnlocked(Sword sword) {
