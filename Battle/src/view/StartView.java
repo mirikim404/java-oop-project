@@ -5,23 +5,15 @@ import java.awt.*;
 
 public class StartView extends JPanel {
 
-	private JPanel contentPane;
-	private MinecraftButton btnNewGame;
-	private MinecraftButton btnHowTo;
-	private MinecraftButton btnCredits;
-	private MinecraftButton btnExit;
-	private GameFrame gameFrame;
-	
 	public StartView(GameFrame gameFrame) {
-	    this.gameFrame = gameFrame;
-	    contentPane = new BackgroundPanel();
+	    JPanel contentPane = new BackgroundPanel();
 	    contentPane.setLayout(new GridBagLayout());
 	    setLayout(new BorderLayout());
 	    add(contentPane, BorderLayout.CENTER);
-	    initComponents();
+	    initComponents(contentPane, gameFrame);
 	}
 
-	private void initComponents() {
+	private void initComponents(JPanel contentPane, GameFrame gameFrame) {
 
 		JLabel title = new JLabel("MINECRAFT", SwingConstants.CENTER);
 		title.setForeground(Color.WHITE);
@@ -41,7 +33,7 @@ public class StartView extends JPanel {
 		gbcSub.insets = new Insets(0, 0, 32, 0);
 		contentPane.add(subTitle, gbcSub);
 
-		btnNewGame = new MinecraftButton("새 게임");
+		MinecraftButton btnNewGame = new MinecraftButton("새 게임");
 		btnNewGame.setPreferredSize(new Dimension(310, 40));
 		GridBagConstraints gbcBtn1 = new GridBagConstraints();
 		gbcBtn1.gridx = 0;
@@ -50,7 +42,7 @@ public class StartView extends JPanel {
 		gbcBtn1.insets = new Insets(4, 0, 4, 0);
 		contentPane.add(btnNewGame, gbcBtn1);
 
-		btnHowTo = new MinecraftButton("게임 방법");
+		MinecraftButton btnHowTo = new MinecraftButton("게임 방법");
 		btnHowTo.setPreferredSize(new Dimension(310, 40));
 		GridBagConstraints gbcBtn2 = new GridBagConstraints();
 		gbcBtn2.gridx = 0;
@@ -61,8 +53,8 @@ public class StartView extends JPanel {
 
 		JPanel bottomRow = new JPanel(new GridLayout(1, 2, 6, 0));
 		bottomRow.setOpaque(false);
-		btnCredits = new MinecraftButton("크레딧");
-		btnExit = new MinecraftButton("종료");
+		MinecraftButton btnCredits = new MinecraftButton("크레딧");
+		MinecraftButton btnExit = new MinecraftButton("종료");
 		bottomRow.add(btnCredits);
 		bottomRow.add(btnExit);
 		bottomRow.setPreferredSize(new Dimension(310, 40));
@@ -73,7 +65,6 @@ public class StartView extends JPanel {
 		gbcBottom.insets = new Insets(4, 0, 4, 0);
 		contentPane.add(bottomRow, gbcBottom);
 
-		// 폰트
 		title.setFont(FontManager.getMC(36));
 		subTitle.setFont(FontManager.get(12));
 		btnNewGame.setFont(FontManager.get(16));
@@ -81,7 +72,6 @@ public class StartView extends JPanel {
 		btnCredits.setFont(FontManager.get(14));
 		btnExit.setFont(FontManager.get(14));
 
-		// 액션
 		btnNewGame.addActionListener(e -> {
 		    JDialog dialog = new JDialog();
 		    dialog.setTitle("새 게임");

@@ -2,205 +2,142 @@ package view;
 
 import entity.Steve;
 import entity.mob.Mob;
-import manager.ShopManager;
 import manager.WaveManager;
 
 import javax.swing.*;
 import java.awt.*;
 
 public class DeadView extends JPanel {
-	private GameFrame gameFrame;
+
+    private GameFrame gameFrame;
     private Steve steve;
     private WaveManager waveManager;
-    private ShopManager shopManager;
-
-    private JLabel coinLabel;
 
     public DeadView(GameFrame gameFrame, Steve steve, WaveManager waveManager) {
         this.gameFrame = gameFrame;
-    	this.steve = steve;
+        this.steve = steve;
         this.waveManager = waveManager;
-        this.shopManager = new ShopManager(steve);
 
+        setLayout(null);
+        setBackground(new Color(10, 10, 10));
 
-        JPanel root = new BackgroundPanel();
-        root.setLayout(new BorderLayout(10, 10));
-        root.setBorder(BorderFactory.createEmptyBorder(16, 24, 16, 24));
-        setLayout(new BorderLayout());
-        add(root, BorderLayout.CENTER);
-
-        root.add(buildTopPanel(), BorderLayout.NORTH);
-        root.add(buildShopPanel(), BorderLayout.CENTER);
-        root.add(buildBottomPanel(), BorderLayout.SOUTH);
-
-        setVisible(true);
+        buildUI();
     }
 
-    // ─── 상단: 사망 메시지 + 코인 ───
-    private JPanel buildTopPanel() {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setOpaque(false);
+    private void buildUI() {
+        int W = 854;
+        int H = 560;
 
-        JLabel deadLabel = new JLabel("💀 YOU DIED", SwingConstants.LEFT);
-        deadLabel.setFont(new Font("Dialog", Font.BOLD, 28));
-        deadLabel.setForeground(new Color(220, 50, 50));
-
-        coinLabel = new JLabel(String.valueOf(steve.getCoin()), SwingConstants.RIGHT);
-        coinLabel.setIcon(BattleView.loadScaledIcon("resources/icon/Coin.png", 22, 22));
-        coinLabel.setIconTextGap(6);
-        coinLabel.setFont(new Font("Dialog", Font.BOLD, 20));
-        coinLabel.setForeground(new Color(255, 215, 0));
-
-        JLabel subLabel = new JLabel("코인은 유지됩니다. 장비를 구매하고 재도전하세요!", SwingConstants.LEFT);
-        subLabel.setFont(new Font("Dialog", Font.PLAIN, 13));
-        subLabel.setForeground(new Color(200, 200, 200));
-
-        JPanel leftPanel = new JPanel(new GridLayout(2, 1, 0, 4));
-        leftPanel.setOpaque(false);
-        leftPanel.add(deadLabel);
-        leftPanel.add(subLabel);
-
-        panel.add(leftPanel, BorderLayout.WEST);
-        panel.add(coinLabel, BorderLayout.EAST);
-        return panel;
-    }
-
-    // ─── 중앙: 상점 탭 (ShopView와 동일) ───
-    private JTabbedPane buildShopPanel() {
-        JTabbedPane tabs = new JTabbedPane();
-        tabs.setFont(new Font("Dialog", Font.BOLD, 14));
-        tabs.setBackground(new Color(50, 50, 50));
-        tabs.setForeground(Color.WHITE);
-
-        tabs.addTab("⚔ 무기", buildWeaponPanel());
-        tabs.addTab("✨ 스킬", buildSkillPanel());
-        tabs.addTab("🧪 포션", buildPotionPanel());
-
-        return tabs;
-    }
-
-    // ─── 무기 패널 ───
-    private JPanel buildWeaponPanel() {
-        JPanel panel = new JPanel(new GridLayout(4, 1, 0, 8));
-        panel.setBackground(new Color(30, 30, 30));
-        panel.setBorder(BorderFactory.createEmptyBorder(12, 16, 12, 16));
-
-        String[][] weapons = {
-            {"StoneSword",     "돌 검",         "40"},
-            {"IronSword",      "철 검",         "75"},
-            {"DiamondSword",   "다이아몬드 검",  "115"},
-            {"NetheriteSword", "네더라이트 검",  "160"},
+        // YOU DIED 텍스트 (레이블로)
+        JLabel diedLabel = new JLabel("YOU DIED", SwingConstants.CENTER) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+                g2.setFont(FontManager.getNeoDgm(72));
+                FontMetrics fm = g2.getFontMetrics();
+                String text = "YOU DIED";
+                int tx = (getWidth() - fm.stringWidth(text)) / 2;
+                int ty = (getHeight() + fm.getAscent() - fm.getDescent()) / 2;
+                // 그림자
+                g2.setColor(new Color(80, 0, 0));
+                g2.drawString(text, tx + 3, ty + 3);
+                // 본문
+                g2.setColor(new Color(200, 30, 30));
+                g2.drawString(text, tx, ty);
+                g2.dispose();
+            }
         };
+        diedLabel.setBounds(0, 140, W, 100);
 
-        for (String[] w : weapons) {
-            panel.add(buildItemRow(w[1], w[2] + " 코인", () -> {
-                weapon.Sword sword = switch (w[0]) {
-                    case "StoneSword"     -> new weapon.StoneSword();
-                    case "IronSword"      -> new weapon.IronSword();
-                    case "DiamondSword"   -> new weapon.DiamondSword();
-                    case "NetheriteSword" -> new weapon.NetheriteSword();
-                    default -> null;
-                };
-                if (sword != null && shopManager.buyWeapon(sword)) refreshCoin();
-            }));
-        }
-        return panel;
-    }
+        // 코인 유지 안내 텍스트
+        JLabel coinLabel = new JLabel("코인 " + steve.getCoin() + "개를 가지고 1웨이브부터 재시작합니다.", SwingConstants.CENTER) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+                g2.setFont(FontManager.getNeoDgm(14));
+                FontMetrics fm = g2.getFontMetrics();
+                String text = "코인 " + steve.getCoin() + "개를 가지고 1웨이브부터 재시작합니다.";
+                int tx = (getWidth() - fm.stringWidth(text)) / 2;
+                int ty = (getHeight() + fm.getAscent()) / 2;
+                g2.setColor(new Color(0, 0, 0, 180));
+                g2.drawString(text, tx + 1, ty + 1);
+                g2.setColor(new Color(255, 215, 0));
+                g2.drawString(text, tx, ty);
+                g2.dispose();
+            }
+        };
+        coinLabel.setBounds(0, 250, W, 30);
 
-    // ─── 스킬 패널 ───
-    private JPanel buildSkillPanel() {
-        JPanel panel = new JPanel(new GridLayout(2, 1, 0, 8));
-        panel.setBackground(new Color(30, 30, 30));
-        panel.setBorder(BorderFactory.createEmptyBorder(12, 16, 12, 16));
+        // 상점으로 버튼
+        JButton btnShop = makeButton("상점으로");
+        btnShop.setBounds(240, 320, 140, 44);
+        btnShop.addActionListener(e -> {
+            // 상점에서 "다음 웨이브" 대신 "처음으로" 동작을 해야 하므로
+            // waveManager는 현재 상태 그대로 넘김 (상점 내부에서 restartAfterDeath 호출)
+            gameFrame.showShop(steve, waveManager, 0); // wave=0 → 상점에서 처음으로 버튼 표시 신호
+        });
 
-        panel.add(buildItemRow("눈덩이 (보조 스턴, 쿨타임 3턴)", "45 코인", () -> {
-            if (shopManager.buySkill(new skill.active.SnowBall())) refreshCoin();
-        }));
-        panel.add(buildItemRow("화염구 (화상 2턴, 쿨타임 3턴)", "65 코인", () -> {
-            if (shopManager.buySkill(new skill.active.FireCharge())) refreshCoin();
-        }));
-
-        return panel;
-    }
-
-    // ─── 포션 패널 ───
-    private JPanel buildPotionPanel() {
-        JPanel panel = new JPanel(new GridLayout(2, 1, 0, 8));
-        panel.setBackground(new Color(30, 30, 30));
-        panel.setBorder(BorderFactory.createEmptyBorder(12, 16, 12, 16));
-
-        panel.add(buildItemRow("공격 포션 (다음 공격 2배)", "18 코인", () -> {
-            if (shopManager.buyPotion(new skill.consumable.AttackPotion())) refreshCoin();
-        }));
-        panel.add(buildItemRow("회복 포션 (체력 회복)", "15 코인", () -> {
-            if (shopManager.buyPotion(new skill.consumable.HealPotion())) refreshCoin();
-        }));
-
-        return panel;
-    }
-
-    // ─── 아이템 행 공통 컴포넌트 ───
-    private JPanel buildItemRow(String name, String price, Runnable onBuy) {
-        JPanel row = new JPanel(new BorderLayout(10, 0));
-        row.setBackground(new Color(50, 50, 50));
-        row.setBorder(BorderFactory.createEmptyBorder(8, 12, 8, 12));
-
-        JLabel nameLabel = new JLabel(name);
-        nameLabel.setFont(new Font("Dialog", Font.PLAIN, 15));
-        nameLabel.setForeground(Color.WHITE);
-
-        JLabel priceLabel = new JLabel(price.replace(" Coin", "").replace(" 肄붿씤", ""));
-        priceLabel.setIcon(BattleView.loadScaledIcon("resources/icon/Coin.png", 16, 16));
-        priceLabel.setIconTextGap(5);
-        priceLabel.setFont(new Font("Dialog", Font.BOLD, 14));
-        priceLabel.setForeground(new Color(255, 215, 0));
-
-        MinecraftButton btnBuy = new MinecraftButton("구매");
-        btnBuy.setPreferredSize(new Dimension(80, 32));
-        btnBuy.setFont(new Font("Dialog", Font.BOLD, 13));
-        btnBuy.addActionListener(e -> onBuy.run());
-
-        JPanel rightPanel = new JPanel(new BorderLayout(8, 0));
-        rightPanel.setOpaque(false);
-        rightPanel.add(priceLabel, BorderLayout.WEST);
-        rightPanel.add(btnBuy, BorderLayout.EAST);
-
-        row.add(nameLabel, BorderLayout.CENTER);
-        row.add(rightPanel, BorderLayout.EAST);
-        return row;
-    }
-
-    // ─── 하단: 재시작 / 타이틀 ───
-    private JPanel buildBottomPanel() {
-        JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
-        panel.setOpaque(false);
-
-        MinecraftButton btnRestart = new MinecraftButton("↺ 재시작");
-        btnRestart.setPreferredSize(new Dimension(160, 44));
-        btnRestart.setFont(new Font("Dialog", Font.BOLD, 16));
+        // 처음으로 버튼
+        JButton btnRestart = makeButton("처음으로");
+        btnRestart.setBounds(474, 320, 140, 44);
         btnRestart.addActionListener(e -> {
-            // 새 Steve 생성 (코인 유지)
-            steve = steve.resetAfterDeath();
-            WaveManager newWaveManager = new WaveManager();
-            newWaveManager.loadCurrentWave();
-            Mob firstMob = newWaveManager.getAliveMobs().get(0);
             gameFrame.restartAfterDeath(steve);
         });
 
-        MinecraftButton btnTitle = new MinecraftButton("Title");
-        btnTitle.setPreferredSize(new Dimension(120, 44));
-        btnTitle.setFont(new Font("Dialog", Font.BOLD, 16));
+        // 타이틀로 버튼 (작게, 맨 밑)
+        JButton btnTitle = makeSmallButton("타이틀로 돌아가기");
+        btnTitle.setBounds(327, 420, 200, 28);
         btnTitle.addActionListener(e -> {
-        	gameFrame.showStart();
+            gameFrame.showStart();
         });
 
-        panel.add(btnRestart);
-        panel.add(btnTitle);
-        return panel;
+        add(diedLabel);
+        add(coinLabel);
+        add(btnShop);
+        add(btnRestart);
+        add(btnTitle);
     }
 
-    // ─── 코인 갱신 ───
-    private void refreshCoin() {
-        coinLabel.setText(String.valueOf(steve.getCoin()));
+    private JButton makeButton(String text) {
+        JButton btn = new JButton(text) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                Color base = getModel().isPressed() ? new Color(50, 45, 65)
+                        : getModel().isRollover() ? new Color(118, 108, 132)
+                        : new Color(78, 72, 94);
+                g2.setColor(base);
+                g2.fillRect(0, 0, getWidth(), getHeight());
+                g2.setColor(base.brighter().brighter());
+                g2.drawLine(0, 0, getWidth() - 2, 0);
+                g2.drawLine(0, 0, 0, getHeight() - 2);
+                g2.setColor(base.darker().darker());
+                g2.drawLine(1, getHeight() - 1, getWidth() - 1, getHeight() - 1);
+                g2.drawLine(getWidth() - 1, 1, getWidth() - 1, getHeight() - 1);
+                g2.setFont(FontManager.getNeoDgm(15));
+                FontMetrics fm = g2.getFontMetrics();
+                int tx = (getWidth() - fm.stringWidth(getText())) / 2;
+                int ty = (getHeight() + fm.getAscent() - fm.getDescent()) / 2;
+                g2.setColor(new Color(0, 0, 0, 180));
+                g2.drawString(getText(), tx + 1, ty + 1);
+                g2.setColor(Color.WHITE);
+                g2.drawString(getText(), tx, ty);
+                g2.dispose();
+            }
+        };
+        btn.setFocusPainted(false);
+        btn.setBorderPainted(false);
+        btn.setContentAreaFilled(false);
+        btn.setOpaque(false);
+        btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        return btn;
+    }
+
+    private JButton makeSmallButton(String text) {
+        JButton btn = makeButton(text);
+        btn.setFont(FontManager.getNeoDgm(11));
+        return btn;
     }
 }

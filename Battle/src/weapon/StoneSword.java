@@ -1,9 +1,8 @@
 package weapon;
 public class StoneSword extends Sword {
 	
-	// 생성자(기본)
 	public StoneSword() {
-		super(10, 6); // attackBonus, aoeDamageBonus
+		super("돌 검", "돌로 만들어진 기본 무기입니다.", 1, 10, 6);
 	}
 
 }

@@ -16,4 +16,9 @@ public class SnowBall extends ActiveSkill {
         triggerCooldown();
         System.out.println("눈덩이를 던졌다! " + target.getName() + "이(가) 스턴됐다!");
     }
+
+    @Override
+    public boolean skipsMobTurn() {
+        return true;
+    }
 }

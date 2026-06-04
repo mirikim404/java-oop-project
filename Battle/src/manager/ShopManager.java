@@ -1,39 +1,343 @@
 package manager;
 
 import entity.Steve;
-import skill.active.*;
-import skill.consumable.*;
-import weapon.*;
-import java.util.*;
+import skill.active.ActiveSkill;
+import skill.active.FireCharge;
+import skill.active.SnowBall;
+import skill.consumable.AttackPotion;
+import skill.consumable.ConsumableSkill;
+import skill.consumable.HealPotion;
+import weapon.DiamondSword;
+import weapon.IronSword;
+import weapon.NetheriteSword;
+import weapon.StoneSword;
+import weapon.Sword;
+import weapon.Weapon;
+
+import java.util.List;
+import java.util.Scanner;
+import java.util.function.Supplier;
 
 public class ShopManager {
 
-    private Steve steve;
-    private Map<String, Integer> weaponPrices;
-    private Map<String, Integer> skillPrices;
-    private Map<String, Integer> potionPrices;
+    private static final List<ShopEntry> WEAPONS = List.of(
+            new WeaponEntry("StoneSword", "돌 검", "돌로 만들어진 검입니다.\n가장 기본적인 무기입니다.", Rarity.COMMON, 10, 0, 40,
+                    StoneSword::new),
+            new WeaponEntry("IronSword", "철 검", "철로 만들어진 검입니다.\n적당한 강도를 자랑합니다.", Rarity.UNCOMMON, 15, 0, 75,
+                    IronSword::new),
+            new WeaponEntry("DiamondSword", "다이아몬드 검", "다이아몬드로 만들어진 검입니다.\n균형 잡힌 성능을 자랑합니다.", Rarity.RARE, 20,
+                    0, 115, DiamondSword::new),
+            new WeaponEntry("NetheriteSword", "네더라이트 검", "지옥의 금속으로 만든 검입니다.\n최강의 무기입니다.", Rarity.EPIC, 25, 0,
+                    160, NetheriteSword::new));
 
+    private static final List<ShopEntry> SKILLS = List.of(
+            new SkillEntry("SnowBall", "눈덩이", "적을 스턴 상태로 만듭니다.\n쿨타임 3턴", Rarity.COMMON, 10, 0, 45,
+                    SnowBall::new),
+            new SkillEntry("FireCharge", "화염구", "적에게 화상을 입힙니다.\n화상 2턴, 쿨타임 3턴", Rarity.UNCOMMON, 15, 0, 65,
+                    FireCharge::new));
+
+    private static final List<ShopEntry> POTIONS = List.of(
+            new PotionEntry("AttackPotion", "공격 포션", "다음 공격의 데미지를\n2배로 만듭니다.", Rarity.COMMON, 0, 0, 18,
+                    AttackPotion::new),
+            new PotionEntry("HealPotion", "회복 포션", "체력을 일정량\n회복합니다.", Rarity.COMMON, 0, 0, 15,
+                    HealPotion::new));
+
+    private Steve steve;
     private final Scanner scanner = new Scanner(System.in);
 
     public ShopManager(Steve steve) {
         this.steve = steve;
-        initPrices();
     }
 
-    private void initPrices() {
-        weaponPrices = new HashMap<>();
-        weaponPrices.put("StoneSword",     40);
-        weaponPrices.put("IronSword",      75);
-        weaponPrices.put("DiamondSword",  115);
-        weaponPrices.put("NetheriteSword",160);
+    public enum Category {
+        WEAPON("무기"),
+        SKILL("스킬"),
+        POTION("포션");
 
-        skillPrices = new HashMap<>();
-        skillPrices.put("SnowBall",   45);
-        skillPrices.put("FireCharge", 65);
+        private final String label;
 
-        potionPrices = new HashMap<>();
-        potionPrices.put("AttackPotion", 18);
-        potionPrices.put("HealPotion",   15);
+        Category(String label) {
+            this.label = label;
+        }
+
+        public String getLabel() {
+            return label;
+        }
+    }
+
+    public enum Rarity {
+        COMMON("일반"),
+        UNCOMMON("고급"),
+        RARE("희귀"),
+        EPIC("영웅");
+
+        private final String label;
+
+        Rarity(String label) {
+            this.label = label;
+        }
+
+        public String getLabel() {
+            return label;
+        }
+    }
+
+    public enum PurchaseStatus {
+        AVAILABLE("구매하기", ""),
+        OWNED("이미 보유 중", "이미 보유 중이거나 상위 티어 장비를 가졌습니다."),
+        LOCKED("이전 무기 필요", "이전 단계 무기를 먼저 구매해야 합니다."),
+        SLOT_FULL("슬롯 부족", "가방 슬롯이 가득 차서 공간이 없습니다.");
+
+        private final String label;
+        private final String message;
+
+        PurchaseStatus(String label, String message) {
+            this.label = label;
+            this.message = message;
+        }
+
+        public String getLabel() {
+            return label;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+    }
+
+    public abstract static class ShopEntry {
+        private final Category category;
+        private final String id;
+        private final String name;
+        private final String description;
+        private final Rarity rarity;
+        private final int attack;
+        private final int defense;
+        private final int price;
+
+        protected ShopEntry(Category category, String id, String name, String description, Rarity rarity, int attack,
+                int defense, int price) {
+            this.category = category;
+            this.id = id;
+            this.name = name;
+            this.description = description;
+            this.rarity = rarity;
+            this.attack = attack;
+            this.defense = defense;
+            this.price = price;
+        }
+
+        public Category getCategory() {
+            return category;
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public Rarity getRarity() {
+            return rarity;
+        }
+
+        public int getAttack() {
+            return attack;
+        }
+
+        public int getDefense() {
+            return defense;
+        }
+
+        public int getPrice() {
+            return price;
+        }
+
+        public abstract PurchaseStatus getStatus(ShopManager shop);
+
+        protected abstract boolean buy(ShopManager shop);
+    }
+
+    private static class WeaponEntry extends ShopEntry {
+        private final Supplier<? extends Sword> factory;
+
+        WeaponEntry(String id, String name, String description, Rarity rarity, int attack, int defense, int price,
+                Supplier<? extends Sword> factory) {
+            super(Category.WEAPON, id, name, description, rarity, attack, defense, price);
+            this.factory = factory;
+        }
+
+        @Override
+        public PurchaseStatus getStatus(ShopManager shop) {
+            Weapon current = shop.steve.getWeapon();
+            Sword target = factory.get();
+            int currentTier = current == null ? -1 : current.getTier();
+
+            if (currentTier >= target.getTier())
+                return PurchaseStatus.OWNED;
+            if (target.getTier() == currentTier + 1)
+                return PurchaseStatus.AVAILABLE;
+            return PurchaseStatus.LOCKED;
+        }
+
+        @Override
+        protected boolean buy(ShopManager shop) {
+            Sword sword = factory.get();
+            shop.steve.setCoin(shop.steve.getCoin() - getPrice());
+            shop.steve.setWeapon(sword);
+            System.out.println(sword.getName() + " 구매 완료! 남은 코인: " + shop.steve.getCoin());
+            return true;
+        }
+    }
+
+    private static class SkillEntry extends ShopEntry {
+        private final Supplier<? extends ActiveSkill> factory;
+
+        SkillEntry(String id, String name, String description, Rarity rarity, int attack, int defense, int price,
+                Supplier<? extends ActiveSkill> factory) {
+            super(Category.SKILL, id, name, description, rarity, attack, defense, price);
+            this.factory = factory;
+        }
+
+        @Override
+        public PurchaseStatus getStatus(ShopManager shop) {
+            if (shop.hasActiveSkill(getId()))
+                return PurchaseStatus.OWNED;
+            if (!shop.hasEmptySkillSlot())
+                return PurchaseStatus.SLOT_FULL;
+            return PurchaseStatus.AVAILABLE;
+        }
+
+        @Override
+        protected boolean buy(ShopManager shop) {
+            ActiveSkill[] skills = shop.steve.getActiveSkills();
+            ActiveSkill skill = factory.get();
+
+            for (int i = 0; i < skills.length; i++) {
+                if (skills[i] == null) {
+                    skills[i] = skill;
+                    shop.steve.setCoin(shop.steve.getCoin() - getPrice());
+                    System.out.println(skill.getName() + " 해금 완료! 남은 코인: " + shop.steve.getCoin());
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+
+    private static class PotionEntry extends ShopEntry {
+        private final Supplier<? extends ConsumableSkill> factory;
+
+        PotionEntry(String id, String name, String description, Rarity rarity, int attack, int defense, int price,
+                Supplier<? extends ConsumableSkill> factory) {
+            super(Category.POTION, id, name, description, rarity, attack, defense, price);
+            this.factory = factory;
+        }
+
+        @Override
+        public PurchaseStatus getStatus(ShopManager shop) {
+            if (shop.hasPotion(getId()))
+                return PurchaseStatus.AVAILABLE;
+            if (!shop.hasEmptyPotionSlot())
+                return PurchaseStatus.SLOT_FULL;
+            return PurchaseStatus.AVAILABLE;
+        }
+
+        @Override
+        protected boolean buy(ShopManager shop) {
+            ConsumableSkill[] consumables = shop.steve.getConsumables();
+            ConsumableSkill potion = factory.get();
+
+            for (ConsumableSkill item : consumables) {
+                if (item != null && item.getId().equals(potion.getId())) {
+                    item.addQuantity(1);
+                    shop.steve.setCoin(shop.steve.getCoin() - getPrice());
+                    System.out.println(item.getName() + " 구매 완료! 남은 코인: " + shop.steve.getCoin());
+                    return true;
+                }
+            }
+
+            for (int i = 0; i < consumables.length; i++) {
+                if (consumables[i] == null) {
+                    potion.addQuantity(1);
+                    consumables[i] = potion;
+                    shop.steve.setCoin(shop.steve.getCoin() - getPrice());
+                    System.out.println(potion.getName() + " 구매 완료! 남은 코인: " + shop.steve.getCoin());
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+
+    public List<ShopEntry> getItems(Category category) {
+        return switch (category) {
+            case WEAPON -> WEAPONS;
+            case SKILL -> SKILLS;
+            case POTION -> POTIONS;
+        };
+    }
+
+    public ShopEntry findItem(String id) {
+        for (Category category : Category.values()) {
+            for (ShopEntry item : getItems(category)) {
+                if (item.getId().equals(id))
+                    return item;
+            }
+        }
+        return null;
+    }
+
+    public PurchaseStatus getStatus(ShopEntry item) {
+        return item == null ? PurchaseStatus.LOCKED : item.getStatus(this);
+    }
+
+    public boolean buy(ShopEntry item) {
+        if (item == null)
+            return false;
+
+        PurchaseStatus status = item.getStatus(this);
+        if (status != PurchaseStatus.AVAILABLE) {
+            System.out.println(status.getMessage());
+            return false;
+        }
+
+        if (!canAfford(item.getPrice())) {
+            System.out.println("코인이 부족합니다. (필요: " + item.getPrice() + ", 보유: " + steve.getCoin() + ")");
+            return false;
+        }
+
+        return item.buy(this);
+    }
+
+    public boolean buyWeapon(Sword sword) {
+        return sword != null && buy(findItem(sword.getId()));
+    }
+
+    public boolean buySkill(ActiveSkill skill) {
+        return skill != null && buy(findItem(skill.getId()));
+    }
+
+    public boolean buyPotion(ConsumableSkill potion) {
+        return potion != null && buy(findItem(potion.getId()));
+    }
+
+    public boolean canAfford(int price) {
+        return steve.getCoin() >= price;
+    }
+
+    public boolean isWeaponUnlocked(Sword sword) {
+        if (sword == null)
+            return false;
+        Weapon current = steve.getWeapon();
+        int currentTier = current == null ? -1 : current.getTier();
+        return sword.getTier() == currentTier + 1;
     }
 
     public void enterShop(GameState state) {
@@ -55,208 +359,36 @@ public class ShopManager {
 
         int input = scanner.nextInt();
         switch (input) {
-            case 1 -> showWeaponMenu();
-            case 2 -> showSkillMenu();
-            case 3 -> showPotionMenu();
+            case 1 -> showCategoryMenu(Category.WEAPON);
+            case 2 -> showCategoryMenu(Category.SKILL);
+            case 3 -> showCategoryMenu(Category.POTION);
             case 0 -> System.out.println("상점을 나갑니다.");
-            default -> { System.out.println("잘못된 입력입니다."); showMenu(); }
+            default -> {
+                System.out.println("잘못된 입력입니다.");
+                showMenu();
+            }
         }
     }
 
-    private void showWeaponMenu() {
-        System.out.println("\n--- 무기 ---");
-        System.out.println("[1] 돌 검        - " + weaponPrices.get("StoneSword")     + " 코인");
-        System.out.println("[2] 철 검        - " + weaponPrices.get("IronSword")      + " 코인");
-        System.out.println("[3] 다이아몬드 검 - " + weaponPrices.get("DiamondSword")   + " 코인");
-        System.out.println("[4] 네더라이트 검 - " + weaponPrices.get("NetheriteSword") + " 코인");
+    private void showCategoryMenu(Category category) {
+        List<ShopEntry> items = getItems(category);
+
+        System.out.println("\n--- " + category.getLabel() + " ---");
+        for (int i = 0; i < items.size(); i++) {
+            ShopEntry item = items.get(i);
+            System.out.println("[" + (i + 1) + "] " + item.getName() + " - " + item.getPrice() + " 코인");
+        }
         System.out.println("[0] 뒤로");
 
         int input = scanner.nextInt();
-        switch (input) {
-            case 1 -> {buyWeapon(new StoneSword()); showWeaponMenu();}
-            case 2 -> {buyWeapon(new IronSword()); showWeaponMenu();}
-            case 3 -> {buyWeapon(new DiamondSword()); showWeaponMenu();}
-            case 4 -> {buyWeapon(new NetheriteSword()); showWeaponMenu();}
-            case 0 -> showMenu();
+        if (input == 0) {
+            showMenu();
+            return;
         }
-    }
-
-    private void showSkillMenu() {
-        System.out.println("\n--- 스킬 ---");
-        System.out.println("[1] 눈덩이 (단일 스턴) - " + skillPrices.get("SnowBall")   + " 코인");
-        System.out.println("[2] 화염구 (화상 2턴)  - " + skillPrices.get("FireCharge") + " 코인");
-        System.out.println("[0] 뒤로");
-
-        int input = scanner.nextInt();
-        switch (input) {
-            case 1 -> {buySkill(new SnowBall()); showSkillMenu();}
-            case 2 -> {buySkill(new FireCharge()); showSkillMenu();}
-            case 0 -> showMenu();
+        if (input >= 1 && input <= items.size()) {
+            buy(items.get(input - 1));
         }
-    }
-
-    private void showPotionMenu() {
-        System.out.println("\n--- 포션 ---");
-        System.out.println("[1] 공격 포션 (1턴 공격력 2배) - " + potionPrices.get("AttackPotion") + " 코인");
-        System.out.println("[2] 회복 포션 (체력 회복)      - " + potionPrices.get("HealPotion")   + " 코인");
-        System.out.println("[0] 뒤로");
-
-        int input = scanner.nextInt();
-        switch (input) {
-            case 1 -> {buyPotion(new AttackPotion()); showPotionMenu();}
-            case 2 -> {buyPotion(new HealPotion()); showPotionMenu();}
-            case 0 -> showMenu();
-        }
-    }
-
-    public boolean buyWeapon(Sword sword) {
-        String swordName = sword.getClass().getSimpleName();
-
-        // [체크 1] 이미 동일한 무기를 장착하고 있는지 검사
-        if (steve.getWeapon().getClass().getSimpleName().equals(swordName)) {
-            System.out.println("이미 장착 중인 무기입니다.");
-            return false;
-        }
-
-        // [체크 2] 티어 순서대로 구매하는지 검사
-        if (!isWeaponUnlocked(sword)) {
-            System.out.println("이전 무기를 먼저 구매해야 합니다.");
-            return false;
-        }
-
-        // [체크 3] 코인 부족 검사
-        int price = weaponPrices.getOrDefault(swordName, 0);
-        if (!canAfford(price)) {
-            System.out.println("코인이 부족합니다. (필요: " + price + ", 보유: " + steve.getCoin() + ")");
-            return false;
-        }
-
-        // 조건 통과 시 결제 및 적용
-        steve.setCoin(steve.getCoin() - price);
-        steve.setWeapon(sword);
-        System.out.println(swordName + " 구매 완료! 남은 코인: " + steve.getCoin());
-        return true;
-    }
-
-    public boolean buySkill(ActiveSkill skill) {
-        String skillName = skill.getClass().getSimpleName();
-        int price = skillPrices.getOrDefault(skillName, 0);
-        ActiveSkill[] skills = steve.getActiveSkills();
-
-        // [체크 1] 이미 보유 중인 스킬인지 검사
-        for (ActiveSkill s : skills) {
-            if (s != null && s.getClass().getSimpleName().equals(skillName)) {
-                System.out.println("이미 보유 중인 스킬입니다.");
-                return false;
-            }
-        }
-
-        // [체크 2] 빈 슬롯이 있는지 먼저 검사 (결제 전 예외 처리)
-        boolean hasEmptySlot = false;
-        for (ActiveSkill s : skills) {
-            if (s == null) {
-                hasEmptySlot = true;
-                break;
-            }
-        }
-        if (!hasEmptySlot) {
-            System.out.println("스킬 슬롯이 가득 찼습니다! (최대 2개)");
-            return false;
-        }
-
-        // [체크 3] 코인 부족 검사
-        if (!canAfford(price)) {
-            System.out.println("코인이 부족합니다. (필요: " + price + ", 보유: " + steve.getCoin() + ")");
-            return false;
-        }
-
-        // 모든 조건 통과 후 결제 및 스킬 추가
-        steve.setCoin(steve.getCoin() - price);
-        for (int i = 0; i < skills.length; i++) {
-            if (skills[i] == null) {
-                skills[i] = skill;
-                break;
-            }
-        }
-        System.out.println(skillName + " 해금 완료! 남은 코인: " + steve.getCoin());
-        return true;
-    }
-
-    public boolean buyPotion(ConsumableSkill potion) {
-        String potionName = potion.getClass().getSimpleName();
-        int price = potionPrices.getOrDefault(potionName, 0);
-        ConsumableSkill[] consumables = steve.getConsumables();
-
-        // [체크 1] 이미 가지고 있는 포션인지 확인
-        boolean alreadyHas = false;
-        for (ConsumableSkill c : consumables) {
-            if (c != null && c.getClass().equals(potion.getClass())) {
-                alreadyHas = true;
-                break;
-            }
-        }
-
-        // [체크 2] 가지고 있지 않은 새로운 포션인데 인벤토리가 꽉 찬 경우 컷트
-        if (!alreadyHas) {
-            boolean hasEmptySlot = false;
-            for (ConsumableSkill c : consumables) {
-                if (c == null) {
-                    hasEmptySlot = true;
-                    break;
-                }
-            }
-            if (!hasEmptySlot) {
-                System.out.println("포션 슬롯이 가득 찼습니다! (최대 2종류)");
-                return false;
-            }
-        }
-
-        // [체크 3] 코인 부족 검사
-        if (!canAfford(price)) {
-            System.out.println("코인이 부족합니다. (필요: " + price + ", 보유: " + steve.getCoin() + ")");
-            return false;
-        }
-
-        // 모든 조건 통과 후 결제 진행
-        steve.setCoin(steve.getCoin() - price);
-
-        // [지급 처리] 이미 있으면 수량 증가, 없으면 빈 공간에 할당
-        if (alreadyHas) {
-            for (ConsumableSkill c : consumables) {
-                if (c != null && c.getClass().equals(potion.getClass())) {
-                    c.addQuantity(1);
-                    break;
-                }
-            }
-        } else {
-            for (int i = 0; i < consumables.length; i++) {
-                if (consumables[i] == null) {
-                    potion.addQuantity(1); // 최초 구매 시 수량 1 장착
-                    consumables[i] = potion;
-                    break;
-                }
-            }
-        }
-        
-        System.out.println(potionName + " 구매 완료! 남은 코인: " + steve.getCoin());
-        return true;
-    }
-
-    public boolean canAfford(int price) {
-        return steve.getCoin() >= price;
-    }
-
-    public boolean isWeaponUnlocked(Sword sword) {
-        String current = steve.getWeapon().getClass().getSimpleName();
-        String target  = sword.getClass().getSimpleName();
-
-        return switch (target) {
-            case "StoneSword"     -> current.equals("WoodSword");
-            case "IronSword"      -> current.equals("StoneSword");
-            case "DiamondSword"   -> current.equals("IronSword");
-            case "NetheriteSword" -> current.equals("DiamondSword");
-            default -> false;
-        };
+        showCategoryMenu(category);
     }
 
     public void showRestartMenu() {
@@ -272,5 +404,37 @@ public class ShopManager {
 
     public void setSteve(Steve steve) {
         this.steve = steve;
+    }
+
+    private boolean hasActiveSkill(String id) {
+        for (ActiveSkill skill : steve.getActiveSkills()) {
+            if (skill != null && skill.getId().equals(id))
+                return true;
+        }
+        return false;
+    }
+
+    private boolean hasEmptySkillSlot() {
+        for (ActiveSkill skill : steve.getActiveSkills()) {
+            if (skill == null)
+                return true;
+        }
+        return false;
+    }
+
+    private boolean hasPotion(String id) {
+        for (ConsumableSkill item : steve.getConsumables()) {
+            if (item != null && item.getId().equals(id))
+                return true;
+        }
+        return false;
+    }
+
+    private boolean hasEmptyPotionSlot() {
+        for (ConsumableSkill item : steve.getConsumables()) {
+            if (item == null)
+                return true;
+        }
+        return false;
     }
 }

@@ -24,7 +24,7 @@ public class BackgroundPanel extends JPanel {
         try {
         	bgImage = new ImageIcon("resources/bg/title_bg.png").getImage();
         } catch (Exception e) {
-            bgImage = null; // 이미지 못 불러오면 기존 배경으로 fallback
+            bgImage = null;
         }
     }
 
@@ -33,12 +33,9 @@ public class BackgroundPanel extends JPanel {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g.create();
 
-        // ─── 배경 ───
         if (bgImage != null) {
-            // 이미지 배경
             g2.drawImage(bgImage, 0, 0, getWidth(), getHeight(), this);
         } else {
-            // 이미지 없을 때 fallback
             g2.setColor(new Color(91, 163, 224));
             g2.fillRect(0, 0, getWidth(), getHeight() / 2);
             g2.setColor(new Color(106, 170, 58));
@@ -47,11 +44,9 @@ public class BackgroundPanel extends JPanel {
             g2.fillRect(0, getHeight() / 2 + 40, getWidth(), getHeight());
         }
 
-        // ─── 어두운 오버레이 ───
         g2.setColor(new Color(0, 0, 0, 90));
         g2.fillRect(0, 0, getWidth(), getHeight());
 
-        // ─── 버전 텍스트 (좌측 하단) ───
         g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_OFF);
         g2.setFont(new Font("Dialog", Font.PLAIN, 12));
         g2.setColor(new Color(0, 0, 0, 150));
@@ -59,7 +54,6 @@ public class BackgroundPanel extends JPanel {
         g2.setColor(Color.WHITE);
         g2.drawString("Java RPG Edition 1.0", 2, getHeight() - 7);
 
-        // ─── Splash Text ───
         Graphics2D gs = (Graphics2D) g2.create();
         gs.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_OFF);
         gs.setFont(new Font("Dialog", Font.BOLD, 16));
