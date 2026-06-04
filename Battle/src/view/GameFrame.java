@@ -1,5 +1,6 @@
 package view;
 
+import java.awt.*;
 import entity.Steve;
 import entity.mob.Mob;
 import manager.WaveManager;
@@ -8,81 +9,77 @@ import javax.swing.*;
 
 public class GameFrame extends JFrame {
 
-    private Steve steve;
-    private WaveManager waveManager;
+	public GameFrame() {
+		setTitle("Minecraft RPG");
+		setSize(854, 560);
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setLocationRelativeTo(null);
+		setResizable(false);
+		showStart();
+		setVisible(true);
+	}
 
-    public GameFrame() {
-        setTitle("Minecraft RPG");
-        setSize(854, 560);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);
-        setResizable(false);
+	private void changeScreen(JPanel panel) {
+		setContentPane(panel);
+		revalidate();
+		repaint();
+		panel.requestFocusInWindow();
+	}
 
-        showStart();
+	public void showStart() {
+		changeScreen(new StartView(this));
+	}
 
-        setVisible(true);
-    }
+	public void startNewGame(String name) {
+		Steve steve = new Steve(name);
+		WaveManager waveManager = new WaveManager();
+		waveManager.loadCurrentWave();
 
-    private void changeScreen(JPanel panel) {
-        setContentPane(panel);
-        revalidate();
-        repaint();
-        panel.requestFocusInWindow();
-    }
+		Mob firstMob = waveManager.getAliveMobs().get(0);
+		showEncounter(steve, waveManager, firstMob, 1);
+	} 
+	
 
-    public void showStart() {
-        changeScreen(new StartView(this));
-    }
+	public void showEncounter(Steve steve, WaveManager waveManager, Mob mob, int wave) {
+		changeScreen(new BattleView(this, steve, waveManager, mob, wave, true));
+	}
 
-    public void startNewGame(String name) {
-        steve = new Steve(name);
-        waveManager = new WaveManager();
-        waveManager.loadCurrentWave();
+	public void showBattle(Steve steve, WaveManager waveManager, Mob mob, int wave) {
+		changeScreen(new BattleView(this, steve, waveManager, mob, wave));
+	}
 
-        Mob firstMob = waveManager.getAliveMobs().get(0);
-        showEncounter(steve, waveManager, firstMob, 1);
-    }
 
-    public void showEncounter(Steve steve, WaveManager waveManager, Mob mob, int wave) {
-        this.steve = steve;
-        this.waveManager = waveManager;
-        changeScreen(new EncounterView(this, steve, waveManager, mob, wave));
-    }
+	public void showShop(Steve steve, WaveManager waveManager, int wave) {
+		changeScreen(new ShopView(this, steve, waveManager, wave));
+	}
 
-    public void showBattle(Steve steve, WaveManager waveManager, Mob mob, int wave) {
-        this.steve = steve;
-        this.waveManager = waveManager;
-        changeScreen(new BattleView(this, steve, waveManager, mob, wave));
-    }
+	public void showDead(Steve steve, WaveManager waveManager) {
+	    changeScreen(new DeadView(this, steve, waveManager));
+	}
+	
+	public void showEnding(Steve steve) {
+	    changeScreen(new EndingView(this, steve));
+	}
 
-    public void showVictory(Steve steve, WaveManager waveManager, int wave) {
-        this.steve = steve;
-        this.waveManager = waveManager;
-        changeScreen(new VictoryView(this, steve, waveManager, wave));
-    }
+	public void restartAfterDeath(Steve oldSteve) {
+		Steve steve = oldSteve.resetAfterDeath();
+		WaveManager waveManager = new WaveManager();
+		waveManager.loadCurrentWave();
 
-    public void showShop(Steve steve, WaveManager waveManager, int wave) {
-        this.steve = steve;
-        this.waveManager = waveManager;
-        changeScreen(new ShopView(this, steve, waveManager, wave));
-    }
+		Mob firstMob = waveManager.getAliveMobs().get(0);
+		showEncounter(steve, waveManager, firstMob, 1);
+	}
 
-    public void showDead(Steve steve, WaveManager waveManager) {
-        this.steve = steve;
-        this.waveManager = waveManager;
-        changeScreen(new DeadView(this, steve, waveManager));
-    }
-
-    public void restartAfterDeath(Steve oldSteve) {
-        steve = oldSteve.resetAfterDeath();
-        waveManager = new WaveManager();
-        waveManager.loadCurrentWave();
-
-        Mob firstMob = waveManager.getAliveMobs().get(0);
-        showEncounter(steve, waveManager, firstMob, 1);
-    }
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(GameFrame::new);
-    }
+	/* public static void main(String[] args) {
+		SwingUtilities.invokeLater(GameFrame::new);
+	}*/
+	// [디버그용]
+		public static void main(String[] args) {
+		    SwingUtilities.invokeLater(() -> {
+		        GameFrame frame = new GameFrame();
+		        Steve steve = new Steve("테스트");
+		        frame.showEnding(steve);
+		    });
+		}
+	
 }

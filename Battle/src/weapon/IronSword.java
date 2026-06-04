@@ -1,9 +1,8 @@
 package weapon;
 public class IronSword extends Sword {
 	
-	// 생성자(기본)
 	public IronSword() {
-		super(15, 10); // attackBonus, aoeDamageBonus
+		super("철 검", "적당한 강도를 가진 무기입니다.", 2, 15, 10);
 	}
 
 
