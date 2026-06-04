@@ -70,16 +70,9 @@ public class GameFrame extends JFrame {
 		showEncounter(steve, waveManager, firstMob, 1);
 	}
 
-	/* public static void main(String[] args) {
+	public static void main(String[] args) {
 		SwingUtilities.invokeLater(GameFrame::new);
-	}*/
-	// [디버그용]
-		public static void main(String[] args) {
-		    SwingUtilities.invokeLater(() -> {
-		        GameFrame frame = new GameFrame();
-		        Steve steve = new Steve("테스트");
-		        frame.showEnding(steve);
-		    });
-		}
+	}
+	
 	
 }
