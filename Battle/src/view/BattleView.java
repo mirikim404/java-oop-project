@@ -252,7 +252,6 @@ public class BattleView extends JPanel {
 	}
 	
 	private void playMobSpawnEffect() {
-	    // 인트로 전까지 몹 숨기기
 	    mobBattlePanel.setMobAlpha(0f);
 	    
 
@@ -262,7 +261,6 @@ public class BattleView extends JPanel {
 	        alpha[0] = Math.min(1f, alpha[0] + 0.05f);
 	        mobBattlePanel.setMobAlpha(alpha[0]);
 
-	        // 알파 0.3 시점에 파티클 터뜨리기
 	        if (alpha[0] >= 0.3f && !mobBattlePanel.hasSpawnedParticles()) {
 	            int cx = mobBattlePanel.getWidth() / 2;
 	            int cy = mobBattlePanel.getHeight() / 2;
@@ -1339,9 +1337,21 @@ public class BattleView extends JPanel {
 			drawMarkedWrappedCentered(g2, card.description, x + 8, descY, w - 16, 9, 2);
 
 			if (highlighted) {
-				g2.setStroke(new BasicStroke(3f));
-				g2.setColor(new Color(255, 255, 80));
-				g2.drawRect(x - 2, y - 2, w + 3, h + 3);
+			    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+			    int pad = 6;
+			    for (int i = pad; i >= 1; i--) {
+			        float t = (pad - i) / (float) pad;
+			        int ga = Math.min(255, Math.max(0, (int) (t * 160)));
+			        int gr = Math.min(255, Math.max(0, (int) (180 + t * 30)));
+			        int gg = Math.min(255, Math.max(0, (int) (160 + t * 25)));
+			        int gb = Math.min(255, Math.max(0, (int) (60  + t * 20)));
+			        g2.setStroke(new BasicStroke(1.2f));
+			        g2.setColor(new Color(gr, gg, gb, ga));
+			        g2.drawRect(x - i, y - i, w + i * 2 - 1, h + i * 2 - 1);
+			    }
+			    g2.setStroke(new BasicStroke(1f));
+			    g2.setColor(new Color(220, 195, 85, 200));
+			    g2.drawRect(x, y, w - 1, h - 1);
 			}
 
 			g2.setComposite(oldComposite);
@@ -2184,7 +2194,6 @@ public class BattleView extends JPanel {
 	}
 
 	private boolean useAoeSlash() {
-		Weapon weapon = steve.getWeapon();
 		AoeSlash aoeSlash = getEquippedAoeSlash();
 		if (aoeSlash == null) {
 			showMessage("광역 베기는 검을 장착해야 사용할 수 있습니다.");
@@ -2205,7 +2214,7 @@ public class BattleView extends JPanel {
 		}
 
 		int before = mob.getHealth();
-		aoeSlash.use(steve, targets, weapon);
+		aoeSlash.use(steve, targets, steve.getWeapon());
 		updateDragonPhaseImage(true);
 		int actualDmg = before - mob.getHealth();
 
@@ -2387,7 +2396,6 @@ public class BattleView extends JPanel {
 	private void handleSteveDead() {
 		if (inputLocked)
 			return;
-		inputLocked = true;
 		inputLocked = true;
 
 		showMessage(steve.getName() + "이(가) 쓰러졌습니다.");
@@ -2712,8 +2720,6 @@ public class BattleView extends JPanel {
 	private JPanel buildLevelUpCard(String title, String statLine, String desc, ImageIcon icon, String framePath,
 			Color statColor, Runnable onClick) {
 
-		final Color capturedStatColor = statColor;
-
 		JPanel card = new JPanel() {
 			@Override
 			protected void paintComponent(Graphics g) {
@@ -2727,7 +2733,7 @@ public class BattleView extends JPanel {
 				if (frameIcon.getIconWidth() > 0) {
 					g2.drawImage(frameIcon.getImage(), 0, 0, w, h, this);
 				} else {
-					paintLevelUpCardFallback(g2, w, h, capturedStatColor);
+					paintLevelUpCardFallback(g2, w, h, statColor);
 				}
 
 				int headerCenterY = (int) (h * 0.12);
@@ -2759,7 +2765,7 @@ public class BattleView extends JPanel {
 				tx = (w - fm.stringWidth(statLine)) / 2;
 				g2.setColor(new Color(0, 0, 0, 160));
 				g2.drawString(statLine, tx + 1, barCenterY + 1);
-				g2.setColor(capturedStatColor);
+				g2.setColor(statColor);
 				g2.drawString(statLine, tx, barCenterY);
 
 				int lineY = (int) (h * 0.63);
@@ -2824,10 +2830,6 @@ public class BattleView extends JPanel {
 		g2.drawRect(1, 1, Math.max(0, w - 3), Math.max(0, h - 3));
 		g2.setColor(new Color(0, 0, 0, 170));
 		g2.drawRect(0, 0, Math.max(0, w - 1), Math.max(0, h - 1));
-	}
-
-	private int getMobDefense() {
-		return readIntMethod(mob, 0, "getDefensePower", "getDefense", "getArmor");
 	}
 
 	private int getMobDefense(Mob targetMob) {

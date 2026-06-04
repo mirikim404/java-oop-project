@@ -313,7 +313,7 @@ public class ShopView extends JPanel {
 			int titleBoxW = sc(sx, TITLE_W);
 			int titleBoxH = sc(sy, TITLE_H);
 
-			g2.setFont(mcFontEN(sc(sx, TITLE_FONT_SIZE)));
+			g2.setFont(mcFont(sc(sx, TITLE_FONT_SIZE)));
 			FontMetrics titleFm = g2.getFontMetrics();
 			int titleX = titleBoxX + (titleBoxW - titleFm.stringWidth("SHOP")) / 2;
 			int titleY = titleBoxY + (titleBoxH + titleFm.getAscent() - titleFm.getDescent()) / 2 + sc(sy, 1);
@@ -753,7 +753,7 @@ public class ShopView extends JPanel {
 			int qtyFontSize = INV_QTY_FONT_SIZE;
 
 			g2.setColor(new Color(200, 200, 200));
-			g2.setFont(mcFontEN(sc(sx, titleFontSize)));
+			g2.setFont(mcFont(sc(sx, titleFontSize)));
 			g2.drawString("INVENTORY", x, y - sc(sy, 12));
 
 			List<String[]> entries = buildHotbarEntries();
