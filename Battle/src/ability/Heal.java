@@ -21,7 +21,7 @@ public class Heal implements Mobability {
 		    
 		    //Steve player 사용 안함
 		    // 현재 체력 + 회복량만큼 회복
-		    if (attacker instanceof Witch w) {
+		    if (attacker instanceof Witch) {
 		    		System.out.println(attacker.getName() + "이 스스로 자신을 치료합니다");
 		    		attacker.heal(healAmount);
 		    		}
