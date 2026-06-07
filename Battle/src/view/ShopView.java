@@ -24,7 +24,6 @@ public class ShopView extends JPanel {
 	private int wave;
 
 	private Image bgImage;
-	private Image tabActiveImg;
 
 	private static final Color MC_TEXT = new Color(209, 213, 219);
 	private static final Color MC_TEXT_DARK = new Color(63, 63, 63);
@@ -52,12 +51,15 @@ public class ShopView extends JPanel {
 		this.waveManager = waveManager;
 		this.shopManager = new ShopManager(steve);
 		this.wave = wave;
+		
+		System.out.println("shop_bg 경로: " + getClass().getResource("/resources/ui/shop_bg.png"));
 
 		tabItems = new ArrayList<>();
 		buildTabItems();
 
-		bgImage = new ImageIcon("resources/ui/shop_bg.png").getImage();
-		tabActiveImg = new ImageIcon("resources/ui/tab_active.png").getImage();
+		java.net.URL bgURL = getClass().getResource("/resources/ui/shop_bg.png");
+		bgImage = (bgURL != null) ? new ImageIcon(bgURL).getImage() : null;
+
 
 		setLayout(new BorderLayout());
 		setOpaque(false);
@@ -481,11 +483,9 @@ public class ShopView extends JPanel {
 			int gap = (int) sc(sx, TAB_LABEL_GAP);
 			int leftOffset = (int) sc(sx, TAB_LEFT_OFFSET);
 
-			if (active && tabActiveImg != null) {
-				g2.drawImage(tabActiveImg, x, y, w, h, null);
-			}
 
-			Image tabIcon = new ImageIcon(iconPath).getImage();
+			java.net.URL iconURL = getClass().getResource("/" + iconPath);
+			Image tabIcon = (iconURL != null) ? new ImageIcon(iconURL).getImage() : null;
 			g2.setFont(mcFont(fontSize));
 			FontMetrics fm = g2.getFontMetrics();
 
@@ -823,9 +823,10 @@ public class ShopView extends JPanel {
 
 		private void drawMCIcon(Graphics2D g2, String path, int x, int y, int w, int h) {
 			try {
-				ImageIcon ic = new ImageIcon(path);
-				if (ic.getIconWidth() <= 0)
-					return;
+				java.net.URL imgURL = getClass().getResource("/" + path);
+		        if (imgURL == null) return;
+		        ImageIcon ic = new ImageIcon(imgURL);
+		        if (ic.getIconWidth() <= 0) return;
 
 				Image img = ic.getImage();
 				int iw = ic.getIconWidth(), ih = ic.getIconHeight();

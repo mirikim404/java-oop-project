@@ -22,7 +22,7 @@ public class BackgroundPanel extends JPanel {
     public BackgroundPanel() {
         splash = SPLASHES[new Random().nextInt(SPLASHES.length)];
         try {
-        	bgImage = new ImageIcon("resources/bg/title_bg.png").getImage();
+        	bgImage = new ImageIcon(BackgroundPanel.class.getResource("/resources/bg/title_bg.png")).getImage();
         } catch (Exception e) {
             bgImage = null;
         }

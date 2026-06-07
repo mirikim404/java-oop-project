@@ -33,7 +33,7 @@ public class DeadView extends JPanel {
         int imgY = (H - imgH) / 2;
 
         JLabel bg = new JLabel() {
-            private final Image bgImg = new ImageIcon("resources/ui/died_view.png").getImage();
+        	private final Image bgImg = new ImageIcon(DeadView.class.getResource("/resources/ui/died_view.png")).getImage();
 
             @Override
             protected void paintComponent(Graphics g) {
