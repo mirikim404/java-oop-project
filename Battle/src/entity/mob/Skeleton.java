@@ -8,19 +8,14 @@ public class Skeleton extends Mob {
 	private static final int DEFAULT_MAX_HEALTH = 34;
     private static final int DEFAULT_ATTACK_POWER = 22;  
     private static final int DEFAULT_DEFENCE_POWER = 4;
-    private static final int DROP_EXP = 45; 
-    private static final int DROP_COIN = 35;
-    private static final int EXTRA_DAMAGE = 3; // 스킬 발동 시 추가 데미지
+    private static final int DROP_EXP = 25; 
+    private static final int DROP_COIN = 20;
+    private static final int EXTRA_DAMAGE = 3; 
 	public Skeleton() {
 		super("스켈레톤", DEFAULT_MAX_HEALTH, DEFAULT_ATTACK_POWER, DEFAULT_DEFENCE_POWER, DROP_EXP, DROP_COIN );
 		setAbility(new Shoot(EXTRA_DAMAGE));
 	}
 	
-//	public Skeleton (String name, int DEFAULT_MAX_HEALTH, int DEFAULT_ATTACK_POWER, int DEFAULT_DEFENCE_POWER) { //생성자
-//		super(name, DEFAULT_MAX_HEALTH, DEFAULT_ATTACK_POWER, DEFAULT_DEFENCE_POWER);
-//		setAbility(new Shoot(EXTRA_DAMAGE));
-//	}
-//	
 	@Override
 	public void attack(Entity target) {
 		super.attack(target);

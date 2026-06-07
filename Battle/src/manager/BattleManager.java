@@ -7,8 +7,7 @@ import skill.active.*;
 import java.util.*;
 
 public class BattleManager {
-	// 화상 데미지 (추후 수정)
-	private static final int BURN_DAMAGE = 3;
+	private static final int BURN_DAMAGE = 3; // 화상 데미지 (추후 수정)
 
 	private GameState gameState;
 	private Steve steve;
@@ -19,7 +18,6 @@ public class BattleManager {
 
 	private final Scanner scanner = new Scanner(System.in);
 
-	// 생성자 -----------------------------
 	public BattleManager() {
 	}
 
@@ -30,14 +28,12 @@ public class BattleManager {
 		this.gameState = GameState.BATTLE;
 	}
 
-	// 게임 초기화 + 웨이브 1 시작
 	public void startGame() {
 		System.out.println("=== 마인크래프트 RPG 시작 ===");
 		System.out.println("플레이어: " + steve.getName());
 		startWave();
 	}
 
-	// WaveManager에서 몹 목록 받아 전투 시작
 	public void startWave() {
 		waveManager.loadCurrentWave();
 		List<Mob> mobs = new ArrayList<>(waveManager.getAliveMobs());
@@ -48,13 +44,11 @@ public class BattleManager {
 			System.out.println("- " + mob.getName() + " 등장!");
 		}
 
-		// 살아있는 몹 상대로 1:1 전투
 		for (Mob mob : mobs) {
 			if (mob.isAlive()) {
 				currentMob = mob;
 				runBattle(mob);
 
-				// 스티브 사망 체크
 				if (!steve.isAlive()) {
 					handleDeath();
 					return;
@@ -62,11 +56,9 @@ public class BattleManager {
 			}
 		}
 
-		// 웨이브 몹 모두 처치
 		handleWaveClear();
 	}
 
-	// 단일 몹과의 전투 루프
 	private void runBattle(Mob mob) {
 		System.out.println("\n--- " + mob.getName() + "와(과) 전투 시작 ---");
 
@@ -75,31 +67,24 @@ public class BattleManager {
 		}
 	}
 
-	// 내 턴 → 몹 턴 순서로 턴 진행
 	public void processTurn(Mob mob) {
-		// 내 턴
 		processPlayerTurn(mob);
 
-		// 몹이 처치되면 몹 턴 스킵
 		if (!mob.isAlive()) {
 			handleMobDeath(mob);
 			return;
 		}
 
-		// 몹 턴
 		processMobTurn(mob);
-
-		// 턴 종료: 스킬 쿨타임 감소
-		steve.onTurnEnd();
+		steve.onTurnEnd(); // 턴 종료: 스킬 쿨타임 감소
 	}
 
-	// 공격 / 막기 / 스킬 선택 입력 처리
 	public void processPlayerTurn(Mob mob) {
 		System.out.println("\n[내 턴] HP: " + steve.getHealth() + " / " + steve.getMaxHealth());
 		System.out.println("[1] 공격  [2] 막기  [3] 스킬 [4] 포션");
 
 		int input = scanner.nextInt();
-		
+
 		switch (input) {
 		case 1 -> {
 			steve.attack(mob);
@@ -122,14 +107,10 @@ public class BattleManager {
 			System.out.println("잘못된 입력");
 			processPlayerTurn(mob);
 		}
-		
 
 		}
 	}
 
-
-
-	// 스턴/화상 체크 후 몹 행동 실행
 	public void processMobTurn(Mob mob) {
 		System.out.println("\n[" + mob.getName() + "의 턴]");
 
@@ -142,8 +123,7 @@ public class BattleManager {
 			return;
 		}
 
-		// 막기 체크
-		if (!(mob instanceof Creeper) &&  isBlocking) { // 크리퍼는 막기 무시
+		if (!(mob instanceof Creeper) && isBlocking) { // 크리퍼는 막기 무시
 			System.out.println(mob.getName() + "이 공격했지만 막혔다!");
 			isBlocking = false; // 막기 해제
 			return;
@@ -153,7 +133,6 @@ public class BattleManager {
 		System.out.println("스티브 HP: " + steve.getHealth());
 	}
 
-	// EXP + 코인 지급, aliveMobs 제거, 레벨업 체크
 	public void handleMobDeath(Mob mob) {
 		System.out.println(mob.getName() + "을(를) 처치했다!");
 
@@ -162,11 +141,8 @@ public class BattleManager {
 		waveManager.removeMob(mob);
 
 		System.out.println("EXP +" + mob.getDropExp() + " / 코인 +" + mob.getDropCoin());
-
-		// 레벨업 체크는 gainExp 내부에서 처리
 	}
 
-	// 스탯 선택 → 적용 → 전투 재개
 	public void handleLevelUp() {
 		System.out.println("\n=== 레벨업! ===");
 		System.out.println("[1] 공격력 +5  [2] 방어력 +3  [3] 최대 체력 +20");
@@ -192,7 +168,6 @@ public class BattleManager {
 		}
 	}
 
-	// 웨이브 클리어 처리
 	public void handleWaveClear() {
 		setGameState(GameState.WAVE_CLEAR);
 		int bonus = waveManager.getCurrentWave() * 20;
@@ -200,13 +175,11 @@ public class BattleManager {
 		System.out.println("\n=== 웨이브 " + waveManager.getCurrentWave() + " 클리어! ===");
 		System.out.println("클리어 보너스 코인 +" + bonus);
 
-		// 마지막 웨이브면 승리
 		if (waveManager.isLastWave()) {
 			handleVictory();
 			return;
 		}
 
-		// 상점 → 다음 웨이브 예고 → 다음 웨이브 시작
 		setGameState(GameState.SHOP);
 		shopManager.enterShop(GameState.WAVE_CLEAR);
 
@@ -217,34 +190,27 @@ public class BattleManager {
 		startWave();
 	}
 
-	// 사망 처리
 	public void handleDeath() {
 		setGameState(GameState.DEAD);
 		System.out.println("\n=== 사망했습니다 ===");
 
-		// 새 Steve 객체로 교체
-		steve = steve.resetAfterDeath();
-
-		// 상점 진입
-		shopManager.setSteve(steve); 
+		steve = steve.resetAfterDeath(); // 코인/무기/스킬 유지하고 새 Steve 객체로 교체
+		shopManager.setSteve(steve);
 		shopManager.enterShop(GameState.DEAD);
 		shopManager.showRestartMenu();
 
-		// 재시작 선택 시 웨이브 1부터 다시
 		this.waveManager = new WaveManager();
 
 		setGameState(GameState.BATTLE);
 		startGame();
 	}
 
-	// 승리 처리
 	public void handleVictory() {
 		setGameState(GameState.VICTORY);
 		System.out.println("\n=== 엔더드래곤을 처치했다! ===");
 		System.out.println("축하합니다, " + steve.getUsername() + "! 모든 웨이브를 클리어했습니다!");
 	}
 
-	// EnderDragon 체력 % 기준 페이즈 전환 체크
 	public void checkPhase() {
 		if (currentMob instanceof EnderDragon dragon) {
 			// TODO: EnderDragon 구현 후 활성화
@@ -252,7 +218,6 @@ public class BattleManager {
 		}
 	}
 
-	// gameState 변경
 	public void setGameState(GameState state) {
 		this.gameState = state;
 	}
