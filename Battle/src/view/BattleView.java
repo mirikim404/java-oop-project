@@ -353,10 +353,13 @@ public class BattleView extends JPanel {
 		BackgroundPanel(String imagePath) {
 			setOpaque(true);
 			try {
-				ImageIcon ic = new ImageIcon(imagePath);
-				if (ic.getIconWidth() > 0)
-					bgImage = ic.getImage();
-			} catch (Exception ignored) {
+		        java.net.URL url = BattleView.class.getResource("/" + imagePath);
+		        if (url != null) {
+		            ImageIcon ic = new ImageIcon(url);
+		            if (ic.getIconWidth() > 0)
+		                bgImage = ic.getImage();
+		        }
+		    } catch (Exception ignored) {
 			}
 			try {
 				ImageIcon frameIcon = loadIcon("resources/ui/battle_frame.png");
@@ -1891,19 +1894,21 @@ public class BattleView extends JPanel {
 	}
 
 	private static ImageIcon loadIcon(String path) {
-		ImageIcon cached = ICON_CACHE.get(path);
-		if (cached != null)
-			return cached;
-		try {
-			ImageIcon ic = new ImageIcon(path);
-			if (ic.getIconWidth() > 0) {
-				ICON_CACHE.put(path, ic);
-				return ic;
-			}
-			return null;
-		} catch (Exception e) {
-			return null;
-		}
+	    try {
+	        if (!path.startsWith("/")) {
+	            path = "/" + path;
+	        }
+	        
+	        java.net.URL imgURL = BattleView.class.getResource(path);
+	        if (imgURL != null) {
+	            return new ImageIcon(imgURL);
+	        } else {
+	            System.out.println("[경고] 이미지를 찾지 못함: " + path);
+	            return null;
+	        }
+	    } catch (Exception e) {
+	        return null;
+	    }
 	}
 
 	private void updateDragonPhaseImage(boolean animate) {
@@ -2006,15 +2011,16 @@ public class BattleView extends JPanel {
 	}
 
 	private static Font uiPixelFont(int style, int size) {
-		if (pixelFontBase == null) {
-			try {
-				pixelFontBase = Font.createFont(Font.TRUETYPE_FONT, new File(PIXEL_FONT_PATH));
-				GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(pixelFontBase);
-			} catch (Exception e) {
-				pixelFontBase = new Font("Monospaced", Font.BOLD, 12);
-			}
-		}
-		return pixelFontBase.deriveFont(style, (float) size);
+	    if (pixelFontBase == null) {
+	        try {
+	            pixelFontBase = Font.createFont(Font.TRUETYPE_FONT,
+	                BattleView.class.getResourceAsStream("/fonts/Minecraftia-Regular.ttf"));
+	            GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(pixelFontBase);
+	        } catch (Exception e) {
+	            pixelFontBase = new Font("Monospaced", Font.BOLD, 12);
+	        }
+	    }
+	    return pixelFontBase.deriveFont(style, (float) size);
 	}
 
 	private static Font koreanPixelFont(int size) {
@@ -2666,7 +2672,7 @@ public class BattleView extends JPanel {
 			@Override
 			protected void paintComponent(Graphics g) {
 				Graphics2D g2 = (Graphics2D) g.create();
-				ImageIcon frameIcon = new ImageIcon("resources/ui/levelup_frame.png");
+				ImageIcon frameIcon = new ImageIcon(getClass().getResource("/resources/ui/levelup_frame.png"));
 				g2.drawImage(frameIcon.getImage(), 0, 0, getWidth(), getHeight(), this);
 				g2.dispose();
 			}
@@ -2690,7 +2696,7 @@ public class BattleView extends JPanel {
 				g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 				int cx = getWidth() / 2;
 
-				ImageIcon titleIcon = new ImageIcon("resources/ui/levelup_title.png");
+				ImageIcon titleIcon = new ImageIcon(getClass().getResource("/resources/ui/levelup_title.png"));
 				if (titleIcon.getIconWidth() > 0) {
 					int iw = titleIcon.getIconWidth();
 					int ih = titleIcon.getIconHeight();
@@ -2767,7 +2773,7 @@ public class BattleView extends JPanel {
 	private void showVictoryDialog(int gainedCoin, int gainedExp) {
 		inputLocked = true;
 
-		ImageIcon frameIcon = new ImageIcon("resources/ui/victory_frame.png");
+		ImageIcon frameIcon = new ImageIcon(getClass().getResource("/resources/ui/victory_frame.png"));
 		int frameW = 480;
 		int frameH = (int) (frameIcon.getIconHeight() * (480.0 / frameIcon.getIconWidth()));
 
@@ -2796,7 +2802,7 @@ public class BattleView extends JPanel {
 				FontMetrics fm;
 
 				// 타이틀 이미지
-				ImageIcon titleIcon = new ImageIcon("resources/ui/victory_title.png");
+				ImageIcon titleIcon = new ImageIcon(getClass().getResource("/resources/ui/victory_title.png"));
 				if (titleIcon.getIconWidth() > 0) {
 					int iw = titleIcon.getIconWidth();
 					int ih = titleIcon.getIconHeight();
@@ -2959,7 +2965,8 @@ public class BattleView extends JPanel {
 
 				int w = getWidth(), h = getHeight();
 
-				ImageIcon frameIcon = new ImageIcon(framePath);
+				java.net.URL url = BattleView.class.getResource("/" + framePath);
+				ImageIcon frameIcon = (url != null) ? new ImageIcon(url) : new ImageIcon(framePath);
 				if (frameIcon.getIconWidth() > 0) {
 					g2.drawImage(frameIcon.getImage(), 0, 0, w, h, this);
 				} else {
