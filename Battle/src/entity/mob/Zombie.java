@@ -9,18 +9,12 @@ public class Zombie extends Mob {
     private static final int DEFAULT_ATTACK_POWER = 10;  
     private static final int DEFAULT_DEFENCE_POWER = 1;
     private static final int DROP_EXP = 35; 
-    private static final int DROP_COIN = 25;
+    private static final int DROP_COIN = 15;
 	
 	public Zombie() {
 		super("좀비", DEFAULT_MAX_HEALTH, DEFAULT_ATTACK_POWER, DEFAULT_DEFENCE_POWER,DROP_EXP, DROP_COIN);
 		setAbility(null); // 좀비는 능력 없음
 	}
-	
-	
-//	public Zombie (String name, int DEFAULT_MAX_HEALTH, int DEFAULT_ATTACK_POWER, int DEFAULT_DEFENCE_POWER) { //생성자
-//		super(name, DEFAULT_MAX_HEALTH, DEFAULT_ATTACK_POWER, DEFAULT_DEFENCE_POWER);
-//		setAbility(null); // 좀비는 능력 없음
-//	}
 	
 	@Override
 	public void attack(Entity target) {

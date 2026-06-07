@@ -8,6 +8,8 @@ import manager.WaveManager;
 import javax.swing.*;
 
 public class GameFrame extends JFrame {
+	
+	private long startTime = -1;
 
 	public GameFrame() {
 		setTitle("Minecraft RPG");
@@ -31,6 +33,7 @@ public class GameFrame extends JFrame {
 	}
 
 	public void startNewGame(String name) {
+		startTime = System.currentTimeMillis();
 		Steve steve = new Steve(name);
 		WaveManager waveManager = new WaveManager();
 		waveManager.loadCurrentWave();
@@ -38,6 +41,8 @@ public class GameFrame extends JFrame {
 		Mob firstMob = waveManager.getAliveMobs().get(0);
 		showEncounter(steve, waveManager, firstMob, 1);
 	} 
+	
+	public long getStartTime() { return startTime; }
 	
 
 	public void showEncounter(Steve steve, WaveManager waveManager, Mob mob, int wave) {
@@ -57,8 +62,8 @@ public class GameFrame extends JFrame {
 	    changeScreen(new DeadView(this, steve, waveManager));
 	}
 	
-	public void showEnding(Steve steve) {
-	    changeScreen(new EndingView(this, steve));
+	public void showEnding(Steve steve, long elapsedMs) {
+	    changeScreen(new EndingView(this, steve, elapsedMs));
 	}
 
 	public void restartAfterDeath(Steve oldSteve) {

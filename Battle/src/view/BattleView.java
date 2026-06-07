@@ -12,6 +12,10 @@ import skill.weapon.AoeSlash;
 import weapon.Weapon;
 
 import javax.swing.*;
+
+import ability.Explode;
+import ability.Mobability;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.Path2D;
@@ -64,6 +68,7 @@ public class BattleView extends JPanel {
 	private float introAlpha = 1f;
 	private javax.swing.Timer introTimer;
 	private boolean inputLocked = false;
+	private boolean creepExploding;
 
 	private static final Color GOLD = new Color(230, 184, 76);
 	private static final Color HOTBAR_SLOT = new Color(118, 118, 118, 82);
@@ -127,7 +132,7 @@ public class BattleView extends JPanel {
 		this.wave = wave;
 		this.waveManager = waveManager;
 
-		this.waveMobs = waveManager.getMobsForWave(wave);
+		this.waveMobs = new ArrayList<>(waveManager.getAliveMobs());
 		this.mobIndex = 0;
 		this.mob = waveMobs.isEmpty() ? mob : waveMobs.get(0);
 
@@ -136,11 +141,28 @@ public class BattleView extends JPanel {
 
 	private String buildEncounterMessage() {
 		if (waveMobs.size() > 1) {
+			List<String> parts = new ArrayList<>();
+			String prevName = null;
+			int cnt = 0;
+			for (Mob m : waveMobs) {
+				String name = m.getName();
+				if (name.equals(prevName)) {
+					cnt++;
+				} else {
+					if (prevName != null)
+						parts.add(cnt > 1 ? prevName + " x" + cnt : prevName);
+					prevName = name;
+					cnt = 1;
+				}
+			}
+			if (prevName != null)
+				parts.add(cnt > 1 ? prevName + " x" + cnt : prevName);
+
 			StringBuilder sb = new StringBuilder();
-			for (int i = 0; i < waveMobs.size(); i++) {
+			for (int i = 0; i < parts.size(); i++) {
 				if (i > 0)
 					sb.append(" + ");
-				sb.append(waveMobs.get(i).getName());
+				sb.append(parts.get(i));
 			}
 			sb.append(" 등장!");
 			return sb.toString();
@@ -166,7 +188,7 @@ public class BattleView extends JPanel {
 					cardPanel.setVisible(true);
 					cardPanel.repaint();
 					requestFocusInWindow();
-					
+
 					playMobSpawnEffect();
 				}
 			});
@@ -230,11 +252,11 @@ public class BattleView extends JPanel {
 
 		refreshUI();
 
-		 if (playIntro) {
-		        mobBattlePanel.setMobAlpha(0f);
-		        SwingUtilities.invokeLater(this::playEncounterIntro);
-		        return;
-		    }
+		if (playIntro) {
+			mobBattlePanel.setMobAlpha(0f);
+			SwingUtilities.invokeLater(this::playEncounterIntro);
+			return;
+		}
 
 		if (waveMobs.size() > 1) {
 			StringBuilder sb = new StringBuilder("웨이브 " + wave + " - 적 등장: ");
@@ -250,30 +272,29 @@ public class BattleView extends JPanel {
 			System.out.println("[웨이브 " + wave + "] " + this.mob.getName() + iGa(this.mob.getName()) + " 등장했습니다!");
 		}
 	}
-	
+
 	private void playMobSpawnEffect() {
-	    mobBattlePanel.setMobAlpha(0f);
-	    
+		mobBattlePanel.setMobAlpha(0f);
 
-	    float[] alpha = {0f};
-	    javax.swing.Timer fadeIn = new javax.swing.Timer(30, null);
-	    fadeIn.addActionListener(e -> {
-	        alpha[0] = Math.min(1f, alpha[0] + 0.05f);
-	        mobBattlePanel.setMobAlpha(alpha[0]);
+		float[] alpha = { 0f };
+		javax.swing.Timer fadeIn = new javax.swing.Timer(30, null);
+		fadeIn.addActionListener(e -> {
+			alpha[0] = Math.min(1f, alpha[0] + 0.05f);
+			mobBattlePanel.setMobAlpha(alpha[0]);
 
-	        if (alpha[0] >= 0.3f && !mobBattlePanel.hasSpawnedParticles()) {
-	            int cx = mobBattlePanel.getWidth() / 2;
-	            int cy = mobBattlePanel.getHeight() / 2;
-	            int mobW = (int)(mobBattlePanel.getWidth() * 0.4);
-	            int mobH = (int)(mobBattlePanel.getHeight() * 0.5);
-	            mobBattlePanel.playSpawnParticles(cx, cy, mobW, mobH);
-	        }
+			if (alpha[0] >= 0.3f && !mobBattlePanel.hasSpawnedParticles()) {
+				int cx = mobBattlePanel.getWidth() / 2;
+				int cy = mobBattlePanel.getHeight() / 2;
+				int mobW = (int) (mobBattlePanel.getWidth() * 0.4);
+				int mobH = (int) (mobBattlePanel.getHeight() * 0.5);
+				mobBattlePanel.playSpawnParticles(cx, cy, mobW, mobH);
+			}
 
-	        if (alpha[0] >= 1f) {
-	            fadeIn.stop();
-	        }
-	    });
-	    fadeIn.start();
+			if (alpha[0] >= 1f) {
+				fadeIn.stop();
+			}
+		});
+		fadeIn.start();
 	}
 
 	private List<Image[]> buildMobImageList() {
@@ -388,6 +409,7 @@ public class BattleView extends JPanel {
 			this.alpha = 1.0f;
 		}
 	}
+
 	private static class SpawnParticle {
 		float x, y;
 		float vx, vy;
@@ -402,9 +424,9 @@ public class BattleView extends JPanel {
 			double angle = Math.random() * Math.PI * 2;
 			float speed = (float) (Math.random() * 2.5 + 0.5f);
 			this.vx = (float) Math.cos(angle) * speed;
-			this.vy = (float) Math.sin(angle) * speed - 1.5f; // 위로 약간 뜨는 느낌
+			this.vy = (float) Math.sin(angle) * speed - 1.5f; 
 			this.alpha = 1.0f;
-			this.size = (int) (Math.random() * 6 + 3); // 3~8픽셀 사각형
+			this.size = (int) (Math.random() * 6 + 3); 
 			// 보라색 계열 랜덤
 			int r = (int) (Math.random() * 60 + 120); // 120~180
 			int g = (int) (Math.random() * 30); // 0~30
@@ -536,7 +558,7 @@ public class BattleView extends JPanel {
 
 		@Override
 		public void doLayout() {
-			
+
 			int w = getWidth();
 			int h = getHeight();
 
@@ -588,17 +610,62 @@ public class BattleView extends JPanel {
 
 		private List<SpawnParticle> spawnParticles = new ArrayList<>();
 		private javax.swing.Timer particleTimer;
-		
+
 		private float mobAlpha = 1f;
 		private boolean spawnedParticles = false;
 		
+		void playCreepFlash(Runnable onComplete) {
+		    // 크리퍼 이미지를 흰색으로 여러번 깜빡임
+		    int[] count = {0};
+		    javax.swing.Timer flashTimer = new javax.swing.Timer(120, null);
+		    flashTimer.addActionListener(e -> {
+		        showHurt = (count[0] % 2 == 0); 
+		        repaint();
+		        count[0]++;
+		        if (count[0] >= 6) { 
+		            flashTimer.stop();
+		            showHurt = false;
+		            repaint();
+		            if (onComplete != null) onComplete.run();
+		        }
+		    });
+		    flashTimer.start();
+		}
+
+		void playExplosionEffect(Runnable onComplete) {
+		    int cx = getWidth() / 2;
+		    int cy = getHeight() / 2;
+		    int count = 80;
+		    for (int i = 0; i < count; i++) {
+		        float px = cx + (float)(Math.random() * 200 - 100);
+		        float py = cy + (float)(Math.random() * 200 - 100);
+		        SpawnParticle p = new SpawnParticle(px, py);
+		        int type = (int)(Math.random() * 3);
+		        if (type == 0) p.color = new Color(80, 200, 80);       // 초록
+		        else if (type == 1) p.color = new Color(200, 200, 60); // 노랑
+		        else p.color = new Color(240, 240, 240);                // 흰색
+		        p.vx *= 2.5f; 
+		        p.vy *= 2.5f;
+		        p.size += 4;
+		        spawnParticles.add(p);
+		    }
+		    if (!particleTimer.isRunning()) particleTimer.start();
+		    playShake();
+
+		    javax.swing.Timer wait = new javax.swing.Timer(600, e -> {
+		        if (onComplete != null) onComplete.run();
+		    });
+		    wait.setRepeats(false);
+		    wait.start();
+		}
+
 		void setMobAlpha(float alpha) {
-		    this.mobAlpha = alpha;
-		    repaint();
+			this.mobAlpha = alpha;
+			repaint();
 		}
 
 		boolean hasSpawnedParticles() {
-		    return spawnedParticles;
+			return spawnedParticles;
 		}
 
 		MobBattlePanel(List<Image[]> images) {
@@ -615,14 +682,13 @@ public class BattleView extends JPanel {
 				if (dmgNumbers.isEmpty())
 					animTimer.stop();
 			});
-			
+
 			particleTimer = new javax.swing.Timer(30, e -> {
 				for (SpawnParticle p : spawnParticles) {
 					p.x += p.vx;
 					p.y += p.vy;
-					p.vy += 0.08f; // 중력감
+					p.vy += 0.08f; 
 					p.alpha -= 0.022f;
-					// 크기 약간 변화 (둥둥 느낌)
 					p.size = Math.max(1, p.size);
 				}
 				spawnParticles.removeIf(p -> p.alpha <= 0f);
@@ -657,17 +723,17 @@ public class BattleView extends JPanel {
 				}
 			});
 		}
-		
+
 		void playSpawnParticles(int mobCenterX, int mobCenterY, int mobW, int mobH) {
-		    spawnedParticles = true;
-		    int count = 40;
-		    for (int i = 0; i < count; i++) {
-		        float px = mobCenterX + (float)(Math.random() * mobW - mobW / 2f);
-		        float py = mobCenterY + (float)(Math.random() * mobH - mobH / 2f);
-		        spawnParticles.add(new SpawnParticle(px, py));
-		    }
-		    if (!particleTimer.isRunning())
-		        particleTimer.start();
+			spawnedParticles = true;
+			int count = 40;
+			for (int i = 0; i < count; i++) {
+				float px = mobCenterX + (float) (Math.random() * mobW - mobW / 2f);
+				float py = mobCenterY + (float) (Math.random() * mobH - mobH / 2f);
+				spawnParticles.add(new SpawnParticle(px, py));
+			}
+			if (!particleTimer.isRunning())
+				particleTimer.start();
 		}
 
 		void setCardTopY(int cardTopY) {
@@ -808,28 +874,31 @@ public class BattleView extends JPanel {
 					}
 
 					int slotW = pw / count;
-					int dx = slotW * i + (slotW - dw) / 2 + BATTLE_CONTENT_X_OFFSET;
+					int leftMargin = count >= 3 ? scaleX(getWidth(), 40) : 0;
+					int usableW = pw - leftMargin;
+					int dx = leftMargin + (usableW / count) * i + ((usableW / count) - dw) / 2
+							+ BATTLE_CONTENT_X_OFFSET;
 					int dy = groundY - dh;
 
-					if (count > 1) {
+					if (count == 2) {
 						int offset = 70;
 						if (i == 0) {
 							dx += offset;
-						} else if (i == 1) {
+						} else {
 							dx -= offset;
 						}
 					}
 
-					boolean alreadyDead = i < currentMobIndex;
 					boolean dyingNow = isDead && i == currentMobIndex;
+					boolean alreadyDead = !drawnMob.isAlive() && !dyingNow;
 
 					if (alreadyDead) {
-					    continue;
+						continue;
 					} else if (dyingNow) {
-					    g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, Math.max(0f, deadAlpha)));
-					    dy += deadDropY;
+						g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, Math.max(0f, deadAlpha)));
+						dy += deadDropY;
 					} else {
-					    g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, mobAlpha));
+						g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, mobAlpha));
 					}
 
 					if (i == currentMobIndex && !isDead) {
@@ -838,32 +907,31 @@ public class BattleView extends JPanel {
 						targetDw = dw;
 						targetDh = dh;
 					}
-					
 
 					g2.drawImage(img, dx, dy, dw, dh, null);
 					g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));
-					g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, mobAlpha)); 
+					g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, mobAlpha));
 					if (!dyingNow) {
-					    drawMobHud(g2, drawnMob, dx, dy, dw);
+						drawMobHud(g2, drawnMob, dx, dy, dw);
 					}
-					g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));       
+					g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));
 				}
 
 				if (targetDx >= 0 && scopeImage != null) {
-				    int scopeW = 100;
-				    int scopeH = 100;
-				    int scopeOffsetX = 0;
-				    if ("스켈레톤".equals(mob.getName())) {
-				        scopeOffsetX = -15;
-				    } else if ("위더스켈레톤".equals(mob.getName())) {
-				        scopeOffsetX = +15;
-				    }
-				    int scopeX = targetDx + (targetDw - scopeW) / 2 + scopeOffsetX;
-				    int scopeY = targetDy + (targetDh - scopeH) / 2;
+					int scopeW = 100;
+					int scopeH = 100;
+					int scopeOffsetX = 0;
+					if ("스켈레톤".equals(mob.getName())) {
+						scopeOffsetX = -15;
+					} else if ("위더스켈레톤".equals(mob.getName())) {
+						scopeOffsetX = +15;
+					}
+					int scopeX = targetDx + (targetDw - scopeW) / 2 + scopeOffsetX;
+					int scopeY = targetDy + (targetDh - scopeH) / 2;
 
-				    g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, mobAlpha)); 
-				    g2.drawImage(scopeImage, scopeX, scopeY, scopeW, scopeH, null);
-				    g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));       
+					g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, mobAlpha));
+					g2.drawImage(scopeImage, scopeX, scopeY, scopeW, scopeH, null);
+					g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));
 				}
 			}
 
@@ -904,13 +972,14 @@ public class BattleView extends JPanel {
 					}
 				}
 			}
-			
+
 			// 파티클 렌더링
 			for (SpawnParticle p : new ArrayList<>(spawnParticles)) {
-			    if (p.alpha <= 0f) continue;
-			    g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, Math.min(1f, p.alpha)));
-			    g2.setColor(p.color);
-			    g2.fillRect((int) p.x, (int) p.y, p.size, p.size);
+				if (p.alpha <= 0f)
+					continue;
+				g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, Math.min(1f, p.alpha)));
+				g2.setColor(p.color);
+				g2.fillRect((int) p.x, (int) p.y, p.size, p.size);
 			}
 			g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));
 
@@ -955,7 +1024,7 @@ public class BattleView extends JPanel {
 			int rowW = 116;
 			int x = centerX - rowW / 2;
 			drawMobStat(g2, x, baseline, targetMob.getAttackPower(), true);
-			drawMobStat(g2, x + 62, baseline, getMobDefense(targetMob), false);
+			drawMobStat(g2, x + 62, baseline, targetMob.getDefencePower(), false);
 		}
 
 		private void drawMobStat(Graphics2D g2, int x, int baseline, int value, boolean attack) {
@@ -1337,21 +1406,21 @@ public class BattleView extends JPanel {
 			drawMarkedWrappedCentered(g2, card.description, x + 8, descY, w - 16, 9, 2);
 
 			if (highlighted) {
-			    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-			    int pad = 6;
-			    for (int i = pad; i >= 1; i--) {
-			        float t = (pad - i) / (float) pad;
-			        int ga = Math.min(255, Math.max(0, (int) (t * 160)));
-			        int gr = Math.min(255, Math.max(0, (int) (180 + t * 30)));
-			        int gg = Math.min(255, Math.max(0, (int) (160 + t * 25)));
-			        int gb = Math.min(255, Math.max(0, (int) (60  + t * 20)));
-			        g2.setStroke(new BasicStroke(1.2f));
-			        g2.setColor(new Color(gr, gg, gb, ga));
-			        g2.drawRect(x - i, y - i, w + i * 2 - 1, h + i * 2 - 1);
-			    }
-			    g2.setStroke(new BasicStroke(1f));
-			    g2.setColor(new Color(220, 195, 85, 200));
-			    g2.drawRect(x, y, w - 1, h - 1);
+				g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+				int pad = 6;
+				for (int i = pad; i >= 1; i--) {
+					float t = (pad - i) / (float) pad;
+					int ga = Math.min(255, Math.max(0, (int) (t * 160)));
+					int gr = Math.min(255, Math.max(0, (int) (180 + t * 30)));
+					int gg = Math.min(255, Math.max(0, (int) (160 + t * 25)));
+					int gb = Math.min(255, Math.max(0, (int) (60 + t * 20)));
+					g2.setStroke(new BasicStroke(1.2f));
+					g2.setColor(new Color(gr, gg, gb, ga));
+					g2.drawRect(x - i, y - i, w + i * 2 - 1, h + i * 2 - 1);
+				}
+				g2.setStroke(new BasicStroke(1f));
+				g2.setColor(new Color(220, 195, 85, 200));
+				g2.drawRect(x, y, w - 1, h - 1);
 			}
 
 			g2.setComposite(oldComposite);
@@ -1883,6 +1952,12 @@ public class BattleView extends JPanel {
 		phaseFlashTimer.start();
 		if (mobBattlePanel != null) {
 			mobBattlePanel.playShake();
+
+			int cx = mobBattlePanel.getWidth() / 2;
+			int cy = mobBattlePanel.getHeight() / 2;
+			int mobW = (int) (mobBattlePanel.getWidth() * 0.4);
+			int mobH = (int) (mobBattlePanel.getHeight() * 0.5);
+			mobBattlePanel.playSpawnParticles(cx, cy, mobW, mobH);
 		}
 		showMessage("엔더드래곤 " + (dragonPhase + 1) + "페이즈 돌입!");
 		System.out.println("[엔더드래곤] 페이즈 " + (dragonPhase + 1) + "로 전환되었습니다!");
@@ -2149,10 +2224,10 @@ public class BattleView extends JPanel {
 		case GUARD:
 			steve.block();
 			guardReady = true;
-			showMessage(steve.getName() + " 방어 중! 다른 카드를 선택하세요.");
-			System.out.println("[방어] " + steve.getName() + iGa(steve.getName()) + " 방어 태세를 취했습니다. 다른 카드를 선택하세요.");
+			showMessage(steve.getName() + " 방어!");
+			System.out.println("[방어] " + steve.getName() + iGa(steve.getName()) + " 방어 태세를 취했습니다.");
 			refreshUI();
-			return true;
+			break;
 		case AOE_SLASH:
 			if (!useAoeSlash())
 				return false;
@@ -2174,6 +2249,16 @@ public class BattleView extends JPanel {
 		}
 		mobTurn(guardReady);
 		guardReady = false;
+		
+		if (!creepExploding && !mob.isAlive()) {
+		    handleMobDead();
+		    return true;
+		}
+		if (!creepExploding && !steve.isAlive()) {
+		    handleSteveDead();
+		    return true;
+		}
+		
 		return true;
 	}
 
@@ -2214,7 +2299,9 @@ public class BattleView extends JPanel {
 		}
 
 		int before = mob.getHealth();
-		aoeSlash.use(steve, targets, steve.getWeapon());
+		for (Mob target : targets) {
+		    aoeSlash.use(steve, target);
+		}
 		updateDragonPhaseImage(true);
 		int actualDmg = before - mob.getHealth();
 
@@ -2235,7 +2322,31 @@ public class BattleView extends JPanel {
 		mobBattlePanel.showDamage(actualDmg, true);
 		mobBattlePanel.playHitFlash();
 		mobBattlePanel.playShake();
+
+		removeDeadMobs();
 		return true;
+	}
+
+	private void removeDeadMobs() {
+		List<Mob> toRemove = new ArrayList<>();
+
+		for (Mob currentMob : waveMobs) {
+			if (currentMob.getHealth() <= 0) {
+				toRemove.add(currentMob);
+			}
+		}
+
+		for (Mob dead : toRemove) {
+			waveManager.removeMob(dead);
+			if (dead != mob) {
+				System.out.println("[처치] " + dead.getName() + "이(가) 쓰러졌습니다!");
+			}
+		}
+
+		if (!waveMobs.isEmpty() && !waveMobs.contains(this.mob)) {
+			this.mobIndex = 0;
+			this.mob = waveMobs.get(0);
+		}
 	}
 
 	private AoeSlash getEquippedAoeSlash() {
@@ -2301,28 +2412,135 @@ public class BattleView extends JPanel {
 			return;
 		}
 
+		List<Mob> attackers = new ArrayList<>();
+		for (Mob m : waveMobs) {
+			if (m.isAlive() && m != mob) { 
+				attackers.add(m);
+			}
+		}
+
 		if (playerBlocked) {
-			showMessage(mob.getName() + "의 공격을 막았습니다.");
-			System.out.println("[방어] " + mob.getName() + "의 공격이 " + steve.getName() + "에 의해 막혔습니다.");
+			showMessage(steve.getName() + "이(가) 방어 자세를 취해 적들의 공격을 대비합니다!");
+			System.out.println("[방어] " + steve.getName() + "이(가) 방어 자세를 취합니다.");
+			
+			int originalDef = steve.getDefencePower();
+			steve.setDefencePower(originalDef + 15);
+			
+			for (Mob attacker : attackers) {
+				int hpBefore = steve.getHealth();
+				attacker.act(steve);
+				int dmg = hpBefore - steve.getHealth(); 
+				
+				showMessage(attacker.getName() + "의 공격! " + steve.getName() + "이(가) " + dmg + " 피해를 입었습니다.");
+				System.out.println("[몹 공격] " + attacker.getName() + iGa(attacker.getName()) + " " + steve.getName()
+						+ eulReul(steve.getName()) + " 공격했습니다! " + dmg + "의 피해를 입었습니다. (남은 체력: " + steve.getHealth()
+						+ ")");
+				mobBattlePanel.showDamage(dmg, false);
+			}
+			
+			steve.setDefencePower(originalDef);
+			
 		} else {
-			int rawDmg = mob.getAttackPower();
 			int steveHpBefore = steve.getHealth();
-			steve.takeDamage(rawDmg);
+			mob.act(steve);
 			int actualDmg = steveHpBefore - steve.getHealth();
+			
 			showMessage(mob.getName() + "의 공격! " + steve.getName() + "이(가) " + actualDmg + " 피해를 입었습니다.");
 			System.out.println("[몹 공격] " + mob.getName() + iGa(mob.getName()) + " " + steve.getName()
 					+ eulReul(steve.getName()) + " 공격했습니다! " + steve.getName() + iGa(steve.getName()) + " " + actualDmg
 					+ "의 피해를 입었습니다. (남은 체력: " + steve.getHealth() + ")");
 			mobBattlePanel.showDamage(actualDmg, false);
+
+			if ("크리퍼".equals(mob.getName())) {
+			    int remaining = getCreepRemainingTurns(mob);
+			    if (!mob.isAlive()) {
+			        inputLocked = true;
+			        creepExploding = true;  
+			        mobBattlePanel.playExplosionEffect(() -> {
+			            creepExploding = false;  
+			            inputLocked = false;
+			            handleMobDead();
+			        });
+			        return;
+			    } else if (remaining == 0) {
+			        mobBattlePanel.playCreepFlash(null);
+			        showMessage("크리퍼가 부풀어 오르고 있다!");
+			    }
+			}
+			
+			for (Mob attacker : attackers) {
+				int hpBefore = steve.getHealth();
+				attacker.act(steve);
+				int dmg = hpBefore - steve.getHealth();
+				
+				showMessage(attacker.getName() + "의 공격! " + steve.getName() + "이(가) " + dmg + " 피해를 입었습니다.");
+				System.out.println("[몹 공격] " + attacker.getName() + iGa(attacker.getName()) + " " + steve.getName()
+						+ eulReul(steve.getName()) + " 공격했습니다! " + dmg + "의 피해를 입었습니다. (남은 체력: " + steve.getHealth()
+						+ ")");
+				mobBattlePanel.showDamage(dmg, false);
+				
+				if ("크리퍼".equals(attacker.getName())) {
+				    int remaining = getCreepRemainingTurns(attacker);
+				    if (!attacker.isAlive()) {
+				        inputLocked = true;
+				        creepExploding = true; 
+				        mobBattlePanel.playExplosionEffect(() -> {
+				            creepExploding = false;  
+				            inputLocked = false;
+				        });
+				    } else if (remaining == 0) {
+				        mobBattlePanel.playCreepFlash(null);
+				        showMessage("크리퍼가 부풀어 오르고 있다!");
+				    }
+				}
+			}
 		}
 
 		steve.onTurnEnd();
 		decrementAoeSlashCooldown();
 		refreshUI();
+		if (!mob.isAlive()) {
+			handleMobDead();
+			return;
+		}
 		if (!steve.isAlive()) {
 			handleSteveDead();
 			return;
 		}
+
+	}
+
+	private int getCreepRemainingTurns(Mob m) {
+	    Mobability ability = m.getAbility();
+	    if (ability instanceof Explode) {
+	        return ((Explode) ability).getBeforeExplosionTurns();
+	    }
+	    return -1;
+	}
+
+	private void playCreepExplosionEffect() {
+	    JPanel flash = new JPanel() {
+	        @Override
+	        protected void paintComponent(Graphics g) {
+	            g.setColor(new Color(80, 255, 80, 180));
+	            g.fillRect(0, 0, getWidth(), getHeight());
+	        }
+	    };
+	    flash.setOpaque(false);
+	    flash.setBounds(0, 0, getWidth(), getHeight());
+	    add(flash);
+	    setComponentZOrder(flash, 0);
+	    repaint();
+
+	    mobBattlePanel.showDamage(0, new Color(80, 255, 80)); // 폭발 위치에 이펙트용
+	    mobBattlePanel.playShake();
+
+	    javax.swing.Timer removeFlash = new javax.swing.Timer(300, e -> {
+	        remove(flash);
+	        repaint();
+	    });
+	    removeFlash.setRepeats(false);
+	    removeFlash.start();
 	}
 
 	private void decrementAoeSlashCooldown() {
@@ -2347,6 +2565,7 @@ public class BattleView extends JPanel {
 	}
 
 	private void handleMobDead() {
+
 		if (inputLocked)
 			return;
 		inputLocked = true;
@@ -2364,27 +2583,33 @@ public class BattleView extends JPanel {
 				+ " (현재 코인: " + steve.getCoin() + ", 경험치: " + steve.getExp() + ")");
 		refreshUI();
 
+		waveManager.removeMob(mob);
+
 		mobBattlePanel.playDeathAnimation(() -> {
 			mobIndex++;
+
 			while (mobIndex < waveMobs.size() && !waveMobs.get(mobIndex).isAlive()) {
 				mobIndex++;
 			}
 
 			if (mobIndex < waveMobs.size()) {
 				mob = waveMobs.get(mobIndex);
-				loadImages();
 				mobBattlePanel.setMobIndex(mobIndex);
+
+
+				loadImages();
 				showMessage("다음 적 등장: " + mob.getName() + "!");
-				System.out.println("[다음 적] " + mob.getName() + iGa(mob.getName()) + " 등장했습니다! (체력: " + mob.getHealth()
-						+ " / " + mob.getMaxHealth() + ")");
 				inputLocked = false;
 				refreshUI();
+
 			} else {
+				mobBattlePanel.setMobIndex(mobIndex);
 				javax.swing.Timer t = new javax.swing.Timer(800, e -> {
 					if (waveManager.isLastWave()) {
-						gameFrame.showEnding(steve); // 6웨이브 클리어 → 엔딩
+						long elapsed = System.currentTimeMillis() - gameFrame.getStartTime();
+						gameFrame.showEnding(steve, elapsed);
 					} else {
-						showVictoryDialog(coin, exp); // 일반 클리어 → 승리 팝업
+						showVictoryDialog(coin, exp); 
 					}
 				});
 				t.setRepeats(false);
@@ -2660,28 +2885,33 @@ public class BattleView extends JPanel {
 		dialog.setLocationRelativeTo(this);
 		dialog.setResizable(false);
 		dialog.setVisible(true);
+
+	}
+
+	private String formatElapsed(long ms) {
+		long sec = ms / 1000;
+		long min = sec / 60;
+		sec = sec % 60;
+		return String.format("%d분 %02d초", min, sec);
 	}
 
 	private JPanel buildVictoryCard(String title, String value, String status, Color valueColor) {
 		JPanel card = new JPanel();
 		card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
 		card.setOpaque(false);
-		// 디버그용 테두리 (위치 확인 후 삭제/주석 처리 하세요)
-		// card.setBorder(BorderFactory.createLineBorder(Color.RED, 1));
 
-		// 1. Title Label 설정
+		// Title Label
 		JLabel titleLabel = new JLabel(title, SwingConstants.CENTER);
 		titleLabel.setFont(koreanPixelFont(11));
 		titleLabel.setForeground(new Color(200, 200, 200));
 		titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-		// 세 가지 사이즈를 동일하게 설정하여 BoxLayout이 강제로 크기를 늘리지 못하게 막음
-		Dimension titleSize = new Dimension(200, 20); // ← 여기서 title 높이 조절
+		Dimension titleSize = new Dimension(200, 20);
 		titleLabel.setPreferredSize(titleSize);
 		titleLabel.setMinimumSize(titleSize);
 		titleLabel.setMaximumSize(titleSize);
 
-		// 2. Value Label 설정
+		// Value Label
 		JLabel valueLabel = new JLabel(value, SwingConstants.CENTER);
 		valueLabel.setFont(uiPixelFont(16));
 		valueLabel.setForeground(valueColor);
@@ -2692,7 +2922,7 @@ public class BattleView extends JPanel {
 		valueLabel.setMinimumSize(valueSize);
 		valueLabel.setMaximumSize(valueSize);
 
-		// 3. Status Label 설정
+		// Status Label
 		JLabel statusLabel = new JLabel(status, SwingConstants.CENTER);
 		statusLabel.setFont(koreanPixelFont(9));
 		statusLabel.setForeground(new Color(160, 160, 160));
@@ -2705,14 +2935,14 @@ public class BattleView extends JPanel {
 		statusLabel.setMinimumSize(statusSize);
 		statusLabel.setMaximumSize(statusSize);
 
-		// 4. 컴포넌트 배치 및 간격(Strut) 조절
+		// 컴포넌트 배치 및 간격 조절
 		card.add(Box.createVerticalStrut(5));
 		card.add(titleLabel);
-		card.add(Box.createVerticalStrut(75)); // ← title과 value 사이의 '정확한' 픽셀 간격
+		card.add(Box.createVerticalStrut(75));
 		card.add(valueLabel);
-		card.add(Box.createVerticalStrut(3)); // ← value와 status 사이의 '정확한' 픽셀 간격
+		card.add(Box.createVerticalStrut(3));
 		card.add(statusLabel);
-		card.add(Box.createVerticalGlue()); // 하단 남는 공간 밀어내기
+		card.add(Box.createVerticalGlue());
 
 		return card;
 	}
@@ -2924,10 +3154,10 @@ public class BattleView extends JPanel {
 	}
 
 	private void showMessage(String msg) {
-	    messageLabel.setText(msg);
-	    if (messageLabel.getParent() != null) {
-	        messageLabel.getParent().revalidate();
-	    }
+		messageLabel.setText(msg);
+		if (messageLabel.getParent() != null) {
+			messageLabel.getParent().revalidate();
+		}
 	}
 
 	private static void drawCentered(Graphics2D g2, String s, int x, int y, int w) {

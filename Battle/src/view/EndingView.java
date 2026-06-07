@@ -13,6 +13,7 @@ public class EndingView extends JPanel {
 
     private GameFrame gameFrame;
     private Steve steve;
+    private long elapsedMs;
 
     private static class GoldParticle {
         double x, y;
@@ -36,9 +37,10 @@ public class EndingView extends JPanel {
         }
     }
 
-    public EndingView(GameFrame gameFrame, Steve steve) {
+    public EndingView(GameFrame gameFrame, Steve steve, long elapsedMs) {
         this.gameFrame = gameFrame;
         this.steve = steve;
+        this.elapsedMs = elapsedMs;
 
         setLayout(null);
         setBackground(new Color(10, 10, 10));
@@ -112,9 +114,9 @@ public class EndingView extends JPanel {
                 g2.setFont(FontManager.getNeoDgm(15));
                 FontMetrics fm = g2.getFontMetrics();
 
-                String part1 = "코인 ";
-                String part2 = String.valueOf(steve.getCoin());
-                String part3 = "개 획득!";
+                String part1 = "클리어 타임 ";
+                String part2 = formatElapsed(elapsedMs);
+                String part3 = "";
                 int totalW = fm.stringWidth(part1 + part2 + part3);
                 int tx = (getWidth() - totalW) / 2;
                 int ty = (getHeight() + fm.getAscent()) / 2;
@@ -134,6 +136,13 @@ public class EndingView extends JPanel {
                 g2.drawString(part3, tx, ty);
 
                 g2.dispose();
+            }
+
+            private String formatElapsed(long ms) {
+                long sec = ms / 1000;
+                long min = sec / 60;
+                sec = sec % 60;
+                return String.format("%d:%02d", min, sec);
             }
         };
         coinLabel.setBounds(0, 225, imgW, 40);

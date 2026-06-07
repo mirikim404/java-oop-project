@@ -5,19 +5,14 @@ import entity.Entity;
 
 public class Piglin extends Mob {
 	private static final int DEFAULT_MAX_HEALTH = 82;
-    private static final int DEFAULT_ATTACK_POWER = 28;  
+    private static final int DEFAULT_ATTACK_POWER = 24;  
     private static final int DEFAULT_DEFENCE_POWER = 14;
-    private static final int DROP_EXP = 110; 
-    private static final int DROP_COIN = 95;
+    private static final int DROP_EXP = 60; 
+    private static final int DROP_COIN = 55;
 	public Piglin () {
 		super("피글린", DEFAULT_MAX_HEALTH, DEFAULT_ATTACK_POWER, DEFAULT_DEFENCE_POWER, DROP_EXP,DROP_COIN);
 		setAbility(new DoubleAttack());
-	} // 기본 생성자
-	
-//	public Piglin (String name, int DEFAULT_MAX_HEALTH, int DEFAULT_ATTACK_POWER, int DEFAULT_DEFENCE_POWER) { //생성자
-//		super(name, DEFAULT_MAX_HEALTH, DEFAULT_ATTACK_POWER, DEFAULT_DEFENCE_POWER);
-//		setAbility(new DoubleAttack());
-//	}
+	} 
 	
 	
 	@Override
