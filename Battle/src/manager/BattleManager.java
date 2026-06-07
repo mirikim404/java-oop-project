@@ -211,12 +211,6 @@ public class BattleManager {
 		System.out.println("축하합니다, " + steve.getUsername() + "! 모든 웨이브를 클리어했습니다!");
 	}
 
-	public void checkPhase() {
-		if (currentMob instanceof EnderDragon dragon) {
-			// TODO: EnderDragon 구현 후 활성화
-			// dragon.updatePhase();
-		}
-	}
 
 	public void setGameState(GameState state) {
 		this.gameState = state;
