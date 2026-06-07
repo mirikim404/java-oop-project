@@ -1,6 +1,11 @@
 package effect;
+
+import entity.Entity;
+import entity.mob.Mob;
+
 public interface StatusEffect {
 
-    public void activate();
-
+    void activate(Entity target);
+    boolean isExpired();
+    
 }

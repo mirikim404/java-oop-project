@@ -1,15 +1,53 @@
 package skill.active;
 
+import entity.Steve;
+import entity.mob.Mob;
 import skill.Skill;
 
-public class ActiveSkill extends Skill {
-    private int cooldown;
-    private int currentCooldown;
+public abstract class ActiveSkill extends Skill {
+    protected int cooldown;
+    protected int currentCooldown = 0;
 
-    public void isReady(){
+    public ActiveSkill() {}
+
+    public ActiveSkill(String name, String description, int cooldown) {
+    	super(name, description);
+    	this.cooldown = cooldown;
+    }
+
+    public boolean isReady() {
+    	return currentCooldown == 0;
     }
 
     public void triggerCooldown(){
+    	currentCooldown = cooldown;
     }
+
+    public void decrementCooldown(){
+    	if (currentCooldown > 0) currentCooldown--;
+    }
+
+    public boolean skipsMobTurn() {
+        return false;
+    }
+
+    public int getCooldown() {
+        return cooldown;
+    }
+
+    public int getCurrentCooldown() {
+		return currentCooldown;
+	}
+
+	public void setCurrentCooldown(int currentCooldown) {
+		this.currentCooldown = currentCooldown;
+	}
+	
+	public void resetCooldown() {
+        this.currentCooldown = 0;
+    }
+
+	public abstract void use(Steve steve, Mob target);
+
 
 }
